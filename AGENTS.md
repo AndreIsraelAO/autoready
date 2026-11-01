@@ -18,6 +18,8 @@ vuelva a tiempo. Producto de **keis.studio** (estudio del dueño del repo). Ante
   detección de inactividad): perjudica a los otros jugadores y esquiva un sistema anti-abuso. No implementarlo.
 - **Sin créditos a terceros:** el código y los README no mencionan otros proyectos de auto-accept que se investigaron, y los
   commits/PRs **no llevan** `Co-Authored-By` ni "Generated with ...". Sí va la marca propia keis.studio.
+- **Commits en inglés**, en imperativo ("Add CS2 support", "Fix tray icon"), aunque la conversación sea en castellano.
+  El historial se reescribió al inglés el 2026-11-01; el anterior quedó en la rama local `backup/spanish-history`.
 
 ## Cómo funciona
 1. Busca la ventana del juego por nombre de proceso (`dota2`, `cs2`).

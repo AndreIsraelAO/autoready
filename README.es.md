@@ -1,64 +1,104 @@
-<p align="center"><img src="assets/autoready-icon.png" width="128" alt="AutoReady"></p>
+<p align="center">
+  <img src="assets/autoready-icon.png" width="112" alt="">
+</p>
 
-# AutoReady
+<h1 align="center">AutoReady</h1>
 
-**Buscá partida, andá a hacer otra cosa. AutoReady la acepta por vos.**
+<p align="center">
+  <b>Buscá partida, andá a hacer otra cosa. AutoReady la acepta por vos.</b>
+</p>
 
-Un auto-accept chiquito para **Dota 2** y **Counter-Strike 2** en Windows. Apretás *Buscar partida*, te vas a buscar algo de tomar y AutoReady hace click en **ACEPTAR** cuando aparece la partida. Después te avisa al celular para que vuelvas a tiempo para el pick.
+<p align="center">
+  <a href="https://github.com/hercase/autoready/releases"><img src="https://img.shields.io/github/v/release/hercase/autoready?include_prereleases&label=descargar" alt="Última versión"></a>
+  <img src="https://img.shields.io/badge/Windows-10%20%7C%2011-0078D4" alt="Windows 10 y 11">
+  <a href="https://github.com/hercase/autoready/releases"><img src="https://img.shields.io/github/downloads/hercase/autoready/total?label=descargas" alt="Descargas"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/github/license/hercase/autoready?label=licencia" alt="Licencia MIT"></a>
+</p>
 
-[English](README.md)
+<p align="center">
+  <a href="https://github.com/hercase/autoready/releases"><b>Descargar para Windows</b></a> · <a href="README.md">Read in English</a>
+</p>
+
+<p align="center">
+  <img src="assets/screenshot-panel.png" width="320" alt="El panel de AutoReady">
+</p>
 
 ## Qué hace
 
-- ✅ Detecta el botón verde **ACEPTAR** y le hace click, aunque Dota esté tapado por otra ventana o minimizado.
-- 🛡️ Usa **Game State Integration**, la integración oficial de Valve, para saber cuándo estás en partida, y ahí deja de escanear. Nunca hace clicks dentro del juego.
-- 📱 Si querés, te manda avisos al celular con [ntfy](https://ntfy.sh) (gratis, sin cuenta): *"¡Partida aceptada!"* y *"¡Empezó el pick, volvé!"*.
-- ⌨️ Atajo de teclado configurable para pausar o reanudar desde cualquier lado, incluso dentro del juego.
-- 🪶 Es un solo `.exe` (~150 KB), no se instala y no necesita descargar nada más. Vive en el área de notificación, con un panel chico para configurarlo.
-- 🔍 Es 100% código abierto y se compila con el compilador de C# que ya trae Windows.
+Apretás **Buscar partida** y te vas a buscar algo de tomar. Cuando aparece la partida, AutoReady toca **Aceptar** por vos y
+te avisa (sonido, notificación de Windows y, si querés, en el celular) para que vuelvas a tiempo para el pick.
 
-## ¿Es seguro? ¿Me pueden banear?
+- **Acepta la partida** aunque el juego esté tapado por otras ventanas o minimizado.
+- **Nunca hace clicks durante una partida:** usa la integración oficial de Valve (Game State Integration) para saber cuándo
+  estás jugando.
+- **Pausalo desde cualquier lado** con la tecla que elijas, incluso jugando.
+- **Avisos al celular** con la app gratuita ntfy.
+- **Un solo archivo chico.** No se instala, no baja nada más y se actualiza solo.
 
-AutoReady **solo mira la pantalla y simula un click**, como haría una persona. No inyecta código, no lee la memoria del juego y no modifica archivos de Dota. Lo único que escribe es la config oficial de GSI, en `dota/cfg/gamestate_integration` y en `csgo/cfg`.
+## Juegos compatibles
 
-No lo uses para quedarte AFK mucho tiempo: aceptá la partida y volvé. Abandonar perjudica a los otros 9 jugadores y te manda a low priority.
+| Juego | Estado | Configuración |
+|---|---|---|
+| Dota 2 | ✅ | Agregá `-gamestateintegration` en las opciones de lanzamiento (Steam → Dota 2 → Propiedades) |
+| Counter-Strike 2 | ✅ | Nada: solo reiniciá CS2 una vez después de abrir AutoReady |
 
-## Instalación
+¿Querés otro juego? [Abrí un issue](https://github.com/hercase/autoready/issues).
 
-1. Bajá `AutoReady.exe` de [Releases](../../releases) (o compilalo vos, ver más abajo) y abrilo.
-2. **Dota 2:** en Steam, **Dota 2 → Propiedades → Opciones de lanzamiento**, agregá `-gamestateintegration` y reiniciá Dota.
-   **CS2:** no hay que hacer nada, solo reiniciá CS2 una vez para que cargue la config de GSI.
-3. Opcional: tocá el ícono de AutoReady, prendé **Celular** y escaneá el QR con la cámara del celular.
+## Empezar
 
-Windows SmartScreen puede mostrar una advertencia porque el exe no está firmado. Tocá **Más información → Ejecutar de todas formas**, o compilalo desde el código.
+1. Bajá `AutoReady.exe` de [Releases](https://github.com/hercase/autoready/releases) y abrilo.
+2. Aparece el ícono de AutoReady al lado del reloj y se abre el panel. Listo: ya está funcionando.
+3. Buscá partida en tu juego y andá a hacer otra cosa.
+
+Windows puede mostrar un aviso de SmartScreen porque la app todavía no está firmada. Tocá **Más información → Ejecutar de
+todas formas**.
 
 ## Cómo se usa
 
-Tocá el ícono para abrir el panel: el interruptor **Aceptar partidas**, el atajo para pausar, los avisos (sonido, arranque de partida, celular) y las opciones generales. Los cambios se aplican al instante. Con click derecho tenés **Abrir AutoReady**, **Pausar/Reanudar** y **Salir**.
+Tocá el ícono al lado del reloj para abrir el panel. Los cambios se aplican al instante.
 
-| Ícono | Significado |
-|---|---|
-| 🟢 | Esperando partida (o en partida, sin escanear) |
-| ⚪ | En pausa |
-| 🟠 | No hay ningún juego abierto |
+- **Aceptar partidas:** el interruptor principal. Apagalo para pausar.
+- **Atajo:** elegí una tecla (por ejemplo F8) para pausar o reanudar desde cualquier lado.
+- **Avisos:** sonido, aviso cuando la partida arranca de verdad y notificaciones al celular.
+- **General:** iniciar con Windows y actualizaciones automáticas.
 
-## Compilar
+Con click derecho en el ícono tenés **Abrir AutoReady**, **Pausar/Reanudar** y **Salir**. En pausa, el ícono se pone gris.
 
-```bat
-build.bat
-```
+## Preguntas frecuentes
 
-Genera `dist\AutoReady.exe`. Solo necesitás Windows 10/11 (usa el `csc.exe` de .NET Framework 4, que ya viene instalado).
+**¿Me pueden banear por usarlo?**
+AutoReady solo mira la pantalla y toca el botón Aceptar, como harías vos. No lee ni cambia la memoria del juego, no inyecta
+nada y no modifica archivos del juego. Lo único que escribe es el archivo de configuración oficial de Game State
+Integration de Valve.
 
-## Problemas
+**¿Hace clicks durante la partida?**
+No. Game State Integration le avisa cuando estás en partida, y deja de mirar hasta que termina.
 
-- **No detecta el botón:** con el popup en pantalla, abrí el panel → *General* → *Avanzado* → *Guardar captura*. La imagen muestra el área de búsqueda (en celeste) y el botón detectado (en rojo). Los valores de detección están en `%APPDATA%\AutoReady\autoready.ini`.
-- **Probar el detector con una imagen:** `AutoReady.exe --test captura.png dota2` (o `cs2`) genera `captura.result.png` y `.result.txt`.
-- **Logs:** `%APPDATA%\AutoReady\autoready.log`.
+**¿Lo puedo usar para quedarme AFK?**
+No, y por favor no lo hagas. Sirve para que no se te pase una partida mientras vas a buscar algo. Aceptá y volvé:
+abandonar perjudica a los otros nueve jugadores.
+
+**¿Funciona con dos monitores?**
+Debería, esté donde esté el juego. Todavía lo estamos probando con varios monitores; si algo falla,
+[avisanos](https://github.com/hercase/autoready/issues/6).
+
+**No me aceptó la partida.**
+Fijate que **Aceptar partidas** esté prendido y, en Dota 2, que `-gamestateintegration` esté en las opciones de
+lanzamiento. Si sigue fallando, [abrí un issue](https://github.com/hercase/autoready/issues) con el juego, la resolución y
+la escala de pantalla de Windows.
+
+## Estado
+
+AutoReady está en **beta** (versiones 0.x). Lo que viene y los problemas conocidos están en
+[Issues](https://github.com/hercase/autoready/issues).
+
+## Colaborar
+
+Reportes de errores e ideas son bienvenidos. Para compilarlo vos o mandar cambios, mirá [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Licencia
 
-MIT
+[MIT](LICENSE)
 
 ---
 
@@ -66,9 +106,7 @@ MIT
   <a href="https://keis.studio">
     <picture>
       <source media="(prefers-color-scheme: dark)" srcset="assets/keis-wordmark-dark.svg">
-      <img src="assets/keis-wordmark-light.svg" height="36" alt="keis.studio">
+      <img src="assets/keis-wordmark-light.svg" height="32" alt="keis.studio">
     </picture>
   </a>
-  <br>
-  <sub>Hecho por <a href="https://keis.studio">keis.studio</a></sub>
 </p>

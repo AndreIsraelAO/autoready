@@ -1,64 +1,102 @@
-<p align="center"><img src="assets/autoready-icon.png" width="128" alt="AutoReady"></p>
+<p align="center">
+  <img src="assets/autoready-icon.png" width="112" alt="">
+</p>
 
-# AutoReady
+<h1 align="center">AutoReady</h1>
 
-**Queue up, step away. AutoReady accepts the match for you.**
+<p align="center">
+  <b>Queue up. Step away. AutoReady accepts the match for you.</b>
+</p>
 
-A tiny auto-accept for **Dota 2** and **Counter-Strike 2** on Windows. Hit *Find Match*, go grab a drink, and AutoReady clicks **ACCEPT** when the match pops — then pings your phone so you come back in time for the pick.
+<p align="center">
+  <a href="https://github.com/hercase/autoready/releases"><img src="https://img.shields.io/github/v/release/hercase/autoready?include_prereleases&label=download" alt="Latest version"></a>
+  <img src="https://img.shields.io/badge/Windows-10%20%7C%2011-0078D4" alt="Windows 10 and 11">
+  <a href="https://github.com/hercase/autoready/releases"><img src="https://img.shields.io/github/downloads/hercase/autoready/total" alt="Downloads"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/github/license/hercase/autoready" alt="MIT license"></a>
+</p>
 
-[Español](README.es.md)
+<p align="center">
+  <a href="https://github.com/hercase/autoready/releases"><b>Download for Windows</b></a> · <a href="README.es.md">Leer en español</a>
+</p>
 
-## Features
+<p align="center">
+  <img src="assets/screenshot-panel.png" width="320" alt="The AutoReady panel">
+</p>
 
-- ✅ Detects the green **ACCEPT** button and clicks it — even if Dota is behind another window or minimized.
-- 🛡️ Uses Valve's official **Game State Integration** to know when you are in a match, and stops scanning there. No clicks during your game.
-- 📱 Optional push notifications to your phone via [ntfy](https://ntfy.sh) (free, no account): *"Match accepted!"* and *"Pick started, come back!"*.
-- ⌨️ Configurable hotkey to pause or resume from anywhere, even in game.
-- 🪶 Single `.exe` (~150 KB), no install, no runtime to download. Lives in the notification area, with a small panel to set it up.
-- 🔍 100% open source. Builds with the C# compiler that already ships with Windows.
+## What it does
 
-## Is it safe? Will I get banned?
+You hit **Find match** and go grab a drink. When the match pops, AutoReady clicks **Accept** for you and lets you know
+(sound, Windows notification and, if you want, your phone) so you're back in time for the pick.
 
-AutoReady **only looks at the screen and simulates a mouse click**, like a person would. It never injects code, reads game memory or modifies game files (the only file it writes is the official GSI config, in `dota/cfg/gamestate_integration` and `csgo/cfg`).
+- **Accepts the match** even if the game is behind other windows or minimized.
+- **Never clicks during a match:** it uses Valve's official Game State Integration to know when you're in game.
+- **Pause it from anywhere** with a hotkey you choose, even while playing.
+- **Phone alerts** through the free ntfy app.
+- **One small file.** No install, no extra downloads, and it updates itself.
 
-Please don't use it to go AFK for long — accept the match and come back. Abandoning games hurts your 9 teammates and gets you low priority.
+## Supported games
 
-## Install
+| Game | Status | Setup |
+|---|---|---|
+| Dota 2 | ✅ | Add `-gamestateintegration` to the launch options (Steam → Dota 2 → Properties) |
+| Counter-Strike 2 | ✅ | Nothing to do: just restart CS2 once after opening AutoReady |
 
-1. Download `AutoReady.exe` from [Releases](../../releases) (or build it yourself, see below) and run it.
-2. **Dota 2:** in Steam, **Dota 2 → Properties → Launch Options**, add `-gamestateintegration`, then restart Dota.
-   **CS2:** nothing to do, just restart CS2 once so it loads the GSI config.
-3. Optional: click the AutoReady icon, turn on **Phone** and scan the QR code with your phone camera.
+Want another game? [Open an issue](https://github.com/hercase/autoready/issues).
 
-Windows SmartScreen may warn you because the exe isn't code-signed. Click **More info → Run anyway**, or build it from source.
+## Get started
+
+1. Download `AutoReady.exe` from [Releases](https://github.com/hercase/autoready/releases) and open it.
+2. The AutoReady icon shows up next to the clock and the panel opens. That's it: it's running.
+3. Queue up in your game and step away.
+
+Windows may show a SmartScreen warning because the app isn't code-signed yet. Click **More info → Run anyway**.
 
 ## Using it
 
-Click the icon to open the panel: the main **Accept matches** switch, the pause hotkey, alerts (sound, match started, phone) and general options. Changes apply right away. Right-click the icon for **Open AutoReady**, **Pause/Resume** and **Exit**.
+Click the icon next to the clock to open the panel. Changes apply right away.
 
-| Icon | Meaning |
-|---|---|
-| 🟢 | Waiting for a match (or in a match, not scanning) |
-| ⚪ | Paused |
-| 🟠 | No game running |
+- **Accept matches:** the main switch. Turn it off to pause.
+- **Hotkey:** pick a key (for example F8) to pause or resume from anywhere.
+- **Alerts:** sound, a heads-up when the match actually starts, and phone notifications.
+- **General:** start with Windows and automatic updates.
 
-## Build from source
+Right-click the icon for **Open AutoReady**, **Pause/Resume** and **Exit**. The icon turns gray while paused.
 
-```bat
-build.bat
-```
+## FAQ
 
-Output: `dist\AutoReady.exe`. Requires only Windows 10/11 (uses `csc.exe` from .NET Framework 4, preinstalled).
+**Can I get banned for this?**
+AutoReady only looks at the screen and clicks the Accept button, like you would. It doesn't read or change game memory,
+doesn't inject anything and doesn't modify game files. The only thing it writes is Valve's official Game State Integration
+config file.
 
-## Troubleshooting
+**Does it click anything during a match?**
+No. Game State Integration tells it when you're in a match, and it stops looking until the match ends.
 
-- **It doesn't detect the button:** open the panel → *General* → *Advanced* → *Save screenshot* while the popup is visible. The image shows the search area (blue) and the detected button (red). Detection thresholds are in `%APPDATA%\AutoReady\autoready.ini`.
-- **Test the detector on an image:** `AutoReady.exe --test screenshot.png dota2` (or `cs2`) writes `screenshot.result.png` and `.result.txt`.
-- **Logs:** `%APPDATA%\AutoReady\autoready.log`.
+**Can I use it to stay AFK?**
+No, and please don't. It's meant to save you from missing a match while you grab something. Accept, then come back:
+abandoning hurts the other nine players.
+
+**Does it work with two monitors?**
+It should, wherever the game is. Multi-monitor setups are still being tested; if something's off, please
+[let us know](https://github.com/hercase/autoready/issues/6).
+
+**It didn't accept my match.**
+Make sure **Accept matches** is on and, for Dota 2, that `-gamestateintegration` is in the launch options.
+If it still fails, [open an issue](https://github.com/hercase/autoready/issues) with your game, resolution and Windows
+display scale.
+
+## Status
+
+AutoReady is in **beta** (versions 0.x). The roadmap and known issues are in
+[Issues](https://github.com/hercase/autoready/issues).
+
+## Contributing
+
+Bug reports and ideas are welcome. To build it yourself or send changes, see [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## License
 
-MIT
+[MIT](LICENSE)
 
 ---
 
@@ -66,9 +104,7 @@ MIT
   <a href="https://keis.studio">
     <picture>
       <source media="(prefers-color-scheme: dark)" srcset="assets/keis-wordmark-dark.svg">
-      <img src="assets/keis-wordmark-light.svg" height="36" alt="keis.studio">
+      <img src="assets/keis-wordmark-light.svg" height="32" alt="keis.studio">
     </picture>
   </a>
-  <br>
-  <sub>Made by <a href="https://keis.studio">keis.studio</a></sub>
 </p>
