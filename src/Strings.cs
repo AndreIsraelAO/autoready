@@ -33,8 +33,6 @@ namespace AutoReady
         public static string HotkeyPressHint { get { return T("Esc cancela · Supr la quita", "Esc to cancel · Delete to clear"); } }
         public static string HotkeyTaken { get { return T("Otra app usa esa tecla. Probá con otra.", "Another app uses that key. Try another."); } }
         public static string HotkeyNeedsModifier { get { return T("Usá una tecla F o combiná con Ctrl, Alt o Shift.", "Use an F key or combine with Ctrl, Alt or Shift."); } }
-        public static string ProtectionOn { get { return T("Activada. No hace nada durante la partida.", "On. Never acts during a match."); } }
-        public static string ProtectionOnSteam { get { return T("Activada con tu estado de Steam: solo mira mientras buscás partida.", "On, using your Steam status: only watches while you queue."); } }
         public static string ProtectionMissing(string game) { return string.Format(T("{0} necesita un paso, una sola vez, para que AutoReady nunca haga click en partida.", "{0} needs a one-time setup so AutoReady never clicks during a match."), game); }
         public static string ProtectionButton { get { return T("Configurar", "Set up"); } }
         public static string ProtectionCopied(string game) { return string.Format(T("Copiado. En la ventana de Steam que se abrió, tocá el campo Opciones de lanzamiento, apretá Ctrl+A y Ctrl+V, y reiniciá {0}.", "Copied. In the Steam window that opened, click the Launch Options box, press Ctrl+A, then Ctrl+V, and restart {0}."), game); }

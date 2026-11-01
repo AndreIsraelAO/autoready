@@ -22,12 +22,25 @@ The full architecture, design decisions and known pitfalls are in [AGENTS.md](AG
 
 | Path | What's there |
 |---|---|
-| `src/TrayApp.cs` | Tray icon, scan loop, accepting, alerts, hotkey |
+| `src/TrayApp.cs` | Orchestrator: tray icon, scan loop, pause, alerts, hotkey |
+| `src/GameStrategy.cs` | Base class for per-game accept strategies and the `IGameHost` interface |
+| `src/ScreenStrategy.cs` | Screen-based accepting (Dota 2, CS2) |
+| `src/ClientApiStrategy.cs` | Local client API accepting (League of Legends) |
 | `src/Panel.cs` | The settings panel (WPF) |
 | `src/Detector.cs` | Finds the Accept button in a screenshot |
 | `src/Gsi.cs` | Game State Integration (knowing when you're in a match) |
-| `src/Games.cs` | Per-game settings (Dota 2, CS2) |
+| `src/Games.cs` | Per-game profiles; each one picks its strategy |
+| `tests/` | Automated tests and synthetic fixtures |
 | `assets/` | Icons and brand assets |
+
+## Tests
+
+```bat
+tests.bat
+```
+
+Builds the app code with `tests\*.cs` and runs every test (exit code `0` = all passed). They also run on every push and
+before every release; a failing test blocks the release. Run them before you commit, and add a test with every bug fix.
 
 ## Testing the detector
 
@@ -53,4 +66,4 @@ best test material for the detector.
 
 - Commit messages in **English**, imperative mood ("Add CS2 support", "Fix tray icon in dark mode").
 - Releases are cut by pushing a tag: `git tag v0.3.0 && git push origin v0.3.0`. GitHub Actions builds the exe and publishes
-  it with its SHA-256. Versions `0.x` are published as pre-releases.
+  it with its SHA-256, after the tests pass.

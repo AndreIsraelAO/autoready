@@ -23,7 +23,6 @@ namespace AutoReady
         public bool Paused;
         public string UpdateTag;       // "v0.2.3" si hay version nueva, si no null
         public string UpdateMessage;   // resultado de "Buscar actualizaciones"
-        public string Protection;      // estado de la proteccion en partida
         public GameProfile ProtectionFix;   // juego al que le falta la opcion de lanzamiento (null = todo bien)
     }
 

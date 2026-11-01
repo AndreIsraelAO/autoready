@@ -39,8 +39,7 @@ namespace AutoReady
                 using (FileStream fs = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
                 using (StreamReader r = new StreamReader(fs, Encoding.UTF8))
                     text = r.ReadToEnd();
-                string[] path = { "UserLocalConfigStore", "Software", "Valve", "Steam", "apps", appId.ToString() };
-                string lo = Find(Tokens(text), path, "LaunchOptions") ?? "";
+                string lo = LaunchOptionsFrom(text, appId);
                 lock (cache) cache[appId] = new KeyValuePair<DateTime, string>(stamp, lo);
                 return lo;
             }
@@ -49,6 +48,13 @@ namespace AutoReady
                 Log.Write("SteamConfig: no pude leer las opciones de lanzamiento: " + e.Message);
                 return null;
             }
+        }
+
+        // Opciones de lanzamiento de un juego dentro del texto de localconfig.vdf ("" si no tiene). Separado para probarlo.
+        internal static string LaunchOptionsFrom(string vdf, int appId)
+        {
+            string[] path = { "UserLocalConfigStore", "Software", "Valve", "Steam", "apps", appId.ToString() };
+            return Find(Tokens(vdf), path, "LaunchOptions") ?? "";
         }
 
         // Abre la ventana de propiedades del juego en Steam (donde estan las opciones de lanzamiento).

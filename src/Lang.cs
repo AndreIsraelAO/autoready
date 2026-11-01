@@ -8,7 +8,7 @@ namespace AutoReady
     // Se puede forzar con Language=es o Language=en en autoready.ini. Los textos estan en Strings.cs.
     static class Lang
     {
-        public static readonly bool Spanish = Detect();
+        public static bool Spanish = Detect();   // no readonly: las pruebas revisan los textos en los dos idiomas
 
         public static string T(string es, string en) { return Spanish ? es : en; }
 

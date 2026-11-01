@@ -106,7 +106,7 @@ namespace AutoReady
         // posible para escribirlo o pegarlo facil (ar-k7m2q) y sin letras que se confunden (0/o, 1/l/i).
         // 5 caracteres de 31 = ~28 millones: con 100 mil usuarios, la chance de que a alguien le toque el canal de otro es de
         // ~0,35 % (los avisos son solo "partida aceptada"). Solo numeros necesitaria 9 digitos para lo mismo.
-        static string NewTopic()
+        internal static string NewTopic()
         {
             const string alphabet = "abcdefghjkmnpqrstuvwxyz23456789";
             byte[] rnd = new byte[5];
@@ -177,8 +177,11 @@ namespace AutoReady
         static readonly object Gate = new object();
         public static readonly string FilePath = Path.Combine(Config.Dir, "autoready.log");
 
+        public static bool Enabled = true;   // las pruebas lo apagan para no ensuciar el log del usuario
+
         public static void Write(string msg)
         {
+            if (!Enabled) return;
             lock (Gate)
             {
                 try

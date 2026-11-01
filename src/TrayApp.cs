@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.IO;
@@ -12,7 +11,7 @@ namespace AutoReady
 {
     enum AppState { Starting, GameClosed, Paused, Searching, InMatch }
 
-    class TrayApp : ApplicationContext, IPanelHost
+    class TrayApp : ApplicationContext, IPanelHost, IGameHost
     {
         const string RunKey = @"Software\Microsoft\Windows\CurrentVersion\Run";
         const int HotkeyId = 1;
@@ -29,34 +28,27 @@ namespace AutoReady
         string updateMessage;
 
         volatile bool paused;
-        volatile bool installWhenGameCloses;
-        readonly Lcu lcu = new Lcu();
-        string clientPhase;             // ultima fase del cliente de LoL
-        volatile bool clientInMatch;    // LoL en seleccion de campeones o en partida   // actualizacion automatica esperando que se cierre el juego
+        volatile bool installWhenGameCloses;   // actualizacion automatica esperando que se cierre el juego
         volatile bool running = true;
-        volatile IntPtr flashedWindow = IntPtr.Zero;   // ultima ventana que titilo en la barra de tareas
         AppState state = AppState.Starting;
-        GameProfile activeGame;               // juego abierto que estamos vigilando
-        DateTime cooldownUntil = DateTime.MinValue;
+        readonly List<GameStrategy> strategies;   // una por juego, en el orden de GameProfile.All
+        volatile GameStrategy active;             // la del juego abierto que estamos vigilando
         DateTime lastAccept = DateTime.MinValue;
-        DateTime gameSeenSince = DateTime.MinValue;
-        readonly HashSet<string> gsiHintShown = new HashSet<string>();
-        int consecutiveHits;
-        Point lastHit;
-        DateTime lastBusySkip = DateTime.MinValue;
         bool useToasts;
         int installing;   // 1 mientras se instala una actualizacion
 
         public TrayApp()
         {
             cfg = Config.Load();
+            strategies = GameProfile.All.ConvertAll(g => g.NewStrategy(g, this));
             Samples.Enabled = cfg.SaveSamples;
             Detector.LoadTemplates();
             iconOn = MakeIcon(false);
             iconOff = MakeIcon(true);
 
             ui = new HiddenWindow();
-            ui.WindowFlashed += h => { flashedWindow = h; };
+            // Solo al juego que se esta vigilando: un titileo de otro juego no tiene que traerlo al frente despues.
+            ui.WindowFlashed += h => { GameStrategy a = active; if (a != null) a.OnWindowFlashed(h); };
             ui.HotkeyPressed += () =>
             {
                 SetPaused(!paused);
@@ -88,8 +80,13 @@ namespace AutoReady
             gsi = new Gsi(cfg.GsiPort, cfg.GsiToken);
             foreach (GameProfile g in GameProfile.All) gsi.InstallConfig(g);
             gsi.Start();
-            gsi.StateChanged += OnGameStateChanged;
-            Presence.Changed += OnPresenceChanged;
+            gsi.StateChanged += MatchStateChanged;
+            Presence.Changed += (old, now, text) =>
+            {
+                GameStrategy a = active;
+                if (a != null) a.OnPresenceChanged(old, now, text);
+                PushStatus();
+            };
 
             if (cfg.HotkeyVk != 0 && !RegisterHotkey(cfg.HotkeyVk, cfg.HotkeyMods))
                 Log.Write("Atajo: no se pudo registrar (otra app lo usa)");
@@ -131,7 +128,8 @@ namespace AutoReady
         public void SetPaused(bool value)
         {
             paused = value;
-            consecutiveHits = 0;
+            GameStrategy current = active;
+            if (current != null) current.ResetDetection();
             if (!paused) lastAccept = DateTime.MinValue;
             state = AppState.Starting;   // fuerza a refrescar icono y panel en el proximo tick
             Log.Write(paused ? "Pausado" : "Reanudado");
@@ -158,18 +156,11 @@ namespace AutoReady
             return current.Length == 0 ? game.GsiLaunchOption : current + " " + game.GsiLaunchOption;
         }
 
-        // Juego instalado al que le falta la opcion de lanzamiento para GSI (o null si esta todo bien).
-        // Cuenta como activo si GSI ya esta mandando datos, aunque no se haya podido leer la config de Steam.
+        // Juego al que le falta un paso de configuracion (lo decide su estrategia), o null si esta todo bien.
         GameProfile MissingProtection()
         {
-            foreach (GameProfile g in GameProfile.All)
-            {
-                if (g.GsiLaunchOption == null || !cfg.For(g).Enabled || !Gsi.IsInstalled(g)) continue;
-                if (gsi.Connected(g)) continue;
-                if (g.UsesPresence && cfg.UseSteamStatus && Presence.Working) continue;   // el estado de Steam ya alcanza
-                string lo = SteamConfig.LaunchOptions(g.AppId);
-                if (lo != null && !SteamConfig.HasOption(g.AppId, g.GsiLaunchOption)) return g;
-            }
+            foreach (GameStrategy st in strategies)
+                if (st.NeedsSetup()) return st.Game;
             return null;
         }
 
@@ -240,7 +231,7 @@ namespace AutoReady
         // Estado para el panel y el menu; se llama cuando algo cambia.
         void PushStatus()
         {
-            GameProfile game = activeGame;
+            GameProfile game = ActiveGame;
             AppState s = state;
             string text;
             StatusKind kind;
@@ -256,13 +247,7 @@ namespace AutoReady
                 UpdateTag = pendingUpdate != null && !cfg.AutoUpdateCheck ? pendingUpdate.Tag : null,
                 UpdateMessage = updateMessage,
             };
-            GameProfile missing = MissingProtection();
-            st.ProtectionFix = missing;
-            st.Protection = missing != null
-                ? S.ProtectionMissing(missing.Name)
-                : (game != null && game.UsesPresence && !gsi.Connected(game) && cfg.UseSteamStatus && Presence.Working
-                    ? S.ProtectionOnSteam
-                    : S.ProtectionOn);
+            st.ProtectionFix = MissingProtection();
             ui.Post(() =>
             {
                 pauseItem.Text = paused ? S.MenuResume : S.MenuPause;
@@ -303,7 +288,7 @@ namespace AutoReady
                 {
                     // "Actualizar automaticamente": se instala sola, pero nunca con un juego abierto (podria estar
                     // buscando partida); en ese caso, al cerrarlo (ver Tick).
-                    if (activeGame == null) { ui.Post(InstallUpdate); return; }
+                    if (ActiveGame == null) { ui.Post(InstallUpdate); return; }
                     installWhenGameCloses = true;
                     updateMessage = S.UpdateWhenGameCloses(r.Tag);
                     PushStatus();
@@ -320,7 +305,9 @@ namespace AutoReady
             Updater.Release r = pendingUpdate;
             if (r == null) return;
             if (Interlocked.CompareExchange(ref installing, 1, 0) != 0) return;   // ya se esta instalando
-            if (gsi.InAnyMatch() || Presence.Current == PresenceState.InMatch || clientInMatch)
+            // GSI y el estado de Steam se miran para todos los juegos (no solo el vigilado): cualquier partida en curso frena.
+            GameStrategy playing = active;
+            if (gsi.InAnyMatch() || Presence.Current == PresenceState.InMatch || (playing != null && playing.InMatch))
             {
                 updateMessage = S.UpdateAfterMatch;
                 installing = 0;
@@ -360,222 +347,61 @@ namespace AutoReady
             }
         }
 
-        // Primer juego habilitado que este abierto.
-        GameProfile FindRunningGame(out IntPtr hwnd)
+        GameProfile ActiveGame { get { GameStrategy a = active; return a == null ? null : a.Game; } }
+
+        // Primer juego habilitado que este abierto (en el orden de GameProfile.All).
+        GameStrategy FindRunning()
         {
-            foreach (GameProfile g in GameProfile.All)
-            {
-                if (!cfg.For(g).Enabled) continue;
-                if (g.UsesClientApi)
-                {
-                    // El cliente de LoL no necesita ventana visible: alcanza con que el proceso este abierto.
-                    Process[] ps = Process.GetProcessesByName(g.Process);
-                    bool open = ps.Length > 0;
-                    foreach (Process p in ps) p.Dispose();
-                    if (open) { hwnd = IntPtr.Zero; return g; }
-                    continue;
-                }
-                hwnd = Win32.FindGameWindow(g.Process);
-                if (hwnd != IntPtr.Zero) return g;
-            }
-            hwnd = IntPtr.Zero;
+            foreach (GameStrategy s in strategies)
+                if (cfg.For(s.Game).Enabled && s.IsRunning()) return s;
             return null;
         }
 
-        // Devuelve cuantos ms esperar hasta el proximo tick.
+        // Devuelve cuantos ms esperar hasta el proximo tick. Lo propio de cada juego esta en su estrategia.
         int Tick()
         {
-            IntPtr hwnd;
-            GameProfile game = FindRunningGame(out hwnd);
-            if (game != activeGame)
+            GameStrategy now = FindRunning();
+            if (now != active)
             {
                 // La pausa dura hasta cerrar el juego: asi nunca queda apagado sin querer para la proxima vez.
-                if (game == null && activeGame != null && paused)
+                if (now == null && active != null && paused)
                 {
-                    Log.Write(activeGame.Name + " cerrado: se reanuda solo");
+                    Log.Write(active.Game.Name + " cerrado: se reanuda solo");
                     SetPaused(false);
                 }
-                if (game == null && installWhenGameCloses)
+                if (now == null && installWhenGameCloses)
                 {
                     installWhenGameCloses = false;
                     ui.Post(InstallUpdate);
                 }
-                activeGame = game;
-                consecutiveHits = 0;
-                gameSeenSince = game == null ? DateTime.MinValue : DateTime.Now;
-                if (game != null) Log.Write(game.Name + " abierto");
+                if (active != null) active.Deactivated();
+                active = now;
+                if (now != null) { now.Reset(); Log.Write(now.Game.Name + " abierto"); }
                 state = AppState.Starting;
             }
-            Presence.Watch(cfg.UseSteamStatus ? game : null);
+            Presence.Watch(cfg.UseSteamStatus && active != null ? active.Game : null);
             if (paused) { SetState(AppState.Paused); return 500; }
-            if (game == null) { clientInMatch = false; SetState(AppState.GameClosed); return 2000; }
-            if (game.UsesClientApi) return TickClient(game);
-
-            if (gsi.InMatch(game)) { SetState(AppState.InMatch); return 1000; }
-
-            // Estado de Steam (Dota sin GSI): en partida no se mira la pantalla. El estado llega con algunos segundos de
-            // demora, asi que solo se usa para frenar, nunca para relajar las reglas del modo seguro.
-            PresenceState ps = cfg.UseSteamStatus && game.UsesPresence && !gsi.Connected(game) ? Presence.Current : PresenceState.Unknown;
-            if (ps == PresenceState.InMatch) { SetState(AppState.InMatch); consecutiveHits = 0; return 1000; }
-            SetState(AppState.Searching);
-            if (ps == PresenceState.Unknown) MaybeShowGsiHint(game);
-            if (DateTime.Now < cooldownUntil) return 500;
-
-            // Sin GSI ni estado de Steam no sabemos si ya estas en partida: despues de aceptar seguimos un rato
-            // (por si alguien no acepto y volves a la cola) y despues pausamos para no hacer clicks dentro del juego.
-            if (!gsi.Connected(game) && ps == PresenceState.Unknown && lastAccept != DateTime.MinValue &&
-                (DateTime.Now - lastAccept).TotalSeconds > cfg.FallbackScanSecAfterAccept)
-            {
-                lastAccept = DateTime.MinValue;
-                SetPaused(true);
-                Notify(S.ToastUnsureTitle, S.ToastUnsure(game.Name), S.ToastResume, () => SetPaused(false));
-                return 500;
-            }
-
-            if (!Win32.IsIconic(hwnd)) flashedWindow = IntPtr.Zero;   // un titileo viejo no tiene que restaurar el juego despues
-            else
-            {
-                // Juego minimizado: no se puede capturar. Cuando encuentra partida hace titilar la barra de tareas;
-                // en ese momento lo restauramos para poder ver el boton.
-                if (flashedWindow != hwnd) return cfg.ScanIntervalMs;
-                flashedWindow = IntPtr.Zero;
-                Log.Write(game.Name + " titilo estando minimizado: lo traigo al frente");
-                Win32.Focus(hwnd);
-                return 700;
-            }
-
-            // Modo seguro: sin GSI no sabemos si ya hay una partida en curso, asi que se exige mas antes de tocar nada.
-            bool safe = !gsi.Connected(game);
-            int needed = safe ? 3 : 2;   // detecciones seguidas
-
-            Detector.Hit hit;
-            Bitmap decisive = null;   // la captura con la que se decide; se guarda solo si de verdad se acepta
-            using (Bitmap shot = Win32.Capture(hwnd))
-            {
-                if (shot == null) return cfg.ScanIntervalMs;
-                hit = Detector.FindButton(shot, game, cfg.For(game).Detector);
-                Samples.Remember(shot);
-                if (hit != null && consecutiveHits + 1 >= needed) decisive = new Bitmap(shot);
-            }
-            if (hit == null) { consecutiveHits = 0; return cfg.ScanIntervalMs; }
-            using (decisive)
-                return Decide(game, hwnd, hit, safe, needed, decisive);
+            if (active == null) { SetState(AppState.GameClosed); return 2000; }
+            return active.Tick();
         }
 
-        // League of Legends: se le pregunta la fase al cliente y, con una partida encontrada, se acepta por su API.
-        // No hay riesgo de click en partida: en seleccion de campeones o jugando no se manda nada.
-        int TickClient(GameProfile game)
+        // ---------- IGameHost: lo que las estrategias le piden a la app ----------
+
+        public Gsi Gsi { get { return gsi; } }
+        public bool Paused { get { return paused; } }
+        public DateTime LastAccept { get { return lastAccept; } }
+        public void ForgetLastAccept() { lastAccept = DateTime.MinValue; }
+
+        public void MatchAccepted(GameProfile game, string how, Action onClick = null)
         {
-            string phase = lcu.Phase();
-            if (phase != clientPhase)
-            {
-                Log.Write(game.Name + ": fase " + (clientPhase ?? "?") + " -> " + (phase ?? "?"));
-                // Arranco la seleccion de campeones (o la partida): mismo aviso que con GSI.
-                if (Lcu.IsInMatch(phase) && !Lcu.IsInMatch(clientPhase)) OnGameStateChanged(game, null, phase);
-                else if (!Lcu.IsInMatch(phase) && Lcu.IsInMatch(clientPhase)) OnGameStateChanged(game, clientPhase, null);
-                clientPhase = phase;
-            }
-            clientInMatch = Lcu.IsInMatch(phase);
-            if (clientInMatch) { SetState(AppState.InMatch); return 1000; }
-            SetState(AppState.Searching);
-            if (phase != "ReadyCheck" || DateTime.Now < cooldownUntil) return 1000;
-            if (!lcu.ReadyCheckPending()) return 500;   // ya la acepto (o rechazo) el jugador
-            if (paused) return 500;
-            if (!lcu.Accept()) { Log.Write(game.Name + ": no pude aceptar por la API del cliente"); return 500; }
             lastAccept = DateTime.Now;
-            cooldownUntil = DateTime.Now.AddSeconds(cfg.CooldownAfterAcceptSec);
-            Log.Write(game.Name + ": partida encontrada, aceptada por la API del cliente");
-            Notify(S.ToastAccepted, S.ToastAcceptedText(game.Name));
-            if (cfg.Sound) Beep(true);
-            Notifier.Phone(cfg, S.ToastAccepted, S.ToastAcceptedText(game.Name), "video_game");
-            return 1000;
-        }
-
-        int Decide(GameProfile game, IntPtr hwnd, Detector.Hit hit, bool safe, int needed, Bitmap decisive)
-        {
-
-            // El popup no se mueve: en modo seguro la deteccion tiene que repetirse en el mismo lugar.
-            if (safe && consecutiveHits > 0 &&
-                (Math.Abs(hit.Center.X - lastHit.X) > 12 || Math.Abs(hit.Center.Y - lastHit.Y) > 12))
-                consecutiveHits = 0;
-            lastHit = hit.Center;
-            if (++consecutiveHits < needed) return 250;
-            consecutiveHits = 0;
-
-            // Sin GSI, con el juego al frente y alguien usando el mouse o el teclado: puede estar jugando.
-            // No se toca nada; si es el popup, lo acepta la persona.
-            if (safe && Win32.GetForegroundWindow() == hwnd && Win32.IdleTime() < TimeSpan.FromSeconds(3))
-            {
-                if ((DateTime.Now - lastBusySkip).TotalSeconds > 30)
-                    Log.Write(game.Name + ": posible popup, pero estas usando la PC y no hay GSI: no acepto");
-                lastBusySkip = DateTime.Now;
-                return 500;
-            }
-            if (Accept(game, hwnd, hit, safe) && decisive != null)
-                Samples.Accepted(decisive, game, Detector.Roi(decisive.Width, decisive.Height, cfg.For(game).Detector));
-            return 500;
-        }
-
-        // Pausado o en partida: se revisa otra vez justo antes de cada accion, porque el usuario puede pausar (atajo,
-        // panel) o la partida empezar en el segundo que tarda aceptar.
-        bool MustStop(GameProfile game)
-        {
-            return paused || gsi.InMatch(game) || (game.UsesPresence && Presence.Current == PresenceState.InMatch);
-        }
-
-        bool Accept(GameProfile game, IntPtr hwnd, Detector.Hit hit, bool safe)
-        {
-            if (MustStop(game)) return false;
-            Win32.Focus(hwnd);
-            Thread.Sleep(250);
-            // Si Windows no dejo traer el juego al frente, no se manda nada: la tecla o el click irian a otra ventana.
-            if (Win32.GetForegroundWindow() != hwnd)
-            {
-                Log.Write(game.Name + ": popup detectado, pero no pude traer el juego al frente; no toco nada");
-                return false;
-            }
-            if (MustStop(game)) return false;
-            string how;
-            // Enter solo con GSI: si por error no fuera el popup, en Dota abriria el chat en medio de la partida.
-            if (game.AcceptWithEnter && !safe)
-            {
-                Win32.PressEnter();
-                Thread.Sleep(900);
-                // Si el popup sigue ahi, el Enter no alcanzo (o no tenia el foco): click en el boton.
-                Detector.Hit still = null;
-                using (Bitmap again = Win32.Capture(hwnd))
-                    if (again != null) still = Detector.FindButton(again, game, cfg.For(game).Detector);
-                if (still == null) how = "con Enter";
-                else how = !MustStop(game) && ClickButton(hwnd, still) ? "con click (el Enter no alcanzo)" : null;
-            }
-            else how = ClickButton(hwnd, hit) ? "con click" : null;
-            if (how == null) return false;   // el click se cancelo: no se cuenta como aceptada
-
-            lastAccept = DateTime.Now;
-            cooldownUntil = DateTime.Now.AddSeconds(cfg.CooldownAfterAcceptSec);
             Log.Write(game.Name + ": partida encontrada, aceptada " + how);
-            // Al tocar el aviso se trae el juego al frente (es lo que la persona quiere ver), no el panel.
-            Notify(S.ToastAccepted, S.ToastAcceptedText(game.Name), null, null, () => Win32.Focus(hwnd));
+            Notify(S.ToastAccepted, S.ToastAcceptedText(game.Name), null, null, onClick);
             if (cfg.Sound) Beep(true);
             Notifier.Phone(cfg, S.ToastAccepted, S.ToastAcceptedText(game.Name), "video_game");
-            return true;
         }
 
-        static bool ClickButton(IntPtr hwnd, Detector.Hit hit)
-        {
-            Rectangle rc = Win32.ClientRectOnScreen(hwnd);
-            int x = rc.X + hit.Center.X, y = rc.Y + hit.Center.Y;
-            // El punto tiene que caer en la ventana del juego (no en algo que quedo encima).
-            if (Win32.GetForegroundWindow() != hwnd || !Win32.PointBelongsTo(hwnd, x, y))
-            {
-                Log.Write("Click cancelado: el punto no esta sobre la ventana del juego");
-                return false;
-            }
-            Win32.Click(x, y);
-            return true;
-        }
-
-        void OnGameStateChanged(GameProfile game, string oldState, string newState)
+        public void MatchStateChanged(GameProfile game, string oldState, string newState)
         {
             bool recentlyAccepted = lastAccept != DateTime.MinValue && (DateTime.Now - lastAccept).TotalMinutes < 5;
             if (oldState == null && newState != null && cfg.NotifyMatchStarted && recentlyAccepted)
@@ -590,30 +416,9 @@ namespace AutoReady
             if (newState != null) { lastAccept = DateTime.MinValue; Samples.Forget(); }   // ya estamos en partida
         }
 
-        // Estado de Steam (Dota sin GSI): mismo efecto que GSI al empezar y terminar una partida.
-        void OnPresenceChanged(PresenceState old, PresenceState now, string text)
-        {
-            GameProfile game = activeGame;
-            if (game == null || !game.UsesPresence || gsi.Connected(game)) return;
-            // Solo cuenta como "empezo una partida" si venia buscando (bots o partidas personalizadas no tienen popup).
-            if (now == PresenceState.InMatch && old == PresenceState.Finding) OnGameStateChanged(game, null, text);
-            else if (old == PresenceState.InMatch && now != PresenceState.InMatch) OnGameStateChanged(game, text, null);
-            PushStatus();
-        }
-
-        void MaybeShowGsiHint(GameProfile game)
-        {
-            if (gsiHintShown.Contains(game.Id) || gsi.Connected(game)) return;
-            if ((DateTime.Now - gameSeenSince).TotalSeconds < 90) return;
-            gsiHintShown.Add(game.Id);
-            Log.Write("GSI " + game.Name + ": abierto hace 90s y no llego nada");
-            if (game.GsiLaunchOption != null) Notify(S.ToastSetupTitle(game.Name), S.ToastSetupText);
-            else Notify(S.ToastRestartTitle(game.Name), S.ToastRestartText);
-        }
-
         // ---------- estado e interfaz ----------
 
-        void SetState(AppState s)
+        public void SetState(AppState s)
         {
             if (s == state) return;
             state = s;
@@ -621,9 +426,9 @@ namespace AutoReady
             {
                 Icon icon = s == AppState.Paused ? iconOff : iconOn;
                 tray.Icon = icon;
-                string name = activeGame != null ? activeGame.Name : "";
+                string name = ActiveGame != null ? ActiveGame.Name : "";
                 string text = s == AppState.Paused ? S.TooltipPaused(cfg.HotkeyVk != 0 ? HotkeyText : null)
-                            : s == AppState.GameClosed || activeGame == null ? S.TooltipIdle
+                            : s == AppState.GameClosed || ActiveGame == null ? S.TooltipIdle
                             : s == AppState.InMatch ? S.TooltipInMatch(name)
                             : S.TooltipSearching(name);
                 tray.Text = Truncate(text, 63);
@@ -635,7 +440,7 @@ namespace AutoReady
 
         // Notificacion nativa de Windows (logo, texto y boton opcional); si no hay toasts, el aviso clasico de la bandeja.
         // Al tocarla se abre el panel (o lo que diga onClick). Los clicks llegan en otro hilo, por eso pasan por ui.Post.
-        void Notify(string title, string text, string button = null, Action onButton = null, Action onClick = null)
+        public void Notify(string title, string text, string button = null, Action onButton = null, Action onClick = null)
         {
             Action click = onClick ?? OpenPanel;
             // Siempre desde el hilo de la interfaz: el notificador de WinRT se creo ahi y desde el hilo del escaneo falla

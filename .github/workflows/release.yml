@@ -18,6 +18,13 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
+      # Si alguna prueba falla, no se publica la version.
+      - name: Tests
+        shell: pwsh
+        run: |
+          & "$env:GITHUB_WORKSPACE\tests.bat"
+          if ($LASTEXITCODE -ne 0) { exit 1 }
+
       - name: Build
         shell: pwsh
         run: |

@@ -3,8 +3,9 @@ using System.Collections.Generic;
 
 namespace AutoReady
 {
-    // Todo lo que cambia de un juego a otro: proceso, GSI, estado de Steam y como es el boton de aceptar.
-    // Lo que ve el usuario (avisos, panel) es generico y usa solo Name; sumar un juego es agregar un perfil aca.
+    // Todo lo que cambia de un juego a otro: proceso, GSI, estado de Steam, como es el boton de aceptar y con que
+    // estrategia se acepta (NewStrategy). Lo que ve el usuario (avisos, panel) es generico y usa solo Name; sumar un
+    // juego es agregar un perfil aca (y, si se acepta de otra forma, una estrategia nueva en GameStrategy.cs).
     class GameProfile
     {
         public string Id;              // clave en el ini: "dota2.HueMin"
@@ -22,8 +23,8 @@ namespace AutoReady
         // Cualquier otro estado del juego cuenta como "en partida". Vacio = el juego no usa el estado de Steam.
         public string[] PresenceFinding = new string[0], PresenceMenu = new string[0];
         public Func<Detector.Settings> DefaultDetector;
-        // Juegos con API local del cliente (League of Legends): no se mira la pantalla, se le pregunta al cliente (Lcu.cs).
-        public bool UsesClientApi;
+        // Como se vigila y se acepta este juego (GameStrategy.cs). Por defecto, mirando la pantalla.
+        public Func<GameProfile, IGameHost, GameStrategy> NewStrategy = (g, h) => new ScreenStrategy(g, h);
 
         public bool UsesPresence { get { return PresenceFinding.Length > 0; } }
 
@@ -68,7 +69,7 @@ namespace AutoReady
             Id = "lol",
             Name = "League of Legends",
             Process = "LeagueClientUx",
-            UsesClientApi = true,
+            NewStrategy = (g, h) => new ClientApiStrategy(g, h),
             DefaultDetector = () => new Detector.Settings(),
         };
 

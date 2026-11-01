@@ -18,6 +18,13 @@ namespace AutoReady
     {
         string baseUrl, auth, lockPath;
         DateTime lockTime;
+        readonly Func<string> findLockfile;
+
+        // findLockfile: de donde sale el lockfile (las pruebas usan uno falso); por defecto, el del cliente abierto.
+        public Lcu(Func<string> findLockfile = null)
+        {
+            this.findLockfile = findLockfile ?? FindLockfile;
+        }
 
         // Fase del cliente ("None", "Lobby", "Matchmaking", "ReadyCheck", "ChampSelect", "InProgress", ...) o null si no
         // se pudo leer (cliente cerrado o todavia arrancando).
@@ -78,7 +85,7 @@ namespace AutoReady
 
         bool LoadCredentials()
         {
-            string path = FindLockfile();
+            string path = findLockfile();
             if (path == null) { baseUrl = null; return false; }
             DateTime t;
             try { t = File.GetLastWriteTimeUtc(path); } catch { return false; }

@@ -54,11 +54,31 @@ ese momento y conectarse por fuera (SteamKit) abre otra sesión y saca al jugado
 
 Para sumar un juego: proceso, una captura del popup (sale de las capturas automáticas), el recorte del botón y la acción.
 
+**Arquitectura:** `TrayApp` es solo el orquestador (bandeja, pausa, avisos, actualizaciones) e implementa `IGameHost`.
+Cada juego tiene una `GameStrategy` (`GameProfile.NewStrategy`) con `IsRunning()` y `Tick()`; la estrategia decide cuándo
+aceptar y se lo informa al host con `MatchAccepted`/`MatchStateChanged`. Hay dos:
+- `ScreenStrategy` (Dota 2, CS2): pantalla + detector, GSI, estado de Steam, modo seguro.
+- `ClientApiStrategy` (League of Legends): API local del cliente (`Lcu`), sin mouse ni teclado.
+Un juego nuevo que entre en uno de esos dos casos es solo un perfil en `Games.cs`; si necesita otro mecanismo, se suma
+una estrategia nueva sin tocar las existentes. Reglas que toda estrategia respeta: nada si `Host.Paused`, nada en
+partida, revisar las dos cosas justo antes de cada acción, y `StartCooldown()` después de aceptar.
+
+## Pruebas
+`tests.bat` compila `src\*.cs` (sin `Program.cs`) con `tests\*.cs` y corre todo (exit 0 = bien). Cubre detector (con
+capturas sintéticas en `tests\fixtures`), perfiles, estado de Steam, opciones de lanzamiento, código del celular, textos
+EN/ES completos, GSI (servidor real) y League (cliente LCU falso). Corre en GitHub Actions en cada push (`test.yml`) y
+antes de cada release (`release.yml`): si falla, no se publica. **Correrlo antes de cada commit** y sumar una prueba con
+cada bug arreglado.
+
 ## Estructura
 | Archivo | Qué hace |
 |---|---|
 | `src/Program.cs` | Entrada, instancia única (mutex), modo `--test`, espera tras actualizar |
-| `src/TrayApp.cs` | Ícono de la bandeja, menú chico, loop de escaneo, aceptar, avisos, atajo global; implementa `IPanelHost` |
+| `src/TrayApp.cs` | Orquestador: ícono de la bandeja, menú chico, loop que elige el juego abierto y llama a su estrategia, pausa, avisos, atajo global; implementa `IPanelHost` e `IGameHost` |
+| `src/GameStrategy.cs` | `IGameHost` y la clase base `GameStrategy` (contrato de hilos y reglas de seguridad) |
+| `src/ScreenStrategy.cs` | Aceptar mirando la pantalla (Dota 2, CS2): captura, detector, GSI, estado de Steam, modo seguro, click/Enter |
+| `src/ClientApiStrategy.cs` | Aceptar por la API local del cliente (League of Legends) |
+| `tests/`, `tests.bat` | Pruebas automáticas (runner propio, sin dependencias) y capturas sintéticas en `tests/fixtures` |
 | `src/Panel.cs` | Panel WPF (click izquierdo en el ícono): interruptor en el encabezado, avisos tipo InfoBar (bienvenida, paso faltante, versión nueva solo si la actualización automática está apagada), atajo, sonido, celular (QR colapsable), "Más opciones" desplegable. Menos filas y menos texto a propósito |
 | `docs/` | Sitio en GitHub Pages (hercase.github.io/autoready): `index.html` una sola pantalla con la descarga directa; `faq/` preguntas frecuentes (qué instala, privacidad; el instalador linkea acá); `phone/` guía para conectar ntfy (el QR del panel abre `phone/#<código>`). Estático, EN/ES, sin scripts de terceros |
 | `src/Controls.cs` | Tema Fluent claro/oscuro (acento verde claro con texto negro en oscuro; `AUTOREADY_THEME=light|dark` lo fuerza para capturas), interruptor, botones (acento/común/sutil/link con estados) e InfoBar, accesibles (Tab, Enter/Espacio, Narrador) |
@@ -68,7 +88,7 @@ Para sumar un juego: proceso, una captura del popup (sale de las capturas autom�
 | `src/Template.cs` | Detección por recorte del botón (NCC en color, multi-escala) |
 | `src/Samples.cs` | Capturas reales de la beta para calibrar (aceptadas y partidas que se escaparon) |
 | `src/Gsi.cs` | Instala la config de GSI en cada biblioteca de Steam y recibe el estado |
-| `src/Lcu.cs` | League of Legends: API local del cliente (lockfile → 127.0.0.1); fase y aceptar sin mouse. El camino de LoL es `TrayApp.TickClient` |
+| `src/Lcu.cs` | League of Legends: API local del cliente (lockfile → 127.0.0.1); fase y aceptar sin mouse. La usa `ClientApiStrategy` |
 | `src/Win32.cs` | P/Invoke: ventanas, captura, foco, click, atajos |
 | `src/Toast.cs` | Notificaciones nativas de Windows (WinRT) con logo y botón; fallback a globos de la bandeja |
 | `src/Notifier.cs` | Push al celular con ntfy.sh |

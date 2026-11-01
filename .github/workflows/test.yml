@@ -1,0 +1,29 @@
+# Pruebas automaticas en cada push y pull request (ver tests\Tests.cs y tests.bat).
+name: tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Tests
+        shell: pwsh
+        run: |
+          & "$env:GITHUB_WORKSPACE\tests.bat"
+          if ($LASTEXITCODE -ne 0) { exit 1 }
+
+      # Tambien tiene que compilar el exe completo.
+      - name: Build
+        shell: pwsh
+        run: |
+          & "$env:GITHUB_WORKSPACE\build.bat"
+          if ($LASTEXITCODE -ne 0) { exit 1 }
