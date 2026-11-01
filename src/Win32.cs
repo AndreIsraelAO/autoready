@@ -114,6 +114,14 @@ namespace AutoReady
         }
 
         // Click en coordenadas de pantalla y devuelve el mouse a donde estaba.
+        public static void PressEnter()
+        {
+            const byte VK_RETURN = 0x0D;
+            keybd_event(VK_RETURN, 0, 0, UIntPtr.Zero);
+            Thread.Sleep(40);
+            keybd_event(VK_RETURN, 0, KEY_UP, UIntPtr.Zero);
+        }
+
         public static void Click(int x, int y)
         {
             POINT old;

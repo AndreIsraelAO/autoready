@@ -9,17 +9,19 @@ using System.Threading;
 
 namespace AutoReady
 {
-    // Capturas reales para mejorar el detector (beta). Solo de la ventana del juego y solo en esta PC.
-    // - Al aceptar: se guarda la imagen exacta con la que se decidio.
-    // - Si una partida arranca sin que AutoReady la haya aceptado (fallo, o el jugador acepto antes): se guardan
-    //   las imagenes del ultimo minuto y medio, donde tiene que aparecer el popup que no se detecto.
+    // Capturas reales para mejorar el detector (solo durante la beta; ver issue #6). Solo de la ventana del juego,
+    // solo en esta PC, y pocas: JPG chicos y como mucho 15 entradas (unos 10-15 MB en total).
+    // - Al aceptar: el recorte de la zona del popup con la que se decidio el click.
+    // - Si una partida arranca sin que AutoReady la haya aceptado (fallo, o el jugador acepto antes): las imagenes
+    //   reducidas del ultimo minuto, donde tiene que aparecer el popup que no se detecto.
     static class Samples
     {
         public static readonly string Dir = Path.Combine(Config.Dir, "samples");
-        const int KeepEntries = 40;                                   // capturas/carpetas que se conservan
-        static readonly TimeSpan Every = TimeSpan.FromSeconds(3);
-        static readonly TimeSpan Window = TimeSpan.FromSeconds(90);
-        const int MaxWidth = 1280;                                    // las del historial van reducidas
+        const int KeepEntries = 15;
+        static readonly TimeSpan Every = TimeSpan.FromSeconds(5);
+        static readonly TimeSpan Window = TimeSpan.FromSeconds(60);
+        const int MaxWidth = 960;                  // las del historial van reducidas
+        const long AcceptedQuality = 90, HistoryQuality = 75;
 
         class Frame { public DateTime At; public Bitmap Image; }
 
@@ -28,7 +30,7 @@ namespace AutoReady
         static DateTime lastAdded = DateTime.MinValue;
         public static bool Enabled = true;
 
-        // Llamado en cada escaneo mientras se espera partida. Guarda en memoria una version reducida cada 3 s.
+        // Llamado en cada escaneo mientras se espera partida. Guarda en memoria una version reducida cada 5 s.
         public static void Remember(Bitmap shot)
         {
             if (!Enabled || DateTime.Now - lastAdded < Every) return;
@@ -41,14 +43,16 @@ namespace AutoReady
             }
         }
 
-        public static void Accepted(Bitmap shot, GameProfile game)
+        // area: la zona del popup (la misma en la que busca el detector).
+        public static void Accepted(Bitmap shot, GameProfile game, Rectangle area)
         {
             if (!Enabled) return;
-            Bitmap copy = new Bitmap(shot);
+            area.Intersect(new Rectangle(0, 0, shot.Width, shot.Height));
+            Bitmap crop = shot.Clone(area, PixelFormat.Format24bppRgb);
             Forget();
             SaveAsync(() =>
             {
-                using (copy) copy.Save(Path.Combine(Dir, Name("accepted", game) + ".png"), ImageFormat.Png);
+                using (crop) SaveJpeg(crop, Path.Combine(Dir, Name("accepted", game) + ".jpg"), AcceptedQuality);
             });
         }
 
@@ -69,7 +73,7 @@ namespace AutoReady
             {
                 Directory.CreateDirectory(folder);
                 foreach (Frame f in frames)
-                    using (f.Image) f.Image.Save(Path.Combine(folder, f.At.ToString("HHmmss") + ".png"), ImageFormat.Png);
+                    using (f.Image) SaveJpeg(f.Image, Path.Combine(folder, f.At.ToString("HHmmss") + ".jpg"), HistoryQuality);
             });
         }
 
@@ -84,7 +88,7 @@ namespace AutoReady
             return kind + "-" + game.Id + "-" + DateTime.Now.ToString("yyyyMMdd-HHmmss");
         }
 
-        // Guardar un PNG grande tarda; se hace fuera del loop de escaneo. Despues se borran las mas viejas.
+        // Guardar tarda; se hace fuera del loop de escaneo. Despues se borran las mas viejas.
         static void SaveAsync(Action save)
         {
             ThreadPool.QueueUserWorkItem(_ =>
@@ -104,15 +108,24 @@ namespace AutoReady
             });
         }
 
+        static void SaveJpeg(Bitmap b, string path, long quality)
+        {
+            ImageCodecInfo jpeg = ImageCodecInfo.GetImageEncoders().First(c => c.FormatID == ImageFormat.Jpeg.Guid);
+            using (EncoderParameters p = new EncoderParameters(1))
+            {
+                p.Param[0] = new EncoderParameter(System.Drawing.Imaging.Encoder.Quality, quality);
+                b.Save(path, jpeg, p);
+            }
+        }
+
         static Bitmap Shrink(Bitmap src)
         {
-            if (src.Width <= MaxWidth) return new Bitmap(src);
-            int h = src.Height * MaxWidth / src.Width;
-            Bitmap b = new Bitmap(MaxWidth, h, PixelFormat.Format24bppRgb);
+            int w = Math.Min(MaxWidth, src.Width), h = src.Height * w / src.Width;
+            Bitmap b = new Bitmap(w, h, PixelFormat.Format24bppRgb);
             using (Graphics g = Graphics.FromImage(b))
             {
                 g.InterpolationMode = InterpolationMode.HighQualityBilinear;
-                g.DrawImage(src, 0, 0, MaxWidth, h);
+                g.DrawImage(src, 0, 0, w, h);
             }
             return b;
         }

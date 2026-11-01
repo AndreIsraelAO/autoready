@@ -44,6 +44,7 @@ namespace AutoReady
         {
             cfg = Config.Load();
             Samples.Enabled = cfg.SaveSamples;
+            Detector.LoadTemplates();
             iconOn = MakeIcon(false);
             iconOff = MakeIcon(true);
 
@@ -359,9 +360,10 @@ namespace AutoReady
             using (Bitmap shot = Win32.Capture(hwnd))
             {
                 if (shot == null) return cfg.ScanIntervalMs;
-                hit = Detector.Find(shot, cfg.For(game).Detector);
+                hit = Detector.FindButton(shot, game, cfg.For(game).Detector);
                 Samples.Remember(shot);
-                if (hit != null && consecutiveHits + 1 >= 2) Samples.Accepted(shot, game);   // la que dispara el click
+                if (hit != null && consecutiveHits + 1 >= 2)   // la que dispara el click
+                    Samples.Accepted(shot, game, Detector.Roi(shot.Width, shot.Height, cfg.For(game).Detector));
             }
             if (hit == null) { consecutiveHits = 0; return cfg.ScanIntervalMs; }
 
@@ -376,16 +378,32 @@ namespace AutoReady
         {
             Win32.Focus(hwnd);
             Thread.Sleep(250);
-            Rectangle rc = Win32.ClientRectOnScreen(hwnd);
-            Point p = hit.Center;
-            Win32.Click(rc.X + p.X, rc.Y + p.Y);
+            string how;
+            if (game.AcceptWithEnter)
+            {
+                Win32.PressEnter();
+                Thread.Sleep(900);
+                // Si el popup sigue ahi, el Enter no alcanzo (o no tenia el foco): click en el boton.
+                Detector.Hit still = null;
+                using (Bitmap again = Win32.Capture(hwnd))
+                    if (again != null) still = Detector.FindButton(again, game, cfg.For(game).Detector);
+                if (still == null) how = "con Enter";
+                else { ClickButton(hwnd, still); how = "con click (el Enter no alcanzo)"; }
+            }
+            else { ClickButton(hwnd, hit); how = "con click"; }
 
             lastAccept = DateTime.Now;
             cooldownUntil = DateTime.Now.AddSeconds(cfg.CooldownAfterAcceptSec);
-            Log.Write(game.Name + ": partida encontrada, click en ACCEPT (" + (rc.X + p.X) + "," + (rc.Y + p.Y) + ")");
+            Log.Write(game.Name + ": partida encontrada, aceptada " + how);
             Notify("Partida aceptada", "Tu partida de " + game.Name + " está por empezar. Volvé a la PC.");
             if (cfg.Sound) Beep(true);
             Notifier.Phone(cfg, "Partida aceptada", "AutoReady aceptó tu partida de " + game.Name + ". Volvé a la PC.", "video_game");
+        }
+
+        static void ClickButton(IntPtr hwnd, Detector.Hit hit)
+        {
+            Rectangle rc = Win32.ClientRectOnScreen(hwnd);
+            Win32.Click(rc.X + hit.Center.X, rc.Y + hit.Center.Y);
         }
 
         void OnGameStateChanged(GameProfile game, string oldState, string newState)

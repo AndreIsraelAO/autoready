@@ -99,7 +99,7 @@ the other nine players.
 <summary><b>Does it save screenshots?</b></summary>
 <br>
 During the beta, yes, to make detection better: when it accepts a match, and when a match starts that it didn't accept.
-Only the game window, only on your PC (<code>%APPDATA%\AutoReady\samples</code>), and it keeps the latest 40. Nothing is
+Only the game window, only on your PC (<code>%APPDATA%\AutoReady\samples</code>), and it keeps the latest 15. Nothing is
 uploaded. You can turn it off with <code>SaveSamples=False</code> in <code>%APPDATA%\AutoReady\autoready.ini</code>.
 </details>
 

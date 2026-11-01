@@ -25,11 +25,25 @@ vuelva a tiempo. Producto de **keis.studio** (estudio del dueño del repo). Ante
 1. Busca la ventana del juego por nombre de proceso (`dota2`, `cs2`).
 2. Captura la ventana con `PrintWindow` (funciona aunque esté tapada; si está minimizada espera a que la barra de tareas
    titile, lo que el juego hace al encontrar partida, y la restaura).
-3. **Detector** (`src/Detector.cs`): máscara de color en HSV dentro de la zona central → componentes conectados → se queda
-   con el que tiene forma de botón (tamaño, proporción, relleno). Pide 2 detecciones seguidas antes de hacer click.
-4. Hace click en el centro del botón y devuelve el mouse a donde estaba.
+3. **Detector** (`Detector.FindButton`): si el juego tiene un **recorte** del botón (`src/Template.cs`), lo busca por
+   correlación normalizada en color, reescalado según la altura de la ventana. Si no, cae a la detección por **color y
+   forma** (`Detector.Find`: máscara HSV en la zona central → componentes conectados → el que tiene forma de botón).
+   Pide 2 detecciones seguidas antes de aceptar.
+4. **Acepta** según el perfil: con **Enter** (`AcceptWithEnter`, Dota 2) y, si al segundo el popup sigue en pantalla,
+   con click; o directo con **click** en el centro del botón, devolviendo el mouse a donde estaba.
 5. **GSI** (`src/Gsi.cs`): servidor HTTP local (TcpListener en 127.0.0.1:53111) que recibe el estado del juego. Si hay
    `map.game_state` (Dota) o `map.phase` (CS2) = en partida → no escanear. Sin GSI, después de aceptar sigue 90 s y se pausa.
+
+## Sumar juegos (la estrategia)
+No hay API oficial de Steam/Valve para el "partida encontrada → aceptar" (pasa por el Game Coordinator), GSI no informa
+ese momento y conectarse por fuera (SteamKit) abre otra sesión y saca al jugador del juego. Leer `console.log` con
+`-condebug` se descartó por invasivo (exige otra opción de lanzamiento). Por eso cada juego es un **perfil** (`Games.cs`):
+1. **Detectar el popup:** por imagen. Lo general es un recorte real del botón en
+   `%APPDATA%\AutoReady\templates\<juego>@<alto-de-ventana>.png`; el color/forma queda de respaldo.
+2. **Aceptar:** click o tecla (Enter), siempre con verificación y click de respaldo.
+3. **Saber si está en partida:** GSI si el juego lo tiene; si no, se pausa sola un rato después de aceptar.
+
+Para sumar un juego: proceso, una captura del popup (sale de las capturas automáticas), el recorte del botón y la acción.
 
 ## Estructura
 | Archivo | Qué hace |
@@ -38,7 +52,9 @@ vuelva a tiempo. Producto de **keis.studio** (estudio del dueño del repo). Ante
 | `src/TrayApp.cs` | Ícono de la bandeja, menú chico, loop de escaneo, aceptar, avisos, atajo global; implementa `IPanelHost` |
 | `src/Panel.cs` | Panel WPF (click izquierdo en el ícono): interruptor principal, atajo, avisos, celular con QR, general |
 | `src/Games.cs` | Perfil por juego: proceso, carpeta de GSI, clave de estado, colores/forma del botón, textos |
-| `src/Detector.cs` | Detección del botón ACCEPT en una captura |
+| `src/Detector.cs` | Detección del botón ACCEPT: por recorte (si hay) o por color y forma |
+| `src/Template.cs` | Detección por recorte del botón (NCC en color, multi-escala) |
+| `src/Samples.cs` | Capturas reales de la beta para calibrar (aceptadas y partidas que se escaparon) |
 | `src/Gsi.cs` | Instala la config de GSI en cada biblioteca de Steam y recibe el estado |
 | `src/Win32.cs` | P/Invoke: ventanas, captura, foco, click, atajos |
 | `src/Toast.cs` | Notificaciones nativas de Windows (WinRT) con logo y botón; fallback a globos de la bandeja |
@@ -75,8 +91,8 @@ instalar nada. Consecuencias:
   es una suposición.
 - **Capturas reales (beta, `src/Samples.cs`):** en `%APPDATA%\AutoReady\samples` se guardan `accepted-<juego>-<fecha>.png`
   (la imagen con la que se decidió el click) y carpetas `missed-<juego>-<fecha>\` con las imágenes reducidas del último
-  minuto y medio cuando GSI ve que arrancó una partida que AutoReady no aceptó. Sirven de fixtures para #6. Se conservan
-  40 entradas; se apaga con `SaveSamples=False` en el ini.
+  minuto cuando GSI ve que arrancó una partida que AutoReady no aceptó. Sirven de fixtures para #6. Se conservan
+  15 entradas (JPG chicos); se apaga con `SaveSamples=False` en el ini.
 - Para revisar el panel sin mostrar ventanas: compilar un programa aparte que cree `Panel` con un `IPanelHost` falso, lo
   muestre fuera de la pantalla y lo guarde con `RenderTargetBitmap`.
 

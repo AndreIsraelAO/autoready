@@ -38,8 +38,8 @@ dist\AutoReady.exe --test screenshot.png dota2
 Exit code `0` means the Accept button was found, `1` means it wasn't. It also writes `screenshot.result.png` with the search
 area and the detected button marked. Use `cs2` for Counter-Strike 2 screenshots.
 
-During the beta the app also keeps real samples in `%APPDATA%\AutoReady\samples`: `accepted-*.png` (the frame that
-triggered a click) and `missed-*` folders (frames from the 90 seconds before a match AutoReady didn't accept). They're the
+During the beta the app also keeps real samples in `%APPDATA%\AutoReady\samples`: `accepted-*.jpg` (the popup area that
+triggered a click) and `missed-*` folders (frames from the minute before a match AutoReady didn't accept). They're the
 best test material for the detector.
 
 ## Principles

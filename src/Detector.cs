@@ -27,7 +27,30 @@ namespace AutoReady
         public class Hit
         {
             public Rectangle Box;   // en coordenadas de la imagen
+            public double Score;    // parecido con el recorte (solo en la deteccion por recorte)
             public Point Center { get { return new Point(Box.X + Box.Width / 2, Box.Y + Box.Height / 2); } }
+        }
+
+        // Recortes reales por juego (ver Template.cs); se cargan al arrancar.
+        static readonly System.Collections.Generic.Dictionary<string, Template> templates =
+            new System.Collections.Generic.Dictionary<string, Template>();
+
+        public static void LoadTemplates()
+        {
+            foreach (GameProfile g in GameProfile.All)
+            {
+                Template t = Template.Load(g);
+                templates[g.Id] = t;
+                if (t != null) Log.Write("Deteccion por recorte para " + g.Name);
+            }
+        }
+
+        // Entrada principal: por recorte si el juego tiene uno; si no, por color y forma.
+        public static Hit FindButton(Bitmap img, GameProfile game, Settings s)
+        {
+            Template t;
+            if (templates.TryGetValue(game.Id, out t) && t != null) return t.Find(img, Roi(img.Width, img.Height, s));
+            return Find(img, s);
         }
 
         const int Step = 2;   // analizamos 1 de cada 2 pixeles en cada eje: 4 veces menos trabajo, sobra precision

@@ -14,6 +14,9 @@ namespace AutoReady
         public string CfgDir;          // carpeta de la config de GSI, relativa a la biblioteca de Steam
         public string StateKey;        // clave del JSON de GSI que indica la fase de la partida
         public string LaunchOptionHint;   // null si GSI funciona sin opciones de lanzamiento
+        // Aceptar apretando Enter en vez de hacer click: no depende de donde esta el boton (resolucion, escala,
+        // monitor). Si despues del Enter el popup sigue en pantalla, se hace click igual.
+        public bool AcceptWithEnter;
         public string MatchStartedTitle, MatchStartedText;
         public Func<Detector.Settings> DefaultDetector;
 
@@ -26,6 +29,7 @@ namespace AutoReady
             CfgDir = @"steamapps\common\dota 2 beta\game\dota\cfg\gamestate_integration",
             StateKey = "game_state",
             LaunchOptionHint = "En Steam: Dota 2 > Propiedades > Opciones de lanzamiento, agrega -gamestateintegration y reinicia Dota.",
+            AcceptWithEnter = true,
             MatchStartedTitle = "¡Empezo el pick!",
             MatchStartedText = "Ya estan eligiendo heroes. ¡Volve!",
             // Boton ACCEPT turquesa: H ~154, S ~0.30-0.35, V ~0.35.

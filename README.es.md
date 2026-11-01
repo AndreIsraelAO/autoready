@@ -99,7 +99,7 @@ perjudica a los otros nueve jugadores.
 <summary><b>¿Guarda capturas de pantalla?</b></summary>
 <br>
 Durante la beta sí, para mejorar la detección: cuando acepta una partida y cuando arranca una que no aceptó. Solo de la
-ventana del juego, solo en tu PC (<code>%APPDATA%\AutoReady\samples</code>), y guarda las últimas 40. No se sube nada. Se
+ventana del juego, solo en tu PC (<code>%APPDATA%\AutoReady\samples</code>), y guarda las últimas 15. No se sube nada. Se
 puede apagar con <code>SaveSamples=False</code> en <code>%APPDATA%\AutoReady\autoready.ini</code>.
 </details>
 

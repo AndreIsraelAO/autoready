@@ -57,7 +57,8 @@ namespace AutoReady
                 Detector.Settings ds = Config.Load().For(game).Detector;
                 using (Bitmap img = new Bitmap(path))
                 {
-                    Detector.Hit hit = Detector.Find(img, ds);
+                    Detector.LoadTemplates();
+                    Detector.Hit hit = Detector.FindButton(img, game, ds);
                     string outPath = Path.ChangeExtension(path, ".result.png");
                     using (Bitmap annotated = Detector.Annotate(img, hit, ds))
                         annotated.Save(outPath);
