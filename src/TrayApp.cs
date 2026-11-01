@@ -85,11 +85,14 @@ namespace ReadyUp
             menu.Items.Add(soundItem);
             menu.Items.Add(matchItem);
             menu.Items.Add(new ToolStripSeparator());
-            menu.Items.Add(new ToolStripMenuItem("Guardar captura de prueba", null, (s, e) => SaveDebugCapture()));
-            menu.Items.Add(new ToolStripMenuItem("Abrir carpeta de ReadyUp", null, (s, e) => Process.Start("explorer.exe", Config.Dir)));
+            // Herramientas para cuando algo no anda: no hacen falta en el uso normal.
+            ToolStripMenuItem diagItem = new ToolStripMenuItem("Diagnostico");
+            diagItem.DropDownItems.Add(new ToolStripMenuItem("Guardar captura (con el popup en pantalla)", null, (s, e) => SaveDebugCapture()));
+            diagItem.DropDownItems.Add(new ToolStripMenuItem("Abrir carpeta de configuracion y logs", null, (s, e) => OpenDataFolder()));
             menu.Items.Add(autostartItem);
             menu.Items.Add(autoUpdateItem);
             menu.Items.Add(new ToolStripMenuItem("Buscar actualizaciones ahora", null, (s, e) => CheckUpdates(true)));
+            menu.Items.Add(diagItem);
             menu.Items.Add(new ToolStripSeparator());
             menu.Items.Add(new ToolStripMenuItem("Hecho por keis.studio", null, (s, e) => Process.Start("https://keis.studio")));
             menu.Items.Add(new ToolStripMenuItem("Salir", null, (s, e) => Quit()));
@@ -378,7 +381,11 @@ namespace ReadyUp
         {
             IntPtr hwnd;
             GameProfile game = FindRunningGame(out hwnd);
-            if (game == null) { MessageBox.Show("No hay ningun juego abierto (Dota 2 / CS2).", "ReadyUp"); return; }
+            if (game == null)
+            {
+                MessageBox.Show("Sirve para revisar la deteccion: abri Dota 2 o CS2, busca partida y usalo cuando aparezca el popup de ACCEPT.", "ReadyUp");
+                return;
+            }
             using (Bitmap shot = Win32.Capture(hwnd))
             {
                 if (shot == null) { MessageBox.Show("No pude capturar " + game.Name + " (¿esta minimizado?).", "ReadyUp"); return; }
@@ -390,6 +397,12 @@ namespace ReadyUp
                 Log.Write("Captura de prueba: " + file + (hit != null ? " (boton encontrado)" : " (sin boton)"));
                 Process.Start("explorer.exe", "/select,\"" + file + "\"");
             }
+        }
+
+        static void OpenDataFolder()
+        {
+            Directory.CreateDirectory(Config.Dir);
+            Process.Start("explorer.exe", "\"" + Config.Dir + "\"");
         }
 
         static bool AutostartEnabled()
