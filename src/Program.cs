@@ -60,6 +60,9 @@ namespace AutoReady
                     return 0;
                 }
                 if (Installer.IsInstalledCopy) Installer.Register();   // la version mostrada en Aplicaciones se actualiza
+                // Si se cierra por un error o se cuelga, Windows la vuelve a abrir sola (despues de 60 s de uso).
+                // No aplica al reinicio por actualizaciones de Windows (flag 8), donde vuelve con el inicio de Windows.
+                Win32.RegisterApplicationRestart("--restarted", 8);
                 Application.EnableVisualStyles();
                 Application.SetCompatibleTextRenderingDefault(false);
                 Application.Run(new TrayApp());
