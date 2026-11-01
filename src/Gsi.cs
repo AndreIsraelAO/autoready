@@ -10,51 +10,73 @@ using Microsoft.Win32;
 
 namespace ReadyUp
 {
-    // Dota 2 Game State Integration: la forma oficial de Valve de saber en que estado esta el juego.
-    // Dota manda POSTs con JSON a un servidor local. Requiere la opcion de lanzamiento -gamestateintegration.
-    // La usamos solo para saber si estas dentro de una partida (y ahi no escanear nada).
+    // Game State Integration: la forma oficial de Valve de saber en que estado esta el juego (Dota 2 y CS2).
+    // El juego manda POSTs con JSON a un servidor local; cada POST trae el appid del juego que lo envia.
+    // Lo usamos solo para saber si estas dentro de una partida (y ahi no escanear nada).
     class Gsi
     {
         const string CfgName = "gamestate_integration_readyup.cfg";
 
-        readonly int port;
-        DateTime lastUpdate = DateTime.MinValue;
-        string gameState;   // null = menu principal; si no, DOTA_GAMERULES_STATE_*
+        class GameState
+        {
+            public DateTime LastUpdate = DateTime.MinValue;
+            public string Phase;   // null = menu principal
+        }
 
-        public event Action<string, string> StateChanged;   // (anterior, nuevo)
+        readonly int port;
+        readonly Dictionary<int, GameState> states = new Dictionary<int, GameState>();
+        readonly object gate = new object();
+
+        public event Action<GameProfile, string, string> StateChanged;   // (juego, anterior, nuevo)
 
         public Gsi(int port) { this.port = port; }
 
-        public bool Connected { get { return (DateTime.Now - lastUpdate).TotalSeconds < 30; } }
-        public bool InMatch { get { return Connected && gameState != null; } }
-        public string GameState { get { return gameState; } }
+        public bool Connected(GameProfile g)
+        {
+            lock (gate)
+            {
+                GameState s;
+                return states.TryGetValue(g.AppId, out s) && (DateTime.Now - s.LastUpdate).TotalSeconds < 30;
+            }
+        }
 
-        public static List<string> FindDotaDirs()
+        public bool InMatch(GameProfile g)
+        {
+            lock (gate)
+            {
+                GameState s;
+                return Connected(g) && states.TryGetValue(g.AppId, out s) && s.Phase != null;
+            }
+        }
+
+        public bool InAnyMatch()
+        {
+            foreach (GameProfile g in GameProfile.All)
+                if (InMatch(g)) return true;
+            return false;
+        }
+
+        static List<string> SteamLibraries()
         {
             List<string> libs = new List<string>();
             string steam = null;
             using (RegistryKey k = Registry.CurrentUser.OpenSubKey(@"Software\Valve\Steam"))
                 if (k != null) steam = k.GetValue("SteamPath") as string;
             if (string.IsNullOrEmpty(steam)) steam = @"C:\Program Files (x86)\Steam";
-            libs.Add(steam);
+            libs.Add(Path.GetFullPath(steam));
 
             string vdf = Path.Combine(steam, @"steamapps\libraryfolders.vdf");
             if (File.Exists(vdf))
                 foreach (Match m in Regex.Matches(File.ReadAllText(vdf), "\"path\"\\s+\"([^\"]+)\""))
-                    libs.Add(m.Groups[1].Value.Replace(@"\\", @"\"));
-
-            List<string> dirs = new List<string>();
-            foreach (string lib in libs)
-            {
-                string d = Path.GetFullPath(Path.Combine(lib, @"steamapps\common\dota 2 beta\game\dota"));
-                if (Directory.Exists(d) && !dirs.Exists(x => string.Equals(x, d, StringComparison.OrdinalIgnoreCase)))
-                    dirs.Add(d);
-            }
-            return dirs;
+                {
+                    string lib = Path.GetFullPath(m.Groups[1].Value.Replace(@"\\", @"\"));
+                    if (!libs.Exists(x => string.Equals(x, lib, StringComparison.OrdinalIgnoreCase))) libs.Add(lib);
+                }
+            return libs;
         }
 
-        // Escribe el .cfg de GSI en cada instalacion de Dota encontrada. Devuelve la cantidad escrita.
-        public int InstallConfig()
+        // Escribe el .cfg de GSI en cada instalacion encontrada del juego. Devuelve la cantidad escrita.
+        public int InstallConfig(GameProfile g)
         {
             string content =
                 "\"ReadyUp\"\r\n{\r\n" +
@@ -68,22 +90,25 @@ namespace ReadyUp
                 "        \"map\"       \"1\"\r\n" +
                 "    }\r\n}\r\n";
             int written = 0;
-            foreach (string dir in FindDotaDirs())
+            foreach (string lib in SteamLibraries())
             {
-                string target = Path.Combine(dir, @"cfg\gamestate_integration\" + CfgName);
+                string dir = Path.Combine(lib, g.CfgDir);
+                // La carpeta del juego tiene que existir; la subcarpeta gamestate_integration de Dota la creamos.
+                if (!Directory.Exists(Path.GetDirectoryName(dir)) && !Directory.Exists(dir)) continue;
+                string target = Path.Combine(dir, CfgName);
                 try
                 {
                     if (!File.Exists(target) || File.ReadAllText(target) != content)
                     {
-                        Directory.CreateDirectory(Path.GetDirectoryName(target));
+                        Directory.CreateDirectory(dir);
                         File.WriteAllText(target, content);
-                        Log.Write("GSI: config escrita en " + target);
+                        Log.Write("GSI " + g.Name + ": config escrita en " + target);
                     }
                     written++;
                 }
-                catch (Exception e) { Log.Write("GSI: no se pudo escribir " + target + ": " + e.Message); }
+                catch (Exception e) { Log.Write("GSI " + g.Name + ": no se pudo escribir " + target + ": " + e.Message); }
             }
-            if (written == 0) Log.Write("GSI: no encontre la carpeta de Dota 2");
+            if (written == 0) Log.Write("GSI " + g.Name + ": juego no encontrado en las bibliotecas de Steam");
             return written;
         }
 
@@ -136,10 +161,9 @@ namespace ReadyUp
                 int n = ns.Read(chunk, 0, chunk.Length);
                 if (n <= 0) return null;
                 buf.Write(chunk, 0, n);
-                byte[] all = buf.GetBuffer();
                 if (headerEnd < 0)
                 {
-                    string soFar = Encoding.ASCII.GetString(all, 0, (int)buf.Length);
+                    string soFar = Encoding.ASCII.GetString(buf.GetBuffer(), 0, (int)buf.Length);
                     int i = soFar.IndexOf("\r\n\r\n", StringComparison.Ordinal);
                     if (i < 0) continue;
                     headerEnd = i + 4;
@@ -153,16 +177,27 @@ namespace ReadyUp
 
         void Handle(string json)
         {
-            lastUpdate = DateTime.Now;
-            // En el menu Dota no manda la seccion "map"; dentro de una partida trae "game_state".
-            Match m = Regex.Match(json, "\"game_state\"\\s*:\\s*\"(\\w+)\"");
-            string state = m.Success ? m.Groups[1].Value : null;
-            if (state == gameState) return;
-            string old = gameState;
-            gameState = state;
-            Log.Write("GSI: " + (old ?? "menu") + " -> " + (state ?? "menu"));
-            Action<string, string> h = StateChanged;
-            if (h != null) h(old, state);
+            Match app = Regex.Match(json, "\"appid\"\\s*:\\s*(\\d+)");
+            GameProfile g = app.Success ? GameProfile.ByAppId(int.Parse(app.Groups[1].Value)) : null;
+            if (g == null) return;
+
+            // En el menu el juego no manda la seccion "map"; dentro de una partida trae la fase.
+            Match m = Regex.Match(json, "\"" + g.StateKey + "\"\\s*:\\s*\"(\\w+)\"");
+            string phase = m.Success ? m.Groups[1].Value : null;
+
+            string old;
+            lock (gate)
+            {
+                GameState s;
+                if (!states.TryGetValue(g.AppId, out s)) states[g.AppId] = s = new GameState();
+                s.LastUpdate = DateTime.Now;
+                if (phase == s.Phase) return;
+                old = s.Phase;
+                s.Phase = phase;
+            }
+            Log.Write("GSI " + g.Name + ": " + (old ?? "menu") + " -> " + (phase ?? "menu"));
+            Action<GameProfile, string, string> h = StateChanged;
+            if (h != null) h(g, old, phase);
         }
     }
 }

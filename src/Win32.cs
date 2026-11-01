@@ -36,9 +36,9 @@ namespace ReadyUp
         const int SW_RESTORE = 9;
         public const int HSHELL_FLASH = 0x8006;
 
-        public static IntPtr FindDotaWindow()
+        public static IntPtr FindGameWindow(string processName)
         {
-            foreach (Process p in Process.GetProcessesByName("dota2"))
+            foreach (Process p in Process.GetProcessesByName(processName))
             {
                 try
                 {

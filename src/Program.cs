@@ -6,7 +6,7 @@ using System.Threading;
 using System.Windows.Forms;
 
 [assembly: System.Reflection.AssemblyTitle("ReadyUp")]
-[assembly: System.Reflection.AssemblyProduct("ReadyUp - auto-accept for Dota 2")]
+[assembly: System.Reflection.AssemblyProduct("ReadyUp - auto-accept for Dota 2 and CS2")]
 // La version la genera build.bat en obj\Version.cs (en los releases sale del tag de git).
 
 namespace ReadyUp
@@ -19,9 +19,10 @@ namespace ReadyUp
             // Coordenadas en pixeles fisicos; si no, con escala 125%/150% el click cae fuera del boton.
             Win32.SetProcessDPIAware();
 
-            // ReadyUp.exe --test captura.png  -> corre el detector sobre una imagen y guarda captura.result.png
+            // ReadyUp.exe --test captura.png [dota2|cs2]  -> corre el detector sobre una imagen y guarda captura.result.png
             // Codigo de salida: 0 = boton encontrado, 1 = no encontrado, 2 = error.
-            if (args.Length == 2 && args[0] == "--test") return TestImage(args[1]);
+            if (args.Length >= 2 && args[0] == "--test")
+                return TestImage(args[1], GameProfile.ById(args.Length > 2 ? args[2] : "dota2") ?? GameProfile.Dota2);
 
             // Despues de actualizar: esperamos a que cierre la version vieja (que tiene el mutex).
             int oldPid;
@@ -47,16 +48,16 @@ namespace ReadyUp
             return 0;
         }
 
-        static int TestImage(string path)
+        static int TestImage(string path, GameProfile game)
         {
             try
             {
-                Config cfg = Config.Load();
+                Detector.Settings ds = Config.Load().For(game).Detector;
                 using (Bitmap img = new Bitmap(path))
                 {
-                    Detector.Hit hit = Detector.Find(img, cfg.Detector);
+                    Detector.Hit hit = Detector.Find(img, ds);
                     string outPath = Path.ChangeExtension(path, ".result.png");
-                    using (Bitmap annotated = Detector.Annotate(img, hit, cfg.Detector))
+                    using (Bitmap annotated = Detector.Annotate(img, hit, ds))
                         annotated.Save(outPath);
                     File.WriteAllText(Path.ChangeExtension(path, ".result.txt"),
                         hit == null ? "no encontrado" : "encontrado " + hit.Box + " centro " + hit.Center);

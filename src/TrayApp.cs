@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Drawing2D;
@@ -9,7 +10,7 @@ using Microsoft.Win32;
 
 namespace ReadyUp
 {
-    enum AppState { Starting, DotaClosed, Paused, Searching, InMatch }
+    enum AppState { Starting, GameClosed, Paused, Searching, InMatch }
 
     class TrayApp : ApplicationContext
     {
@@ -19,20 +20,21 @@ namespace ReadyUp
         readonly Gsi gsi;
         readonly HiddenWindow ui;
         readonly NotifyIcon tray;
-        readonly ToolStripMenuItem statusItem, gsiItem, pauseItem, phoneItem, soundItem, pickItem, autostartItem;
+        readonly ToolStripMenuItem statusItem, gsiItem, pauseItem, phoneItem, soundItem, matchItem, autostartItem;
         readonly ToolStripMenuItem updateItem, autoUpdateItem;
         System.Threading.Timer updateTimer;
         Updater.Release pendingUpdate;
         readonly Icon iconOn, iconOff, iconWait;
 
         volatile bool paused;
-        volatile bool flashRequested;
         volatile bool running = true;
+        IntPtr flashedWindow = IntPtr.Zero;   // ultima ventana que titilo en la barra de tareas
         AppState state = AppState.Starting;
+        GameProfile activeGame;               // juego abierto que estamos vigilando
         DateTime cooldownUntil = DateTime.MinValue;
         DateTime lastAccept = DateTime.MinValue;
-        DateTime dotaSeenSince = DateTime.MinValue;
-        bool gsiHintShown;
+        DateTime gameSeenSince = DateTime.MinValue;
+        readonly HashSet<string> gsiHintShown = new HashSet<string>();
         int consecutiveHits;
 
         public TrayApp()
@@ -43,17 +45,31 @@ namespace ReadyUp
             iconWait = MakeIcon(Color.FromArgb(215, 160, 40));
 
             ui = new HiddenWindow();
-            ui.DotaFlashed += () => { flashRequested = true; };
+            ui.WindowFlashed += h => { flashedWindow = h; };
 
             statusItem = new ToolStripMenuItem("Iniciando...") { Enabled = false };
-            gsiItem = new ToolStripMenuItem("GSI: esperando a Dota") { Enabled = false };
+            gsiItem = new ToolStripMenuItem("GSI: esperando al juego") { Enabled = false };
             pauseItem = new ToolStripMenuItem("Pausar", null, (s, e) => TogglePause());
             phoneItem = new ToolStripMenuItem("Avisos al celular", null, (s, e) => TogglePhone()) { Checked = cfg.NotifyPhone };
             soundItem = new ToolStripMenuItem("Sonido", null, (s, e) => { cfg.Sound = !cfg.Sound; soundItem.Checked = cfg.Sound; cfg.Save(); }) { Checked = cfg.Sound };
-            pickItem = new ToolStripMenuItem("Avisar cuando empieza el pick", null, (s, e) => { cfg.NotifyPickStarted = !cfg.NotifyPickStarted; pickItem.Checked = cfg.NotifyPickStarted; cfg.Save(); }) { Checked = cfg.NotifyPickStarted };
+            matchItem = new ToolStripMenuItem("Avisar cuando arranca la partida", null, (s, e) => { cfg.NotifyMatchStarted = !cfg.NotifyMatchStarted; matchItem.Checked = cfg.NotifyMatchStarted; cfg.Save(); }) { Checked = cfg.NotifyMatchStarted };
             autostartItem = new ToolStripMenuItem("Iniciar con Windows", null, (s, e) => ToggleAutostart()) { Checked = AutostartEnabled() };
             updateItem = new ToolStripMenuItem("Actualizar", null, (s, e) => InstallUpdate()) { Visible = false, Font = new Font(SystemFonts.MenuFont, FontStyle.Bold) };
             autoUpdateItem = new ToolStripMenuItem("Buscar actualizaciones automaticamente", null, (s, e) => ToggleAutoUpdate()) { Checked = cfg.AutoUpdateCheck };
+
+            ToolStripMenuItem gamesItem = new ToolStripMenuItem("Juegos");
+            foreach (GameProfile g in GameProfile.All)
+            {
+                GameProfile game = g;
+                ToolStripMenuItem item = new ToolStripMenuItem(g.Name) { Checked = cfg.For(g).Enabled };
+                item.Click += (s, e) =>
+                {
+                    cfg.For(game).Enabled = !cfg.For(game).Enabled;
+                    item.Checked = cfg.For(game).Enabled;
+                    cfg.Save();
+                };
+                gamesItem.DropDownItems.Add(item);
+            }
 
             ContextMenuStrip menu = new ContextMenuStrip();
             menu.Items.Add(new ToolStripMenuItem("ReadyUp v" + Updater.CurrentVersionText) { Enabled = false });
@@ -62,11 +78,12 @@ namespace ReadyUp
             menu.Items.Add(gsiItem);
             menu.Items.Add(new ToolStripSeparator());
             menu.Items.Add(pauseItem);
+            menu.Items.Add(gamesItem);
             menu.Items.Add(new ToolStripSeparator());
             menu.Items.Add(phoneItem);
             menu.Items.Add(new ToolStripMenuItem("Conectar celular...", null, (s, e) => ShowPhoneSetup()));
             menu.Items.Add(soundItem);
-            menu.Items.Add(pickItem);
+            menu.Items.Add(matchItem);
             menu.Items.Add(new ToolStripSeparator());
             menu.Items.Add(new ToolStripMenuItem("Guardar captura de prueba", null, (s, e) => SaveDebugCapture()));
             menu.Items.Add(new ToolStripMenuItem("Abrir carpeta de ReadyUp", null, (s, e) => Process.Start("explorer.exe", Config.Dir)));
@@ -80,11 +97,11 @@ namespace ReadyUp
             tray.DoubleClick += (s, e) => TogglePause();
 
             gsi = new Gsi(cfg.GsiPort);
-            gsi.InstallConfig();
+            foreach (GameProfile g in GameProfile.All) gsi.InstallConfig(g);
             gsi.Start();
             gsi.StateChanged += OnGameStateChanged;
 
-            Log.Write("ReadyUp iniciado");
+            Log.Write("ReadyUp v" + Updater.CurrentVersionText + " iniciado");
             Thread scanner = new Thread(ScanLoop) { IsBackground = true, Name = "scanner" };
             scanner.Start();
 
@@ -134,9 +151,9 @@ namespace ReadyUp
         {
             Updater.Release r = pendingUpdate;
             if (r == null) return;
-            if (gsi.InMatch)
+            if (gsi.InAnyMatch())
             {
-                MessageBox.Show("Estas en partida: actualizo cuando termine.", "ReadyUp");
+                MessageBox.Show("Estas en partida: actualiza cuando termine.", "ReadyUp");
                 return;
             }
             updateItem.Enabled = false;
@@ -182,27 +199,43 @@ namespace ReadyUp
             }
         }
 
+        // Primer juego habilitado que este abierto.
+        GameProfile FindRunningGame(out IntPtr hwnd)
+        {
+            foreach (GameProfile g in GameProfile.All)
+            {
+                if (!cfg.For(g).Enabled) continue;
+                hwnd = Win32.FindGameWindow(g.Process);
+                if (hwnd != IntPtr.Zero) return g;
+            }
+            hwnd = IntPtr.Zero;
+            return null;
+        }
+
         // Devuelve cuantos ms esperar hasta el proximo tick.
         int Tick()
         {
-            IntPtr dota = Win32.FindDotaWindow();
-            if (dota == IntPtr.Zero)
+            IntPtr hwnd;
+            GameProfile game = FindRunningGame(out hwnd);
+            if (game != activeGame)
             {
-                dotaSeenSince = DateTime.MinValue;
-                SetState(AppState.DotaClosed);
-                return 2000;
+                activeGame = game;
+                consecutiveHits = 0;
+                gameSeenSince = game == null ? DateTime.MinValue : DateTime.Now;
+                if (game != null) Log.Write(game.Name + " abierto");
+                state = AppState.Starting;
             }
-            if (dotaSeenSince == DateTime.MinValue) dotaSeenSince = DateTime.Now;
-            MaybeShowGsiHint();
+            if (game == null) { SetState(AppState.GameClosed); return 2000; }
+            MaybeShowGsiHint(game);
 
             if (paused) { SetState(AppState.Paused); return 500; }
-            if (gsi.InMatch) { SetState(AppState.InMatch); return 1000; }
+            if (gsi.InMatch(game)) { SetState(AppState.InMatch); return 1000; }
             SetState(AppState.Searching);
             if (DateTime.Now < cooldownUntil) return 500;
 
             // Sin GSI no sabemos si ya estas en partida: despues de aceptar seguimos un rato (por si alguien
             // no acepto y volves a la cola) y despues pausamos para no hacer clicks dentro del juego.
-            if (!gsi.Connected && lastAccept != DateTime.MinValue &&
+            if (!gsi.Connected(game) && lastAccept != DateTime.MinValue &&
                 (DateTime.Now - lastAccept).TotalSeconds > cfg.FallbackScanSecAfterAccept)
             {
                 lastAccept = DateTime.MinValue;
@@ -212,66 +245,66 @@ namespace ReadyUp
                 return 500;
             }
 
-            if (Win32.IsIconic(dota))
+            if (Win32.IsIconic(hwnd))
             {
-                // Dota minimizado: no se puede capturar. Cuando encuentra partida hace titilar la barra de tareas;
+                // Juego minimizado: no se puede capturar. Cuando encuentra partida hace titilar la barra de tareas;
                 // en ese momento lo restauramos para poder ver el boton.
-                if (!flashRequested) return cfg.ScanIntervalMs;
-                flashRequested = false;
-                Log.Write("Dota titilo estando minimizado: lo traigo al frente");
-                Win32.Focus(dota);
+                if (flashedWindow != hwnd) return cfg.ScanIntervalMs;
+                flashedWindow = IntPtr.Zero;
+                Log.Write(game.Name + " titilo estando minimizado: lo traigo al frente");
+                Win32.Focus(hwnd);
                 return 700;
             }
 
             Detector.Hit hit;
-            using (Bitmap shot = Win32.Capture(dota))
+            using (Bitmap shot = Win32.Capture(hwnd))
             {
                 if (shot == null) return cfg.ScanIntervalMs;
-                hit = Detector.Find(shot, cfg.Detector);
+                hit = Detector.Find(shot, cfg.For(game).Detector);
             }
             if (hit == null) { consecutiveHits = 0; return cfg.ScanIntervalMs; }
 
             // Pedimos dos detecciones seguidas para evitar falsos positivos.
             if (++consecutiveHits < 2) return 250;
             consecutiveHits = 0;
-            Accept(dota, hit);
+            Accept(game, hwnd, hit);
             return 500;
         }
 
-        void Accept(IntPtr dota, Detector.Hit hit)
+        void Accept(GameProfile game, IntPtr hwnd, Detector.Hit hit)
         {
-            Win32.Focus(dota);
+            Win32.Focus(hwnd);
             Thread.Sleep(250);
-            Rectangle rc = Win32.ClientRectOnScreen(dota);
+            Rectangle rc = Win32.ClientRectOnScreen(hwnd);
             Point p = hit.Center;
             Win32.Click(rc.X + p.X, rc.Y + p.Y);
 
             lastAccept = DateTime.Now;
             cooldownUntil = DateTime.Now.AddSeconds(cfg.CooldownAfterAcceptSec);
-            Log.Write("Partida encontrada: click en ACCEPT (" + (rc.X + p.X) + "," + (rc.Y + p.Y) + ")");
-            Notify("¡Partida aceptada!", "ReadyUp acepto la partida por vos.", true);
-            Notifier.Phone(cfg, "¡Partida aceptada!", "ReadyUp acepto tu partida de Dota 2. ¡Volve a la PC!", "video_game");
+            Log.Write(game.Name + ": partida encontrada, click en ACCEPT (" + (rc.X + p.X) + "," + (rc.Y + p.Y) + ")");
+            Notify("¡Partida aceptada!", "ReadyUp acepto tu partida de " + game.Name + ".", true);
+            Notifier.Phone(cfg, "¡Partida aceptada!", "ReadyUp acepto tu partida de " + game.Name + ". ¡Volve a la PC!", "video_game");
         }
 
-        void OnGameStateChanged(string oldState, string newState)
+        void OnGameStateChanged(GameProfile game, string oldState, string newState)
         {
             bool recentlyAccepted = lastAccept != DateTime.MinValue && (DateTime.Now - lastAccept).TotalMinutes < 5;
-            if (oldState == null && newState != null && cfg.NotifyPickStarted && recentlyAccepted)
+            if (oldState == null && newState != null && cfg.NotifyMatchStarted && recentlyAccepted)
             {
-                Notify("¡Empezo el pick!", "Volve, que ya estan eligiendo heroes.", true);
-                Notifier.Phone(cfg, "¡Empezo el pick!", "Ya estan eligiendo heroes. ¡Volve!", "crossed_swords");
+                Notify(game.MatchStartedTitle, game.MatchStartedText, true);
+                Notifier.Phone(cfg, game.MatchStartedTitle, game.MatchStartedText, "crossed_swords");
             }
             if (newState != null) lastAccept = DateTime.MinValue;   // ya estamos en partida
         }
 
-        void MaybeShowGsiHint()
+        void MaybeShowGsiHint(GameProfile game)
         {
-            if (gsiHintShown || gsi.Connected) return;
-            if ((DateTime.Now - dotaSeenSince).TotalSeconds < 90) return;
-            gsiHintShown = true;
-            Log.Write("GSI: Dota abierto hace 90s y no llego nada");
+            if (gsiHintShown.Contains(game.Id) || gsi.Connected(game)) return;
+            if ((DateTime.Now - gameSeenSince).TotalSeconds < 90) return;
+            gsiHintShown.Add(game.Id);
+            Log.Write("GSI " + game.Name + ": abierto hace 90s y no llego nada");
             Notify("Activa GSI para mas seguridad",
-                   "En Steam: Dota 2 > Propiedades > Opciones de lanzamiento, agrega -gamestateintegration y reinicia Dota.", false);
+                   game.LaunchOptionHint ?? ("Reinicia " + game.Name + " para que cargue la integracion de ReadyUp."), false);
         }
 
         // ---------- estado e interfaz ----------
@@ -280,24 +313,28 @@ namespace ReadyUp
         {
             if (s == state) return;
             state = s;
+            GameProfile game = activeGame;
             ui.Post(() =>
             {
+                string name = game != null ? game.Name : "";
                 string text;
                 Icon icon;
                 switch (s)
                 {
-                    case AppState.DotaClosed: text = "Dota cerrado"; icon = iconWait; break;
+                    case AppState.GameClosed: text = "Esperando a que abras un juego"; icon = iconWait; break;
                     case AppState.Paused: text = "En pausa"; icon = iconOff; break;
-                    case AppState.InMatch: text = "En partida (no escanea)"; icon = iconOn; break;
-                    default: text = "Armado: esperando partida"; icon = iconOn; break;
+                    case AppState.InMatch: text = name + ": en partida (no escanea)"; icon = iconOn; break;
+                    default: text = name + ": esperando partida"; icon = iconOn; break;
                 }
                 statusItem.Text = text;
                 pauseItem.Text = paused ? "Armar" : "Pausar";
-                gsiItem.Text = gsi.Connected ? "GSI: conectado" : "GSI: no conectado";
+                gsiItem.Text = game == null ? "GSI: esperando al juego" : (gsi.Connected(game) ? "GSI: conectado" : "GSI: no conectado");
                 tray.Icon = icon;
-                tray.Text = "ReadyUp - " + text;
+                tray.Text = Truncate("ReadyUp - " + text, 63);
             });
         }
+
+        static string Truncate(string s, int max) { return s.Length <= max ? s : s.Substring(0, max); }
 
         void TogglePause()
         {
@@ -338,14 +375,16 @@ namespace ReadyUp
 
         void SaveDebugCapture()
         {
-            IntPtr dota = Win32.FindDotaWindow();
-            if (dota == IntPtr.Zero) { MessageBox.Show("Dota no esta abierto.", "ReadyUp"); return; }
-            using (Bitmap shot = Win32.Capture(dota))
+            IntPtr hwnd;
+            GameProfile game = FindRunningGame(out hwnd);
+            if (game == null) { MessageBox.Show("No hay ningun juego abierto (Dota 2 / CS2).", "ReadyUp"); return; }
+            using (Bitmap shot = Win32.Capture(hwnd))
             {
-                if (shot == null) { MessageBox.Show("No pude capturar Dota (¿esta minimizado?).", "ReadyUp"); return; }
-                Detector.Hit hit = Detector.Find(shot, cfg.Detector);
-                string file = Path.Combine(Config.Dir, "captura-" + DateTime.Now.ToString("yyyyMMdd-HHmmss") + ".png");
-                using (Bitmap annotated = Detector.Annotate(shot, hit, cfg.Detector))
+                if (shot == null) { MessageBox.Show("No pude capturar " + game.Name + " (¿esta minimizado?).", "ReadyUp"); return; }
+                Detector.Settings ds = cfg.For(game).Detector;
+                Detector.Hit hit = Detector.Find(shot, ds);
+                string file = Path.Combine(Config.Dir, "captura-" + game.Id + "-" + DateTime.Now.ToString("yyyyMMdd-HHmmss") + ".png");
+                using (Bitmap annotated = Detector.Annotate(shot, hit, ds))
                     annotated.Save(file);
                 Log.Write("Captura de prueba: " + file + (hit != null ? " (boton encontrado)" : " (sin boton)"));
                 Process.Start("explorer.exe", "/select,\"" + file + "\"");
@@ -407,7 +446,7 @@ namespace ReadyUp
     class HiddenWindow : Form
     {
         readonly uint shellHookMsg;
-        public event Action DotaFlashed;
+        public event Action<IntPtr> WindowFlashed;
 
         public HiddenWindow()
         {
@@ -425,11 +464,10 @@ namespace ReadyUp
         protected override void WndProc(ref Message m)
         {
             // Comparacion exacta: HSHELL_FLASH es HSHELL_REDRAW con el bit alto, y un redraw no significa partida.
-            if (m.Msg == (int)shellHookMsg && m.WParam.ToInt32() == Win32.HSHELL_FLASH &&
-                m.LParam == Win32.FindDotaWindow())
+            if (m.Msg == (int)shellHookMsg && m.WParam.ToInt32() == Win32.HSHELL_FLASH)
             {
-                Action h = DotaFlashed;
-                if (h != null) h();
+                Action<IntPtr> h = WindowFlashed;
+                if (h != null) h(m.LParam);
             }
             base.WndProc(ref m);
         }

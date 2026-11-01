@@ -6,10 +6,17 @@ using System.IO;
 namespace ReadyUp
 {
     // Configuracion en %APPDATA%\ReadyUp\readyup.ini (clave=valor). Se reescribe con todas las claves al guardar.
+    // Lo de cada juego va con prefijo: "dota2.Enabled", "cs2.HueMin", etc.
     class Config
     {
         public static readonly string Dir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "ReadyUp");
         static readonly string FilePath = Path.Combine(Dir, "readyup.ini");
+
+        public class GameSettings
+        {
+            public bool Enabled = true;
+            public Detector.Settings Detector;
+        }
 
         public int ScanIntervalMs = 700;
         public int CooldownAfterAcceptSec = 10;
@@ -18,15 +25,20 @@ namespace ReadyUp
         public bool NotifyPhone = false;
         public string NtfyServer = "https://ntfy.sh";
         public string NtfyTopic = "";
-        public bool NotifyPickStarted = true;
+        public bool NotifyMatchStarted = true;
         public bool Sound = true;
         public bool AutoUpdateCheck = true;
 
-        public Detector.Settings Detector = new Detector.Settings();
+        public readonly Dictionary<string, GameSettings> Games = new Dictionary<string, GameSettings>();
+
+        public GameSettings For(GameProfile g) { return Games[g.Id]; }
 
         public static Config Load()
         {
             Config c = new Config();
+            foreach (GameProfile g in GameProfile.All)
+                c.Games[g.Id] = new GameSettings { Detector = g.DefaultDetector() };
+
             Directory.CreateDirectory(Dir);
             if (File.Exists(FilePath))
             {
@@ -43,19 +55,25 @@ namespace ReadyUp
                 c.NotifyPhone = Bool(kv, "NotifyPhone", c.NotifyPhone);
                 c.NtfyServer = Str(kv, "NtfyServer", c.NtfyServer);
                 c.NtfyTopic = Str(kv, "NtfyTopic", c.NtfyTopic);
-                c.NotifyPickStarted = Bool(kv, "NotifyPickStarted", c.NotifyPickStarted);
+                c.NotifyMatchStarted = Bool(kv, "NotifyMatchStarted", c.NotifyMatchStarted);
                 c.Sound = Bool(kv, "Sound", c.Sound);
                 c.AutoUpdateCheck = Bool(kv, "AutoUpdateCheck", c.AutoUpdateCheck);
 
-                Detector.Settings d = c.Detector;
-                d.RoiX0 = Dbl(kv, "RoiX0", d.RoiX0); d.RoiY0 = Dbl(kv, "RoiY0", d.RoiY0);
-                d.RoiX1 = Dbl(kv, "RoiX1", d.RoiX1); d.RoiY1 = Dbl(kv, "RoiY1", d.RoiY1);
-                d.HueMin = Dbl(kv, "HueMin", d.HueMin); d.HueMax = Dbl(kv, "HueMax", d.HueMax);
-                d.SatMin = Dbl(kv, "SatMin", d.SatMin); d.ValMin = Dbl(kv, "ValMin", d.ValMin);
-                d.MinWidthFrac = Dbl(kv, "MinWidthFrac", d.MinWidthFrac); d.MaxWidthFrac = Dbl(kv, "MaxWidthFrac", d.MaxWidthFrac);
-                d.MinHeightFrac = Dbl(kv, "MinHeightFrac", d.MinHeightFrac); d.MaxHeightFrac = Dbl(kv, "MaxHeightFrac", d.MaxHeightFrac);
-                d.MinAspect = Dbl(kv, "MinAspect", d.MinAspect); d.MaxAspect = Dbl(kv, "MaxAspect", d.MaxAspect);
-                d.MinFill = Dbl(kv, "MinFill", d.MinFill);
+                foreach (GameProfile g in GameProfile.All)
+                {
+                    string p = g.Id + ".";
+                    GameSettings gs = c.Games[g.Id];
+                    Detector.Settings d = gs.Detector;
+                    gs.Enabled = Bool(kv, p + "Enabled", gs.Enabled);
+                    d.RoiX0 = Dbl(kv, p + "RoiX0", d.RoiX0); d.RoiY0 = Dbl(kv, p + "RoiY0", d.RoiY0);
+                    d.RoiX1 = Dbl(kv, p + "RoiX1", d.RoiX1); d.RoiY1 = Dbl(kv, p + "RoiY1", d.RoiY1);
+                    d.HueMin = Dbl(kv, p + "HueMin", d.HueMin); d.HueMax = Dbl(kv, p + "HueMax", d.HueMax);
+                    d.SatMin = Dbl(kv, p + "SatMin", d.SatMin); d.ValMin = Dbl(kv, p + "ValMin", d.ValMin);
+                    d.MinWidthFrac = Dbl(kv, p + "MinWidthFrac", d.MinWidthFrac); d.MaxWidthFrac = Dbl(kv, p + "MaxWidthFrac", d.MaxWidthFrac);
+                    d.MinHeightFrac = Dbl(kv, p + "MinHeightFrac", d.MinHeightFrac); d.MaxHeightFrac = Dbl(kv, p + "MaxHeightFrac", d.MaxHeightFrac);
+                    d.MinAspect = Dbl(kv, p + "MinAspect", d.MinAspect); d.MaxAspect = Dbl(kv, p + "MaxAspect", d.MaxAspect);
+                    d.MinFill = Dbl(kv, p + "MinFill", d.MinFill);
+                }
             }
             if (string.IsNullOrEmpty(c.NtfyTopic))
             {
@@ -68,7 +86,6 @@ namespace ReadyUp
 
         public void Save()
         {
-            Detector.Settings d = Detector;
             List<string> lines = new List<string>();
             lines.Add("; ReadyUp - configuracion. Reinicia ReadyUp despues de editar a mano.");
             lines.Add("ScanIntervalMs=" + ScanIntervalMs);
@@ -78,19 +95,26 @@ namespace ReadyUp
             lines.Add("NotifyPhone=" + NotifyPhone);
             lines.Add("NtfyServer=" + NtfyServer);
             lines.Add("NtfyTopic=" + NtfyTopic);
-            lines.Add("NotifyPickStarted=" + NotifyPickStarted);
+            lines.Add("NotifyMatchStarted=" + NotifyMatchStarted);
             lines.Add("Sound=" + Sound);
             lines.Add("AutoUpdateCheck=" + AutoUpdateCheck);
-            lines.Add("");
-            lines.Add("; Detector: area de busqueda (fracciones de la ventana), color en HSV (H en grados, S/V 0..1) y forma del boton");
-            lines.Add("RoiX0=" + F(d.RoiX0)); lines.Add("RoiY0=" + F(d.RoiY0));
-            lines.Add("RoiX1=" + F(d.RoiX1)); lines.Add("RoiY1=" + F(d.RoiY1));
-            lines.Add("HueMin=" + F(d.HueMin)); lines.Add("HueMax=" + F(d.HueMax));
-            lines.Add("SatMin=" + F(d.SatMin)); lines.Add("ValMin=" + F(d.ValMin));
-            lines.Add("MinWidthFrac=" + F(d.MinWidthFrac)); lines.Add("MaxWidthFrac=" + F(d.MaxWidthFrac));
-            lines.Add("MinHeightFrac=" + F(d.MinHeightFrac)); lines.Add("MaxHeightFrac=" + F(d.MaxHeightFrac));
-            lines.Add("MinAspect=" + F(d.MinAspect)); lines.Add("MaxAspect=" + F(d.MaxAspect));
-            lines.Add("MinFill=" + F(d.MinFill));
+            foreach (GameProfile g in GameProfile.All)
+            {
+                string p = g.Id + ".";
+                GameSettings gs = Games[g.Id];
+                Detector.Settings d = gs.Detector;
+                lines.Add("");
+                lines.Add("; " + g.Name + ": area de busqueda (fracciones de la ventana), color en HSV (H en grados, S/V 0..1) y forma del boton");
+                lines.Add(p + "Enabled=" + gs.Enabled);
+                lines.Add(p + "RoiX0=" + F(d.RoiX0)); lines.Add(p + "RoiY0=" + F(d.RoiY0));
+                lines.Add(p + "RoiX1=" + F(d.RoiX1)); lines.Add(p + "RoiY1=" + F(d.RoiY1));
+                lines.Add(p + "HueMin=" + F(d.HueMin)); lines.Add(p + "HueMax=" + F(d.HueMax));
+                lines.Add(p + "SatMin=" + F(d.SatMin)); lines.Add(p + "ValMin=" + F(d.ValMin));
+                lines.Add(p + "MinWidthFrac=" + F(d.MinWidthFrac)); lines.Add(p + "MaxWidthFrac=" + F(d.MaxWidthFrac));
+                lines.Add(p + "MinHeightFrac=" + F(d.MinHeightFrac)); lines.Add(p + "MaxHeightFrac=" + F(d.MaxHeightFrac));
+                lines.Add(p + "MinAspect=" + F(d.MinAspect)); lines.Add(p + "MaxAspect=" + F(d.MaxAspect));
+                lines.Add(p + "MinFill=" + F(d.MinFill));
+            }
             File.WriteAllLines(FilePath, lines.ToArray());
         }
 

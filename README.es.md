@@ -2,7 +2,7 @@
 
 **Buscá partida, andá a hacer otra cosa. ReadyUp la acepta por vos.**
 
-Un auto-accept chiquito para **Dota 2** en Windows. Apretás *Buscar partida*, te vas a buscar algo de tomar y ReadyUp hace click en **ACEPTAR** cuando aparece la partida. Después te avisa al celular para que vuelvas a tiempo para el pick.
+Un auto-accept chiquito para **Dota 2** y **Counter-Strike 2** en Windows. Apretás *Buscar partida*, te vas a buscar algo de tomar y ReadyUp hace click en **ACEPTAR** cuando aparece la partida. Después te avisa al celular para que vuelvas a tiempo para el pick.
 
 [English](README.md)
 
@@ -16,15 +16,17 @@ Un auto-accept chiquito para **Dota 2** en Windows. Apretás *Buscar partida*, t
 
 ## ¿Es seguro? ¿Me pueden banear?
 
-ReadyUp **solo mira la pantalla y simula un click**, como haría una persona. No inyecta código, no lee la memoria del juego y no modifica archivos de Dota. Lo único que escribe es la config oficial de GSI en `dota/cfg/gamestate_integration`.
+ReadyUp **solo mira la pantalla y simula un click**, como haría una persona. No inyecta código, no lee la memoria del juego y no modifica archivos de Dota. Lo único que escribe es la config oficial de GSI, en `dota/cfg/gamestate_integration` y en `csgo/cfg`.
 
 No lo uses para quedarte AFK mucho tiempo: aceptá la partida y volvé. Abandonar perjudica a los otros 9 jugadores y te manda a low priority.
 
 ## Instalación
 
 1. Bajá `ReadyUp.exe` de [Releases](../../releases) (o compilalo vos, ver más abajo) y abrilo.
-2. En Steam: **Dota 2 → Propiedades → Opciones de lanzamiento**, agregá `-gamestateintegration` y reiniciá Dota.
-3. Opcional: click derecho en el ícono → **Conectar celular...** y seguí los pasos.
+2. **Dota 2:** en Steam, **Dota 2 → Propiedades → Opciones de lanzamiento**, agregá `-gamestateintegration` y reiniciá Dota.
+   **CS2:** no hay que hacer nada, solo reiniciá CS2 una vez para que cargue la config de GSI.
+3. Elegí qué juegos vigilar en el menú del ícono → **Juegos**.
+4. Opcional: click derecho en el ícono → **Conectar celular...** y seguí los pasos.
 
 Windows SmartScreen puede mostrar una advertencia porque el exe no está firmado. Tocá **Más información → Ejecutar de todas formas**, o compilalo desde el código.
 
@@ -49,7 +51,7 @@ Genera `dist\ReadyUp.exe`. Solo necesitás Windows 10/11 (usa el `csc.exe` de .N
 ## Problemas
 
 - **No detecta el botón:** con el popup en pantalla, click derecho → *Guardar captura de prueba*. La imagen muestra el área de búsqueda (en celeste) y el botón detectado (en rojo). Los valores de detección están en `%APPDATA%\ReadyUp\readyup.ini`.
-- **Probar el detector con una imagen:** `ReadyUp.exe --test captura.png` genera `captura.result.png` y `.result.txt`.
+- **Probar el detector con una imagen:** `ReadyUp.exe --test captura.png dota2` (o `cs2`) genera `captura.result.png` y `.result.txt`.
 - **Logs:** `%APPDATA%\ReadyUp\readyup.log`.
 
 ## Licencia

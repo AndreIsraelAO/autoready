@@ -2,7 +2,7 @@
 
 **Queue up, step away. ReadyUp accepts the match for you.**
 
-A tiny auto-accept for **Dota 2** on Windows. Hit *Find Match*, go grab a drink, and ReadyUp clicks **ACCEPT** when the match pops — then pings your phone so you come back in time for the pick.
+A tiny auto-accept for **Dota 2** and **Counter-Strike 2** on Windows. Hit *Find Match*, go grab a drink, and ReadyUp clicks **ACCEPT** when the match pops — then pings your phone so you come back in time for the pick.
 
 [Español](README.es.md)
 
@@ -16,15 +16,17 @@ A tiny auto-accept for **Dota 2** on Windows. Hit *Find Match*, go grab a drink,
 
 ## Is it safe? Will I get banned?
 
-ReadyUp **only looks at the screen and simulates a mouse click**, like a person would. It never injects code, reads game memory or modifies game files (the only file it writes is the official GSI config in `dota/cfg/gamestate_integration`).
+ReadyUp **only looks at the screen and simulates a mouse click**, like a person would. It never injects code, reads game memory or modifies game files (the only file it writes is the official GSI config, in `dota/cfg/gamestate_integration` and `csgo/cfg`).
 
 Please don't use it to go AFK for long — accept the match and come back. Abandoning games hurts your 9 teammates and gets you low priority.
 
 ## Install
 
 1. Download `ReadyUp.exe` from [Releases](../../releases) (or build it yourself, see below) and run it.
-2. In Steam: **Dota 2 → Properties → Launch Options**, add `-gamestateintegration`, then restart Dota.
-3. Optional: right-click the tray icon → **Connect phone…** and follow the steps.
+2. **Dota 2:** in Steam, **Dota 2 → Properties → Launch Options**, add `-gamestateintegration`, then restart Dota.
+   **CS2:** nothing to do, just restart CS2 once so it loads the GSI config.
+3. Choose which games to watch in the tray menu → **Games**.
+4. Optional: right-click the tray icon → **Connect phone…** and follow the steps.
 
 Windows SmartScreen may warn you because the exe isn't code-signed. Click **More info → Run anyway**, or build it from source.
 
@@ -49,7 +51,7 @@ Output: `dist\ReadyUp.exe`. Requires only Windows 10/11 (uses `csc.exe` from .NE
 ## Troubleshooting
 
 - **It doesn't detect the button:** right-click → *Save debug screenshot* while the popup is visible. The image shows the search area (blue) and the detected button (red). Detection thresholds are in `%APPDATA%\ReadyUp\readyup.ini`.
-- **Test the detector on an image:** `ReadyUp.exe --test screenshot.png` writes `screenshot.result.png` and `.result.txt`.
+- **Test the detector on an image:** `ReadyUp.exe --test screenshot.png dota2` (or `cs2`) writes `screenshot.result.png` and `.result.txt`.
 - **Logs:** `%APPDATA%\ReadyUp\readyup.log`.
 
 ## License
