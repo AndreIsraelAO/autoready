@@ -59,6 +59,9 @@
   .points { list-style: none; padding: 0; margin: 32px 0 0; display: grid; gap: 10px; font-size: 16px; }
   .points li { display: flex; gap: 10px; align-items: flex-start; }
   .points svg { width: 20px; height: 20px; flex: none; margin-top: 2px; color: var(--accent); }
+  .ask { margin: 22px 0 0; font-size: 15px; color: var(--muted); }
+  .ask a { color: var(--accent); font-weight: 600; text-decoration: none; }
+  .ask a:hover { text-decoration: underline; }
 
   .shot { justify-self: center; width: 100%; height: auto; max-width: 320px; display: block; border-radius: 14px;
           border: 1px solid var(--stroke); box-shadow: var(--shadow); }
@@ -98,6 +101,7 @@
         <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg><span data-t="p2">Doesn't read or change the game, it just presses Accept</span></li>
         <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg><span data-t="p3">No accounts, ads or tracking. Open source</span></li>
       </ul>
+      <p class="ask"><span data-t="askQ">Play something else?</span> <a href="https://github.com/hercase/autoready/issues/new?template=game-request.yml" data-t="askA">Ask for your game →</a></p>
     </div>
     <img class="shot" id="shot" src="assets/panel-en.png" width="540" height="685" alt="The AutoReady panel">
   </div>
@@ -130,6 +134,7 @@
     p1: "Nunca hace click durante una partida",
     p2: "No lee ni modifica el juego, solo toca Aceptar",
     p3: "Sin cuentas, publicidad ni rastreo. Código abierto",
+    askQ: "¿Jugás a otra cosa?", askA: "Pedí tu juego →",
     faq: "Preguntas", source: "Código fuente", privacy: "Privacidad"
   };
   document.documentElement.lang = "es";

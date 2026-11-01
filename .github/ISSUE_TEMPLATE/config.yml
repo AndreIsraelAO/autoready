@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Privacy policy
+    url: https://github.com/hercase/autoready/blob/main/PRIVACY.md
+    about: What AutoReady sends and how to turn it off.

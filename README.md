@@ -75,7 +75,7 @@ AutoReady updates itself, and it's in English or Spanish depending on your Windo
 | **Dota 2** | Nothing to do. If a one-time step is needed, the panel shows **Set up**: it copies the launch option and opens Dota's properties in Steam so you just paste it. |
 | **Counter-Strike 2** | Nothing to do. Restart CS2 once after installing AutoReady. |
 
-Want another game? [Ask for it](https://github.com/hercase/autoready/issues/new).
+Playing something else? **[Ask for your game](https://github.com/hercase/autoready/issues/new?template=game-request.yml)**: it takes a minute, and a screenshot of the match found popup helps a lot.
 
 ## FAQ
 

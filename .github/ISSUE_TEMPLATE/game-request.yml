@@ -1,0 +1,40 @@
+name: Request a game
+description: Ask for AutoReady to support another game.
+title: "Game request: "
+labels: ["game request"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks! AutoReady works with games that show an **Accept** button when a match is found.
+        Before posting, check if someone already asked for the same game and give it a 👍 instead.
+        (You can write in English or Spanish.)
+  - type: input
+    id: game
+    attributes:
+      label: Game
+      placeholder: e.g. Deadlock, Rocket League, Valorant
+    validations:
+      required: true
+  - type: dropdown
+    id: store
+    attributes:
+      label: Where do you play it?
+      options:
+        - Steam
+        - Epic Games
+        - Riot Client
+        - Battle.net
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: popup
+    attributes:
+      label: Screenshot of the match found popup
+      description: Optional, but it helps a lot. Drag an image here (a phone photo of the screen works too).
+  - type: textarea
+    id: notes
+    attributes:
+      label: Anything else?
+      description: For example, if the game has a sound or flashes the taskbar when a match is found.

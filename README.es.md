@@ -75,7 +75,7 @@ AutoReady se actualiza solo, y está en español o en inglés según el idioma d
 | **Dota 2** | Nada. Si hace falta un paso (una sola vez), el panel muestra **Configurar**: copia la opción de lanzamiento y abre las propiedades de Dota en Steam para que solo la pegues. |
 | **Counter-Strike 2** | Nada. Reiniciá CS2 una vez después de instalar AutoReady. |
 
-¿Querés otro juego? [Pedilo](https://github.com/hercase/autoready/issues/new).
+¿Jugás a otra cosa? **[Pedí tu juego](https://github.com/hercase/autoready/issues/new?template=game-request.yml)**: es un minuto, y una captura del aviso de partida encontrada ayuda mucho.
 
 ## Preguntas frecuentes
 
