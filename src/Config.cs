@@ -41,11 +41,18 @@ namespace AutoReady
 
         public GameSettings For(GameProfile g) { return Games[g.Id]; }
 
-        public static Config Load()
+        // Valores de fabrica, sin leer el ini.
+        public static Config Defaults()
         {
             Config c = new Config();
             foreach (GameProfile g in GameProfile.All)
-                c.Games[g.Id] = new GameSettings { Detector = g.DefaultDetector() };
+                c.Games[g.Id] = new GameSettings { Enabled = g.EnabledByDefault, Detector = g.DefaultDetector() };
+            return c;
+        }
+
+        public static Config Load()
+        {
+            Config c = Defaults();
 
             Directory.CreateDirectory(Dir);
             if (File.Exists(FilePath))

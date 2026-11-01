@@ -406,7 +406,7 @@ namespace AutoReady
             if (oldState == null && newState != null && cfg.NotifyMatchStarted && recentlyAccepted)
             {
                 Notify(S.ToastStarted(game.Name), S.ToastStartedText);
-                if (cfg.Sound) Beep(true);
+                if (cfg.Sound) BeepStarted();
                 Notifier.Phone(cfg, S.ToastStarted(game.Name), S.ToastStartedText, "crossed_swords");
             }
             // Arranco una partida que no aceptamos nosotros: o no vimos el popup, o el jugador fue mas rapido.
@@ -453,7 +453,16 @@ namespace AutoReady
             });
         }
 
-        // Dos tonos subiendo = activo / partida; uno bajo = pausa.
+        // Tres tonos subiendo = empezo la partida (distinto del aviso de aceptada, para no confundirlos).
+        static void BeepStarted()
+        {
+            ThreadPool.QueueUserWorkItem(_ =>
+            {
+                Console.Beep(1200, 100); Console.Beep(1500, 100); Console.Beep(1900, 160);
+            });
+        }
+
+        // Dos tonos subiendo = activo / aceptada; uno bajo = pausa.
         static void Beep(bool up)
         {
             ThreadPool.QueueUserWorkItem(_ =>

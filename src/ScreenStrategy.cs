@@ -199,7 +199,7 @@ namespace AutoReady
         // Abierto hace 90 s y GSI no mando nada: falta el paso de configuracion o reiniciar el juego.
         void MaybeShowGsiHint()
         {
-            if (gsiHintShown || Gsi.Connected(Game)) return;
+            if (gsiHintShown || Game.NoGsi || Gsi.Connected(Game)) return;
             if ((DateTime.Now - openedAt).TotalSeconds < 90) return;
             gsiHintShown = true;
             Log.Write("GSI " + Game.Name + ": abierto hace 90s y no llego nada");

@@ -22,6 +22,10 @@ namespace AutoReady
         // Estado de Steam (Rich Presence, en ingles): textos que indican que esta buscando partida o en el menu.
         // Cualquier otro estado del juego cuenta como "en partida". Vacio = el juego no usa el estado de Steam.
         public string[] PresenceFinding = new string[0], PresenceMenu = new string[0];
+        // Juego por pantalla que no tiene GSI (CfgDir null a proposito): corre siempre en modo seguro.
+        public bool NoGsi;
+        // Apagado por defecto hasta tener el detector medido; se prende con "<id>.Enabled=True" en el ini.
+        public bool EnabledByDefault = true;
         public Func<Detector.Settings> DefaultDetector;
         // Como se vigila y se acepta este juego (GameStrategy.cs). Por defecto, mirando la pantalla.
         public Func<GameProfile, IGameHost, GameStrategy> NewStrategy = (g, h) => new ScreenStrategy(g, h);
@@ -74,13 +78,16 @@ namespace AutoReady
         };
 
         // Deadlock: por pantalla y sin GSI (Valve no lo ofrece), asi que siempre corre en modo seguro. El color del boton
-        // no esta medido: se detecta por recorte (templates\deadlock@<alto>.png) hasta tener una captura real del popup.
+        // no esta medido y no hay recorte (templates\deadlock@<alto>.png), asi que queda apagado: con el detector por
+        // defecto (el de Dota) podria tomar cualquier boton verde azulado por el popup.
         public static readonly GameProfile Deadlock = new GameProfile
         {
             Id = "deadlock",
             Name = "Deadlock",
             Process = "project8",
             AppId = 1422450,
+            NoGsi = true,
+            EnabledByDefault = false,
             DefaultDetector = () => new Detector.Settings(),
         };
 

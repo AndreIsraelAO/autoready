@@ -70,9 +70,7 @@ namespace AutoReady.Tests
 
         static Config NewConfig()
         {
-            Config c = new Config();
-            foreach (GameProfile g in GameProfile.All) c.Games[g.Id] = new Config.GameSettings { Detector = g.DefaultDetector() };
-            return c;
+            return Config.Defaults();
         }
 
         // ---------- detector ----------
@@ -115,10 +113,11 @@ namespace AutoReady.Tests
                 GameStrategy s = g.NewStrategy(g, new FakeHost());
                 Check(s != null && s.Game == g, g.Id + ": crea su estrategia");
                 // Juegos por pantalla: necesitan GSI (CfgDir + StateKey + AppId) para la proteccion en partida.
-                // Si un juego no tiene GSI (CfgDir == null), corre siempre en modo seguro: nunca debe aceptar con Enter.
-                if (s is ScreenStrategy && g.CfgDir != null) Check(g.StateKey != null && g.AppId > 0, g.Id + ": tiene GSI");
-                if (s is ScreenStrategy && g.CfgDir == null) Check(!g.AcceptWithEnter, g.Id + ": sin GSI no acepta con Enter");
+                // Un juego sin GSI tiene que declararlo (NoGsi): corre siempre en modo seguro y nunca acepta con Enter.
+                if (s is ScreenStrategy && !g.NoGsi) Check(g.CfgDir != null && g.StateKey != null && g.AppId > 0, g.Id + ": tiene GSI");
+                if (g.NoGsi) Check(g.CfgDir == null && !g.AcceptWithEnter && !g.EnabledByDefault, g.Id + ": sin GSI, sin Enter y apagado hasta medirlo");
             }
+            Check(!Config.Defaults().For(GameProfile.Deadlock).Enabled && Config.Defaults().For(GameProfile.Dota2).Enabled, "Deadlock arranca apagado, Dota 2 prendido");
             Check(GameProfile.ById("deadlock") == GameProfile.Deadlock && GameProfile.ByAppId(1422450) == GameProfile.Deadlock, "Deadlock: perfil por id y por AppId");
             Check(Installer.IsQuietInstall(new[] { "--install", "--quiet" }) && !Installer.IsQuietInstall(new[] { "--install" })
                   && !Installer.IsQuietInstall(new[] { "--quiet" }) && !Installer.IsQuietInstall(new string[0]), "instalacion silenciosa solo con --install --quiet");
