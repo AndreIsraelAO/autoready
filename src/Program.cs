@@ -44,6 +44,7 @@ namespace AutoReady
             // Desinstalar (lo llama Configuracion > Aplicaciones) o, si es un exe recien bajado, instalarlo. Tanto si se
             // instala (arranca la copia instalada) como si se cancela, este exe termina aca.
             if (args.Length >= 1 && args[0] == "--uninstall") return Installer.Uninstall(Array.IndexOf(args, "--quiet") > 0);
+            if (Installer.IsQuietInstall(args) && Installer.ShouldOffer(args)) return Installer.InstallQuiet();
             if (Installer.ShouldOffer(args))
             {
                 Installer.Offer();

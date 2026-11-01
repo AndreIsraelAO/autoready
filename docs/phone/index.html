@@ -174,6 +174,9 @@
         <p data-t="testText">In AutoReady, click <b>Send test</b>. When it arrives here, you're done.</p>
       </div></li>
     </ol>
+    <details class="manual" id="android-battery" hidden><summary data-t="batteryTitle">Alerts arrive late? Check battery settings</summary><div>
+      <p data-t="batteryText">Some Android phones pause apps in the background to save battery. In <b>Settings → Apps → ntfy → Battery</b>, choose <b>Unrestricted</b> (the name varies by brand) so alerts arrive right away.</p>
+    </div></details>
     <details class="manual" id="android-manual" hidden><summary data-t="manualTitle">Didn't work? Do it by hand</summary><div>
       <p data-t="manualText">Copy the code, open ntfy, tap <b>+</b>, paste it in <b>Topic name</b> and tap <b>Subscribe</b>.</p>
       <div class="code"><span class="topic"></span><button class="btn copy" type="button" data-t="copy">Copy</button></div>
@@ -221,6 +224,8 @@
     pasteText: "Mantené apretado el campo <b>Topic name</b>, tocá <b>Pegar</b> y después <b>Subscribe</b>, arriba a la derecha.",
     altPlus: "ntfy en iPhone: el botón + arriba a la derecha de Subscribed topics",
     altAdd: "ntfy en iPhone: Add subscription, con el campo Topic name y el botón Subscribe",
+    batteryTitle: "¿Los avisos llegan tarde? Revisá la batería",
+    batteryText: "Algunos Android pausan las apps en segundo plano para ahorrar batería. En <b>Ajustes → Aplicaciones → ntfy → Batería</b>, elegí <b>Sin restricciones</b> (el nombre cambia según la marca) para que los avisos lleguen al instante.",
     manualTitle: "¿No funcionó? Hacelo a mano",
     manualText: "Copiá el código, abrí ntfy, tocá <b>+</b>, pegalo en <b>Topic name</b> y tocá <b>Subscribe</b>.",
     openTitle: "Conectá ntfy",
@@ -290,7 +295,10 @@
   function show(os) {
     ["ios", "android"].forEach(function (o) {
       document.getElementById(o).hidden = o !== os;
-      if (o === "android") document.getElementById("android-manual").hidden = o !== os;
+      if (o === "android") {
+        document.getElementById("android-manual").hidden = o !== os;
+        document.getElementById("android-battery").hidden = o !== os;
+      }
       else document.getElementById("ios-help").hidden = o !== os;
       document.getElementById("tab-" + o).setAttribute("aria-pressed", String(o === os));
     });

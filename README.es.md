@@ -5,7 +5,7 @@
 <h1 align="center">AutoReady</h1>
 
 <p align="center">
-  <b>Buscá partida, andá a hacer otra cosa. AutoReady la acepta por vos.</b><br>
+  <b>Andá tranquilo. La partida se acepta sola.</b><br>
   Una app gratis para Windows que acepta tus partidas y te avisa cuándo volver.<br>
   Funciona con Dota 2, Counter-Strike 2 y League of Legends.
 </p>
@@ -169,4 +169,6 @@ AutoReady está en **beta** (versiones 0.x). Lo que viene y los problemas conoci
   </a>
   <br>
   <sub><a href="LICENSE">Licencia MIT</a></sub>
+  <br>
+  <sub>AutoReady es un proyecto independiente, sin afiliación ni respaldo de las empresas detrás de los juegos que soporta. Los nombres de los juegos son marcas de sus dueños.</sub>
 </p>

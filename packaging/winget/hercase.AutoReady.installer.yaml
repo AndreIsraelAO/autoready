@@ -1,0 +1,15 @@
+PackageIdentifier: hercase.AutoReady
+PackageVersion: <VERSION>
+InstallerType: exe
+Scope: user
+InstallModes:
+  - silent
+InstallerSwitches:
+  Silent: --install --quiet
+  SilentWithProgress: --install --quiet
+Installers:
+  - Architecture: x64
+    InstallerUrl: https://github.com/hercase/autoready/releases/download/v<VERSION>/AutoReady.exe
+    InstallerSha256: <SHA256>
+ManifestType: installer
+ManifestVersion: 1.6.0

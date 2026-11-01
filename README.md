@@ -5,7 +5,7 @@
 <h1 align="center">AutoReady</h1>
 
 <p align="center">
-  <b>Queue up. Step away. AutoReady accepts the match for you.</b><br>
+  <b>Go grab a snack. Your match accepts itself.</b><br>
   A free Windows app that accepts your matches and tells you when to come back.<br>
   Works with Dota 2, Counter-Strike 2 and League of Legends.
 </p>
@@ -145,7 +145,8 @@ Free code signing provided by [SignPath.io](https://about.signpath.io), certific
 - Approvers: [hercase](https://github.com/hercase)
 
 Every release is built from this repository by GitHub Actions, scanned with Microsoft Defender and signed only after
-manual approval.
+manual approval. Each build also carries a GitHub attestation: check yours with
+`gh attestation verify AutoReady.exe -R hercase/autoready`.
 
 **Privacy:** AutoReady has no accounts, analytics or telemetry. It only connects to GitHub (updates), Steam Community
 (your own Steam status) and ntfy (phone notifications, off by default), and each one can be turned off. See the
@@ -168,4 +169,6 @@ AutoReady is in **beta** (versions 0.x). See what's coming and known issues in
   </a>
   <br>
   <sub><a href="LICENSE">MIT License</a></sub>
+  <br>
+  <sub>AutoReady is an independent project, not affiliated with or endorsed by the companies behind the games it supports. Game names are trademarks of their owners.</sub>
 </p>

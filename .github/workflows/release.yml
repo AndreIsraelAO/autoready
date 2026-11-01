@@ -11,6 +11,8 @@ on:
 
 permissions:
   contents: write
+  id-token: write
+  attestations: write
 
 jobs:
   release:
@@ -80,6 +82,12 @@ jobs:
           $hash = (Get-FileHash dist/AutoReady.exe -Algorithm SHA256).Hash.ToLower()
           Set-Content dist/AutoReady.exe.sha256 "$hash  AutoReady.exe" -Encoding ascii -NoNewline
           "SHA-256: $hash"
+
+      # Prueba publica de que el exe salio de este repo y de este workflow: gh attestation verify AutoReady.exe -R hercase/autoready
+      - name: Attest build provenance
+        uses: actions/attest-build-provenance@v2
+        with:
+          subject-path: dist/AutoReady.exe
 
       - name: Publish release
         shell: pwsh

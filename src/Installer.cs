@@ -39,6 +39,19 @@ namespace AutoReady
             return !IsInstalledCopy && !Updater.IsDevBuild;
         }
 
+        // AutoReady.exe --install --quiet: instala sin ventana (para winget y scripts) con las mismas opciones que
+        // trae la ventana, salvo el acceso directo en el escritorio.
+        public static bool IsQuietInstall(string[] args)
+        {
+            return args.Length >= 2 && args[0] == "--install" && Array.IndexOf(args, "--quiet") > 0;
+        }
+
+        public static int InstallQuiet()
+        {
+            try { Install(false, true, true, true); return 0; }
+            catch (Exception e) { Log.Write("Instalador: fallo: " + e); return 1; }
+        }
+
         public static Choice Offer()
         {
             InstallWindow w = new InstallWindow();

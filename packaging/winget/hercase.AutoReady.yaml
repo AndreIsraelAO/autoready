@@ -1,0 +1,7 @@
+# Plantilla del manifiesto de winget (microsoft/winget-pkgs). Reemplazar <VERSION> y <SHA256> con los del release
+# (el .sha256 se publica junto al exe) y mandar el PR a mano. Requiere una version que ya traiga --install --quiet.
+PackageIdentifier: hercase.AutoReady
+PackageVersion: <VERSION>
+ManifestType: version
+ManifestVersion: 1.6.0
+DefaultLocale: en-US

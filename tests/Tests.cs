@@ -115,8 +115,13 @@ namespace AutoReady.Tests
                 GameStrategy s = g.NewStrategy(g, new FakeHost());
                 Check(s != null && s.Game == g, g.Id + ": crea su estrategia");
                 // Juegos por pantalla: necesitan GSI (CfgDir + StateKey + AppId) para la proteccion en partida.
-                if (s is ScreenStrategy) Check(g.CfgDir != null && g.StateKey != null && g.AppId > 0, g.Id + ": tiene GSI");
+                // Si un juego no tiene GSI (CfgDir == null), corre siempre en modo seguro: nunca debe aceptar con Enter.
+                if (s is ScreenStrategy && g.CfgDir != null) Check(g.StateKey != null && g.AppId > 0, g.Id + ": tiene GSI");
+                if (s is ScreenStrategy && g.CfgDir == null) Check(!g.AcceptWithEnter, g.Id + ": sin GSI no acepta con Enter");
             }
+            Check(GameProfile.ById("deadlock") == GameProfile.Deadlock && GameProfile.ByAppId(1422450) == GameProfile.Deadlock, "Deadlock: perfil por id y por AppId");
+            Check(Installer.IsQuietInstall(new[] { "--install", "--quiet" }) && !Installer.IsQuietInstall(new[] { "--install" })
+                  && !Installer.IsQuietInstall(new[] { "--quiet" }) && !Installer.IsQuietInstall(new string[0]), "instalacion silenciosa solo con --install --quiet");
             Check(GameProfile.League.NewStrategy(GameProfile.League, new FakeHost()) is ClientApiStrategy, "LoL usa la API del cliente");
             Check(GameProfile.ByAppId(570) == GameProfile.Dota2 && GameProfile.ByAppId(730) == GameProfile.Cs2, "ByAppId");
         }

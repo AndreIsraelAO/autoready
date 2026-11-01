@@ -73,7 +73,18 @@ namespace AutoReady
             DefaultDetector = () => new Detector.Settings(),
         };
 
-        public static readonly List<GameProfile> All = new List<GameProfile> { Dota2, Cs2, League };
+        // Deadlock: por pantalla y sin GSI (Valve no lo ofrece), asi que siempre corre en modo seguro. El color del boton
+        // no esta medido: se detecta por recorte (templates\deadlock@<alto>.png) hasta tener una captura real del popup.
+        public static readonly GameProfile Deadlock = new GameProfile
+        {
+            Id = "deadlock",
+            Name = "Deadlock",
+            Process = "project8",
+            AppId = 1422450,
+            DefaultDetector = () => new Detector.Settings(),
+        };
+
+        public static readonly List<GameProfile> All = new List<GameProfile> { Dota2, Cs2, League, Deadlock };
 
         public static GameProfile ById(string id)
         {

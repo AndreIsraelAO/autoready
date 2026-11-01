@@ -1,0 +1,17 @@
+PackageIdentifier: hercase.AutoReady
+PackageVersion: <VERSION>
+PackageLocale: en-US
+Publisher: keis.studio
+PublisherUrl: https://keis.studio
+PackageName: AutoReady
+PackageUrl: https://hercase.github.io/autoready/
+License: MIT
+LicenseUrl: https://github.com/hercase/autoready/blob/main/LICENSE
+ShortDescription: Accepts your matches while you're away and notifies you on your PC or phone.
+Moniker: autoready
+Tags:
+  - gaming
+  - tray
+  - notifications
+ManifestType: defaultLocale
+ManifestVersion: 1.6.0

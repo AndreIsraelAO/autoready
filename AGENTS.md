@@ -63,6 +63,15 @@ Un juego nuevo que entre en uno de esos dos casos es solo un perfil en `Games.cs
 una estrategia nueva sin tocar las existentes. Reglas que toda estrategia respeta: nada si `Host.Paused`, nada en
 partida, revisar las dos cosas justo antes de cada acción, y `StartCooldown()` después de aceptar.
 
+**Deadlock** (`GameProfile.Deadlock`, proceso `project8`) es un perfil por pantalla **sin GSI**: corre siempre en modo
+seguro. Su detector por color no está medido; falta una captura real del popup y el recorte `templates\deadlock@<alto>.png`.
+Mientras tanto no se anuncia en el README ni en el sitio.
+
+**Instalación silenciosa y winget:** `AutoReady.exe --install --quiet` instala sin ventana (mismas opciones que el
+instalador, sin acceso directo en el escritorio). Las plantillas del manifiesto de winget están en `packaging/winget/`; el PR a
+`microsoft/winget-pkgs` se manda a mano con una versión que ya traiga ese modo. Cada release sale con una attestation de
+GitHub (`gh attestation verify AutoReady.exe -R hercase/autoready`).
+
 ## Pruebas
 `tests.bat` compila `src\*.cs` (sin `Program.cs`) con `tests\*.cs` y corre todo (exit 0 = bien). Cubre detector (con
 capturas sintéticas en `tests\fixtures`), perfiles, estado de Steam, opciones de lanzamiento, código del celular, textos
@@ -80,7 +89,7 @@ cada bug arreglado.
 | `src/ClientApiStrategy.cs` | Aceptar por la API local del cliente (League of Legends) |
 | `tests/`, `tests.bat` | Pruebas automáticas (runner propio, sin dependencias) y capturas sintéticas en `tests/fixtures` |
 | `src/Panel.cs` | Panel WPF (click izquierdo en el ícono): interruptor en el encabezado, avisos tipo InfoBar (bienvenida, paso faltante, versión nueva solo si la actualización automática está apagada), atajo, sonido, celular (QR colapsable), "Más opciones" desplegable. Menos filas y menos texto a propósito |
-| `docs/` | Sitio en GitHub Pages (hercase.github.io/autoready): `index.html` una sola pantalla con la descarga directa; `faq/` preguntas frecuentes (qué instala, privacidad; el instalador linkea acá); `phone/` guía para conectar ntfy (el QR del panel abre `phone/#<código>`). Estático, EN/ES, sin scripts de terceros |
+| `docs/` | Sitio en GitHub Pages (hercase.github.io/autoready): `index.html` landing (hero con la descarga directa, escena animada del popup aceptándose, pasos, panel, juegos; solo oscuro, acento verde Ready sobre ink; ver `BRAND.md`); `faq/` preguntas frecuentes (qué instala, privacidad; el instalador linkea acá); `phone/` guía para conectar ntfy (el QR del panel abre `phone/#<código>`). Estático, EN/ES, sin scripts de terceros |
 | `src/Controls.cs` | Tema Fluent claro/oscuro (acento verde claro con texto negro en oscuro; `AUTOREADY_THEME=light|dark` lo fuerza para capturas), interruptor, botones (acento/común/sutil/link con estados) e InfoBar, accesibles (Tab, Enter/Espacio, Narrador) |
 | `src/Strings.cs`, `src/Lang.cs` | Todos los textos en español (voseo) e inglés; idioma de Windows o `Language=es|en` en el ini |
 | `src/Games.cs` | Perfil por juego: proceso, carpeta de GSI, clave de estado, colores/forma del botón, textos |
