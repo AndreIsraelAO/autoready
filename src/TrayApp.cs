@@ -38,6 +38,7 @@ namespace AutoReady
         DateTime gameSeenSince = DateTime.MinValue;
         readonly HashSet<string> gsiHintShown = new HashSet<string>();
         int consecutiveHits;
+        bool useToasts;
 
         public TrayApp()
         {
@@ -47,7 +48,13 @@ namespace AutoReady
 
             ui = new HiddenWindow();
             ui.WindowFlashed += h => { flashedWindow = h; };
-            ui.HotkeyPressed += () => { SetPaused(!paused); Notify(paused ? "AutoReady en pausa" : "AutoReady activo", null); Beep(!paused); };
+            ui.HotkeyPressed += () =>
+            {
+                SetPaused(!paused);
+                Beep(!paused);
+                if (paused) Notify("En pausa", "No va a aceptar partidas. Reanudá con " + HotkeyText + ".", "Reanudar", () => SetPaused(false));
+                else Notify("Activo", "Va a aceptar tus partidas.");
+            };
 
             panel = new Panel(this);
 
@@ -77,6 +84,8 @@ namespace AutoReady
             if (cfg.HotkeyVk != 0 && !RegisterHotkey(cfg.HotkeyVk, cfg.HotkeyMods))
                 Log.Write("Atajo: no se pudo registrar (otra app lo usa)");
             Shortcut.EnsureStartMenu();
+            using (Stream logo = typeof(TrayApp).Assembly.GetManifestResourceStream("AutoReady.logo-64.png"))
+                useToasts = Toast.Init(logo);
 
             Log.Write("AutoReady v" + Updater.CurrentVersionText + " iniciado");
             Thread scanner = new Thread(ScanLoop) { IsBackground = true, Name = "scanner" };
@@ -243,7 +252,7 @@ namespace AutoReady
                 updateMessage = r.Tag + " disponible";
                 Log.Write("Updater: hay una version nueva " + r.Tag);
                 PushStatus();
-                if (isNew) Notify("AutoReady " + r.Tag + " disponible", "Abrí AutoReady para actualizar.");
+                if (isNew) Notify("Versión " + r.Tag + " disponible", "Se instala en unos segundos.", "Actualizar", InstallUpdate);
             });
         }
 
@@ -330,7 +339,7 @@ namespace AutoReady
             {
                 lastAccept = DateTime.MinValue;
                 SetPaused(true);
-                Notify("AutoReady en pausa", "Sin GSI no sé si estás en partida, así que me pausé. Reanudalo desde el panel.");
+                Notify("En pausa", "No puedo saber si ya estás en partida, así que dejé de aceptar.", "Reanudar", () => SetPaused(false));
                 return 500;
             }
 
@@ -371,7 +380,7 @@ namespace AutoReady
             lastAccept = DateTime.Now;
             cooldownUntil = DateTime.Now.AddSeconds(cfg.CooldownAfterAcceptSec);
             Log.Write(game.Name + ": partida encontrada, click en ACCEPT (" + (rc.X + p.X) + "," + (rc.Y + p.Y) + ")");
-            Notify("Partida aceptada", "AutoReady aceptó tu partida de " + game.Name + ".");
+            Notify("Partida aceptada", "Tu partida de " + game.Name + " está por empezar. Volvé a la PC.");
             if (cfg.Sound) Beep(true);
             Notifier.Phone(cfg, "Partida aceptada", "AutoReady aceptó tu partida de " + game.Name + ". Volvé a la PC.", "video_game");
         }
@@ -420,8 +429,13 @@ namespace AutoReady
 
         static string Truncate(string s, int max) { return s.Length <= max ? s : s.Substring(0, max); }
 
-        void Notify(string title, string text)
+        // Notificacion nativa de Windows (logo, texto y boton opcional); si no hay toasts, el aviso clasico de la bandeja.
+        // Al tocarla se abre el panel. Los clicks llegan en otro hilo, por eso pasan por ui.Post.
+        void Notify(string title, string text, string button = null, Action onButton = null)
         {
+            if (useToasts && Toast.Show(title, text, button,
+                    onButton == null ? (Action)null : () => ui.Post(onButton), () => ui.Post(OpenPanel)))
+                return;
             ui.Post(() => tray.ShowBalloonTip(4000, title, string.IsNullOrEmpty(text) ? " " : text, ToolTipIcon.None));
         }
 
