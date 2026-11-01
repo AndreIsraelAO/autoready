@@ -54,15 +54,15 @@ namespace AutoReady
 
         readonly IPanelHost host;
         readonly Theme theme;
-        TextBlock statusText, updateText, acceptHint;
+        TextBlock statusText, updateText;
         Ellipse statusDot;
         Toggle acceptToggle, phoneToggle;
         ClickArea updateButton;
         TextBlock updateButtonText;
-        StackPanel phoneDetails;
-        Border welcomeCard;
-        TextBlock hotkeyLabel, hotkeyHint, protectionText;
-        ClickArea protectionButton;
+        StackPanel phoneDetails, moreBox;
+        ClickArea phoneShowCode;
+        Border welcomeCard, protectionCard;
+        TextBlock hotkeyLabel, hotkeyHint, protectionText, moreChevron;
         GameProfile protectionGame;
         bool awaitingUser;      // el usuario toco "Configurar" y esta haciendo el paso en Steam
         bool capturingHotkey;
@@ -76,7 +76,7 @@ namespace AutoReady
             theme = Theme.FromSystem();
 
             Title = "AutoReady";
-            Width = 380;
+            Width = 360;
             SizeToContent = SizeToContent.Height;
             WindowStyle = WindowStyle.None;
             ResizeMode = ResizeMode.NoResize;
@@ -110,7 +110,7 @@ namespace AutoReady
         {
             capturingHotkey = true;
             hotkeyLabel.Text = S.HotkeyPress;
-            hotkeyHint.Text = S.HotkeyPressHint;
+            Hint(S.HotkeyPressHint);
         }
 
         void StopHotkeyCapture()
@@ -118,7 +118,14 @@ namespace AutoReady
             if (!capturingHotkey) return;
             capturingHotkey = false;
             hotkeyLabel.Text = host.HotkeyText;
-            hotkeyHint.Text = S.HotkeyHint;
+            Hint(null);
+        }
+
+        // Aviso debajo de la tecla de pausa; sin mensaje no ocupa lugar.
+        void Hint(string text)
+        {
+            hotkeyHint.Text = text ?? "";
+            hotkeyHint.Visibility = text == null ? Visibility.Collapsed : Visibility.Visible;
         }
 
         void OnPreviewKeyDown(object sender, KeyEventArgs e)
@@ -147,12 +154,12 @@ namespace AutoReady
             if (vk != 0 && mods == 0 && !special)
             {
                 hotkeyLabel.Text = host.HotkeyText;
-                hotkeyHint.Text = S.HotkeyNeedsModifier;
+                Hint(S.HotkeyNeedsModifier);
                 return;
             }
             bool ok = host.SetHotkey(vk, mods);
             hotkeyLabel.Text = host.HotkeyText;
-            hotkeyHint.Text = ok ? S.HotkeyHint : S.HotkeyTaken;
+            Hint(ok ? null : S.HotkeyTaken);
         }
 
         // ---------- mostrar / ocultar ----------
@@ -200,7 +207,6 @@ namespace AutoReady
             statusText.Text = st.Text;
             statusDot.Fill = st.Kind == StatusKind.Watching ? theme.Good : st.Kind == StatusKind.Paused ? theme.Paused : theme.Idle;
             acceptToggle.IsOn = !st.Paused;
-            acceptHint.Text = st.Paused ? S.AcceptOff : S.AcceptOn;
 
             bool hasUpdate = st.UpdateTag != null;
             updateButton.Visibility = hasUpdate ? Visibility.Visible : Visibility.Collapsed;
@@ -214,27 +220,30 @@ namespace AutoReady
             // Si el usuario ya toco "Configurar" y todavia no termino, no se pisa la instruccion.
             if (st.ProtectionFix != protectionGame) awaitingUser = false;
             protectionGame = st.ProtectionFix;
-            protectionButton.Visibility = st.ProtectionFix != null ? Visibility.Visible : Visibility.Collapsed;
+            // Solo se muestra cuando falta algo: si esta todo bien no hay nada que decir.
+            protectionCard.Visibility = st.ProtectionFix != null ? Visibility.Visible : Visibility.Collapsed;
             if (!awaitingUser) protectionText.Text = st.Protection;
         }
 
         // ---------- construccion ----------
 
+        // Lo que se usa siempre queda a la vista; lo que se configura una vez va en "Mas opciones".
         UIElement Build()
         {
             StackPanel root = new StackPanel { Margin = new Thickness(16) };
 
-            // Encabezado: logo, nombre y estado.
+            // Encabezado: logo, nombre, estado y el interruptor principal (pausar / reanudar).
             Grid header = new Grid();
             header.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
             header.ColumnDefinitions.Add(new ColumnDefinition());
+            header.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
             Image logo = new Image { Source = LoadPng("AutoReady.logo-64.png"), Width = 40, Height = 40, Margin = new Thickness(0, 0, 12, 0) };
             RenderOptions.SetBitmapScalingMode(logo, BitmapScalingMode.HighQuality);
             header.Children.Add(logo);
             StackPanel titles = new StackPanel { VerticalAlignment = VerticalAlignment.Center };
             titles.Children.Add(new TextBlock { Text = "AutoReady", FontSize = 16, FontWeight = FontWeights.SemiBold });
-            StackPanel statusLine = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 2, 0, 0) };
-            statusDot = new Ellipse { Width = 8, Height = 8, Fill = theme.Idle, Margin = new Thickness(0, 0, 6, 0), VerticalAlignment = VerticalAlignment.Center };
+            DockPanel statusLine = new DockPanel { Margin = new Thickness(0, 2, 0, 0) };   // DockPanel: el texto largo baja de renglon
+            statusDot = new Ellipse { Width = 8, Height = 8, Fill = theme.Idle, Margin = new Thickness(0, 5, 6, 0), VerticalAlignment = VerticalAlignment.Top };
             statusText = new TextBlock { Text = S.Starting, FontSize = 12, Foreground = theme.TextSecondary, TextWrapping = TextWrapping.Wrap };
             AutomationProperties.SetLiveSetting(statusText, AutomationLiveSetting.Polite);   // el lector anuncia los cambios de estado
             statusLine.Children.Add(statusDot);
@@ -242,6 +251,11 @@ namespace AutoReady
             titles.Children.Add(statusLine);
             Grid.SetColumn(titles, 1);
             header.Children.Add(titles);
+            acceptToggle = new Toggle(theme, true, S.AcceptTitle) { Margin = new Thickness(12, 0, 0, 0) };
+            acceptToggle.ToolTip = S.AcceptTitle;
+            acceptToggle.Changed += on => host.SetPaused(!on);
+            Grid.SetColumn(acceptToggle, 2);
+            header.Children.Add(acceptToggle);
             root.Children.Add(header);
 
             // Bienvenida: solo la primera vez.
@@ -253,6 +267,21 @@ namespace AutoReady
             welcomeCard.Visibility = Visibility.Collapsed;
             root.Children.Add(welcomeCard);
 
+            // Proteccion en partida: aparece solo si a un juego le falta un paso (mientras tanto, modo seguro).
+            protectionText = new TextBlock { FontSize = 12, TextWrapping = TextWrapping.Wrap, VerticalAlignment = VerticalAlignment.Center };
+            ClickArea protectionButton = new ClickArea(theme,
+                new TextBlock { Text = S.ProtectionButton, Foreground = theme.OnFill, FontSize = 13, FontWeight = FontWeights.SemiBold },
+                SetUpProtection, S.ProtectionButton)
+            {
+                Background = theme.Fill, CornerRadius = new CornerRadius(4), Padding = new Thickness(12, 4, 12, 4), VerticalAlignment = VerticalAlignment.Center,
+            };
+            StackPanel prot = new StackPanel();
+            prot.Children.Add(Row(protectionText, protectionButton));
+            protectionCard = Wrap(prot, new Thickness(0, 14, 0, 0));
+            protectionCard.BorderBrush = theme.Paused;
+            protectionCard.Visibility = Visibility.Collapsed;
+            root.Children.Add(protectionCard);
+
             // Boton de actualizacion: solo aparece si hay version nueva.
             updateButtonText = new TextBlock { Foreground = theme.OnFill, FontWeight = FontWeights.SemiBold, HorizontalAlignment = HorizontalAlignment.Center };
             updateButton = new ClickArea(theme, updateButtonText, () => host.InstallUpdate(), S.UpdateTo(""))
@@ -262,60 +291,49 @@ namespace AutoReady
             };
             root.Children.Add(updateButton);
 
-            // Interruptor principal.
-            acceptToggle = new Toggle(theme, true, S.AcceptTitle);
-            acceptToggle.Changed += on => host.SetPaused(!on);
+            // Lo de todos los dias: tecla de pausa, sonido y celular.
             StackPanel main = new StackPanel();
-            StackPanel acceptLeft = Texts(S.AcceptTitle, S.AcceptOn);
-            acceptHint = (TextBlock)acceptLeft.Children[1];
-            main.Children.Add(Row(acceptLeft, acceptToggle));
-            main.Children.Add(Divider());
-
             hotkeyLabel = new TextBlock { Text = host.HotkeyText, FontSize = 13 };
             ClickArea hotkeyButton = new ClickArea(theme, hotkeyLabel, StartHotkeyCapture, S.HotkeyTitle)
             {
                 BorderBrush = theme.ControlStroke, BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(4),
                 Padding = new Thickness(10, 3, 10, 3), VerticalAlignment = VerticalAlignment.Center,
             };
-            StackPanel hotkeyLeft = Texts(S.HotkeyTitle, S.HotkeyHint);
+            StackPanel hotkeyLeft = Texts(S.HotkeyTitle, "");
             hotkeyHint = (TextBlock)hotkeyLeft.Children[1];
+            hotkeyHint.Visibility = Visibility.Collapsed;
             main.Children.Add(Row(hotkeyLeft, hotkeyButton));
             main.Children.Add(Divider());
 
-            // Proteccion en partida (GSI o estado de Steam): si falta un paso, AutoReady trabaja en modo seguro.
-            StackPanel protLeft = Texts(S.ProtectionTitle, S.ProtectionChecking);
-            protectionText = (TextBlock)protLeft.Children[1];
-            protectionButton = new ClickArea(theme,
-                new TextBlock { Text = S.ProtectionButton, Foreground = theme.OnFill, FontSize = 13, FontWeight = FontWeights.SemiBold },
-                SetUpProtection, S.ProtectionButton)
-            {
-                Background = theme.Fill, CornerRadius = new CornerRadius(4), Padding = new Thickness(12, 4, 12, 4),
-                VerticalAlignment = VerticalAlignment.Center, Visibility = Visibility.Collapsed,
-            };
-            main.Children.Add(Row(protLeft, protectionButton));
-            root.Children.Add(Wrap(main, new Thickness(0, 14, 0, 0)));
-
-            // Avisos.
-            root.Children.Add(SectionLabel(S.SectionAlerts));
-            StackPanel alerts = new StackPanel();
             Toggle sound = new Toggle(theme, host.Cfg.Sound, S.Sound);
             sound.Changed += on => { host.Cfg.Sound = on; host.Cfg.Save(); };
-            alerts.Children.Add(Row(Texts(S.Sound, S.SoundHint), sound));
-            alerts.Children.Add(Divider());
-            Toggle match = new Toggle(theme, host.Cfg.NotifyMatchStarted, S.MatchStartTitle);
-            match.Changed += on => { host.Cfg.NotifyMatchStarted = on; host.Cfg.Save(); };
-            alerts.Children.Add(Row(Texts(S.MatchStartTitle, S.MatchStartHint), match));
-            alerts.Children.Add(Divider());
-            phoneToggle = new Toggle(theme, host.Cfg.NotifyPhone, S.PhoneTitle);
-            phoneToggle.Changed += on => { host.SetPhone(on); phoneDetails.Visibility = on ? Visibility.Visible : Visibility.Collapsed; };
-            alerts.Children.Add(Row(Texts(S.PhoneTitle, S.PhoneHint), phoneToggle));
-            phoneDetails = BuildPhoneDetails();
-            phoneDetails.Visibility = host.Cfg.NotifyPhone ? Visibility.Visible : Visibility.Collapsed;
-            alerts.Children.Add(phoneDetails);
-            root.Children.Add(Wrap(alerts, new Thickness(0)));
+            main.Children.Add(Row(Texts(S.Sound, null), sound));
+            main.Children.Add(Divider());
 
-            // General.
-            root.Children.Add(SectionLabel(S.SectionGeneral));
+            // Celular: el QR se muestra hasta que la prueba llega una vez; despues queda a un click.
+            phoneToggle = new Toggle(theme, host.Cfg.NotifyPhone, S.PhoneTitle);
+            phoneShowCode = Link(S.PhoneShowCode, () => ShowPhoneDetails(true), 12);
+            phoneShowCode.Margin = new Thickness(0, 2, 0, 0);
+            StackPanel phoneLeft = Texts(S.PhoneTitle, null);
+            phoneLeft.Children.Add(phoneShowCode);
+            main.Children.Add(Row(phoneLeft, phoneToggle));
+            phoneDetails = BuildPhoneDetails();
+            main.Children.Add(phoneDetails);
+            phoneToggle.Changed += on => { host.SetPhone(on); ShowPhoneDetails(on); };
+            ShowPhoneDetails(host.Cfg.NotifyPhone && !host.Cfg.PhoneTested);
+            root.Children.Add(Wrap(main, new Thickness(0, 14, 0, 0)));
+
+            // Mas opciones: se configuran una vez (ya se eligieron al instalar), cerradas por defecto.
+            moreChevron = new TextBlock { Text = "", FontFamily = new FontFamily("Segoe Fluent Icons, Segoe MDL2 Assets"), FontSize = 10, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 8, 0), Foreground = theme.TextSecondary };
+            StackPanel moreHead = new StackPanel { Orientation = Orientation.Horizontal };
+            moreHead.Children.Add(moreChevron);
+            moreHead.Children.Add(new TextBlock { Text = S.MoreSettings, FontSize = 13, Foreground = theme.TextSecondary });
+            ClickArea moreButton = new ClickArea(theme, moreHead, ToggleMore, S.MoreSettings)
+            {
+                Margin = new Thickness(2, 14, 0, 0), Padding = new Thickness(0, 2, 6, 2), HorizontalAlignment = HorizontalAlignment.Left,
+            };
+            root.Children.Add(moreButton);
+
             StackPanel general = new StackPanel();
             Toggle autostart = new Toggle(theme, host.AutostartEnabled, S.StartWithWindows);
             autostart.Changed += on => host.SetAutostart(on);
@@ -330,18 +348,35 @@ namespace AutoReady
             general.Children.Add(Row(Texts(S.SteamStatus, S.SteamStatusHint), steamStatus));
             general.Children.Add(Divider());
             updateText = new TextBlock { FontSize = 12, Foreground = theme.TextSecondary, VerticalAlignment = VerticalAlignment.Center, TextWrapping = TextWrapping.Wrap };
-            general.Children.Add(Row(updateText, Link(S.CheckUpdates, () => host.CheckUpdatesNow(), 13)));
-            root.Children.Add(Wrap(general, new Thickness(0)));
+            general.Children.Add(Row(updateText, Link(S.CheckUpdates, () => host.CheckUpdatesNow(), 12)));
+            moreBox = new StackPanel { Visibility = Visibility.Collapsed };
+            moreBox.Children.Add(Wrap(general, new Thickness(0, 8, 0, 0)));
+            root.Children.Add(moreBox);
 
             // Pie: el wordmark de keis.studio con la k en tres colores; a este tamano el corrimiento va exagerado
             // (como mark-*-small de la guia) para que los colores se vean nitidos.
-            Image brand = new Image { Source = KeisMark.BuildWordmark(theme.Dark, true, 2.2), Height = 20, ToolTip = "keis.studio" };
+            Image brand = new Image { Source = KeisMark.BuildWordmark(theme.Dark, true, 2.2), Height = 18, ToolTip = "keis.studio" };
             root.Children.Add(new ClickArea(theme, brand, () => System.Diagnostics.Process.Start("https://keis.studio"), "keis.studio")
             {
-                HorizontalAlignment = HorizontalAlignment.Center, Margin = new Thickness(0, 18, 0, 4),
+                HorizontalAlignment = HorizontalAlignment.Center, Margin = new Thickness(0, 18, 0, 2),
             });
 
             return root;
+        }
+
+        void ToggleMore()
+        {
+            bool open = moreBox.Visibility != Visibility.Visible;
+            moreBox.Visibility = open ? Visibility.Visible : Visibility.Collapsed;
+            moreChevron.Text = open ? "" : "";   // chevron abajo / derecha
+        }
+
+        // QR y codigo a la vista, o colapsados con un link "Mostrar codigo" (solo si el celular esta activado).
+        void ShowPhoneDetails(bool open)
+        {
+            bool on = phoneToggle.IsOn;
+            phoneDetails.Visibility = on && open ? Visibility.Visible : Visibility.Collapsed;
+            phoneShowCode.Visibility = on && !open ? Visibility.Visible : Visibility.Collapsed;
         }
 
         void SetUpProtection()
@@ -365,8 +400,8 @@ namespace AutoReady
             g.ColumnDefinitions.Add(new ColumnDefinition());
 
             // Un solo QR para cualquier celular: la camara abre https://ntfy.sh/<codigo>, que ya queda suscripto.
-            Border qrBox = new Border { Background = Brushes.White, CornerRadius = new CornerRadius(6), Padding = new Thickness(6), Margin = new Thickness(0, 0, 14, 0), VerticalAlignment = VerticalAlignment.Top };
-            qrBox.Child = new Image { Source = QrImage("https://ntfy.sh/" + host.Cfg.NtfyTopic), Width = 108, Height = 108 };
+            Border qrBox = new Border { Background = Brushes.White, CornerRadius = new CornerRadius(6), Padding = new Thickness(5), Margin = new Thickness(0, 0, 14, 0), VerticalAlignment = VerticalAlignment.Top };
+            qrBox.Child = new Image { Source = QrImage("https://ntfy.sh/" + host.Cfg.NtfyTopic), Width = 96, Height = 96 };
             AutomationProperties.SetName(qrBox, S.PhoneScan);
             g.Children.Add(qrBox);
 
@@ -379,7 +414,7 @@ namespace AutoReady
             {
                 Text = host.Cfg.NtfyTopic, IsReadOnly = true, BorderThickness = new Thickness(0), Background = Brushes.Transparent,
                 Foreground = theme.Text, FontFamily = new FontFamily("Cascadia Mono, Consolas"), FontSize = 17,
-                FontWeight = FontWeights.SemiBold, Padding = new Thickness(0), Margin = new Thickness(0, 4, 0, 0), CaretBrush = Brushes.Transparent,
+                FontWeight = FontWeights.SemiBold, Padding = new Thickness(0), Margin = new Thickness(0, 2, 0, 0), CaretBrush = Brushes.Transparent,
             };
             AutomationProperties.SetName(code, S.PhoneOrCode);
             right.Children.Add(code);
@@ -392,6 +427,7 @@ namespace AutoReady
                 host.SendTestPush(ok => Dispatcher.BeginInvoke(new Action(() =>
                 {
                     testText.Text = ok ? S.PhoneSent : S.PhoneFailed;
+                    if (ok && !host.Cfg.PhoneTested) { host.Cfg.PhoneTested = true; host.Cfg.Save(); }
                     System.Windows.Threading.DispatcherTimer back = new System.Windows.Threading.DispatcherTimer { Interval = TimeSpan.FromSeconds(4) };
                     back.Tick += (s2, e2) => { back.Stop(); testText.Text = S.PhoneTest; };
                     back.Start();
@@ -399,13 +435,15 @@ namespace AutoReady
             }, S.PhoneTest)
             {
                 BorderBrush = theme.ControlStroke, BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(4),
-                Padding = new Thickness(10, 4, 10, 4), Margin = new Thickness(0, 10, 0, 0), HorizontalAlignment = HorizontalAlignment.Left,
+                Padding = new Thickness(10, 4, 10, 4), Margin = new Thickness(0, 8, 0, 0), HorizontalAlignment = HorizontalAlignment.Left,
             };
             right.Children.Add(test);
             Grid.SetColumn(right, 1);
             g.Children.Add(right);
             p.Children.Add(g);
-            p.Children.Add(new TextBlock { Text = S.PhoneSecret, FontSize = 12, Foreground = theme.TextSecondary, TextWrapping = TextWrapping.Wrap, Margin = new Thickness(0, 10, 0, 0) });
+            TextBlock secret = Small(S.PhoneSecret);
+            secret.Margin = new Thickness(0, 10, 0, 0);
+            p.Children.Add(secret);
             return p;
         }
 

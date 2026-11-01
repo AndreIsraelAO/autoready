@@ -240,7 +240,7 @@ namespace AutoReady
             AppState s = state;
             string text;
             StatusKind kind;
-            if (paused || s == AppState.Paused) { text = S.StatusPaused; kind = StatusKind.Paused; }
+            if (paused || s == AppState.Paused) { text = cfg.HotkeyVk != 0 ? S.StatusPausedKey(HotkeyText) : S.StatusPaused; kind = StatusKind.Paused; }
             else if (game != null && s == AppState.InMatch) { text = S.StatusInMatch(game.Name); kind = StatusKind.Watching; }
             else if (game != null && s == AppState.Searching) { text = S.StatusSearching(game.Name); kind = StatusKind.Watching; }
             else { text = S.StatusIdle; kind = StatusKind.Idle; }

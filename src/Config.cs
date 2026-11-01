@@ -24,6 +24,7 @@ namespace AutoReady
         public string GsiToken = "";   // codigo secreto que el juego manda en cada POST de GSI
         public int FallbackScanSecAfterAccept = 90;   // sin GSI: cuanto seguimos escaneando despues de aceptar
         public bool NotifyPhone = false;
+        public bool PhoneTested = false;   // la prueba llego una vez: el QR queda colapsado
         public string NtfyServer = "https://ntfy.sh";
         public string NtfyTopic = "";
         public bool NotifyMatchStarted = true;
@@ -61,6 +62,7 @@ namespace AutoReady
                 c.GsiToken = Str(kv, "GsiToken", c.GsiToken);
                 c.FallbackScanSecAfterAccept = Int(kv, "FallbackScanSecAfterAccept", c.FallbackScanSecAfterAccept);
                 c.NotifyPhone = Bool(kv, "NotifyPhone", c.NotifyPhone);
+                c.PhoneTested = Bool(kv, "PhoneTested", c.PhoneTested);
                 c.NtfyServer = Str(kv, "NtfyServer", c.NtfyServer);
                 c.NtfyTopic = Str(kv, "NtfyTopic", c.NtfyTopic);
                 c.NotifyMatchStarted = Bool(kv, "NotifyMatchStarted", c.NotifyMatchStarted);
@@ -119,6 +121,7 @@ namespace AutoReady
             lines.Add("GsiToken=" + GsiToken);
             lines.Add("FallbackScanSecAfterAccept=" + FallbackScanSecAfterAccept);
             lines.Add("NotifyPhone=" + NotifyPhone);
+            lines.Add("PhoneTested=" + PhoneTested);
             lines.Add("NtfyServer=" + NtfyServer);
             lines.Add("NtfyTopic=" + NtfyTopic);
             lines.Add("NotifyMatchStarted=" + NotifyMatchStarted);
