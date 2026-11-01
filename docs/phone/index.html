@@ -240,9 +240,9 @@
     });
   }
 
-  // El codigo viene despues del # (no se manda a ningun servidor). Formato de AutoReady: ar- y 6 letras o numeros (8 en los codigos viejos).
+  // El codigo viene despues del # (no se manda a ningun servidor). Formato de AutoReady: ar- y 5 letras o numeros (8 en los codigos viejos).
   var topic = decodeURIComponent(location.hash.slice(1)).trim();
-  if (!/^ar-([a-z0-9]{6}|[a-z0-9]{8})$/.test(topic)) { document.getElementById("invalid").hidden = false; return; }
+  if (!/^ar-([a-z0-9]{5}|[a-z0-9]{8})$/.test(topic)) { document.getElementById("invalid").hidden = false; return; }
   document.getElementById("setup").hidden = false;
   [].forEach.call(document.querySelectorAll(".topic"), function (el) { el.textContent = topic; });
 

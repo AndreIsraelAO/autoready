@@ -99,17 +99,18 @@ namespace AutoReady
         }
 
         // Los topics de ntfy.sh son publicos: quien sabe el nombre lo lee. Por eso uno aleatorio por usuario, lo mas corto
-        // posible para escribirlo o pegarlo facil (ar-k7m2q9) y sin letras que se confunden (0/o, 1/l/i).
-        // 6 caracteres de 31 = ~890 millones: aun con 100 mil usuarios, la chance de que a alguien le toque el canal de otro
-        // es de ~0,01 %. Con 5 seria ~0,35 %. Los codigos viejos (ar- y 8 caracteres) siguen valiendo.
+        // posible para escribirlo o pegarlo facil (ar-k7m2q) y sin letras que se confunden (0/o, 1/l/i).
+        // 5 caracteres de 31 = ~28 millones: con 100 mil usuarios, la chance de que a alguien le toque el canal de otro es de
+        // ~0,35 % (los avisos son solo "partida aceptada"). Solo numeros necesitaria 9 digitos para lo mismo.
+        // Los codigos viejos (ar- y 8 caracteres) siguen valiendo.
         static string NewTopic()
         {
             const string alphabet = "abcdefghjkmnpqrstuvwxyz23456789";
-            byte[] rnd = new byte[6];
+            byte[] rnd = new byte[5];
             using (System.Security.Cryptography.RandomNumberGenerator rng = System.Security.Cryptography.RandomNumberGenerator.Create())
                 rng.GetBytes(rnd);
-            char[] chars = new char[6];
-            for (int i = 0; i < 6; i++) chars[i] = alphabet[rnd[i] % alphabet.Length];
+            char[] chars = new char[5];
+            for (int i = 0; i < 5; i++) chars[i] = alphabet[rnd[i] % alphabet.Length];
             return "ar-" + new string(chars);
         }
 
