@@ -365,7 +365,7 @@ namespace AutoReady
                 if (game != null) Log.Write(game.Name + " abierto");
                 state = AppState.Starting;
             }
-            Presence.SetWanted(game != null && game.UsesPresence);
+            Presence.Watch(game);
             if (paused) { SetState(AppState.Paused); return 500; }
             if (game == null) { SetState(AppState.GameClosed); return 2000; }
 
@@ -477,9 +477,9 @@ namespace AutoReady
             bool recentlyAccepted = lastAccept != DateTime.MinValue && (DateTime.Now - lastAccept).TotalMinutes < 5;
             if (oldState == null && newState != null && cfg.NotifyMatchStarted && recentlyAccepted)
             {
-                Notify(game.MatchStartedTitle, game.MatchStartedText);
+                Notify("Tu partida arrancó", "Volvé a la PC.");
                 if (cfg.Sound) Beep(true);
-                Notifier.Phone(cfg, game.MatchStartedTitle, game.MatchStartedText, "crossed_swords");
+                Notifier.Phone(cfg, "Tu partida arrancó", "Tu partida de " + game.Name + " arrancó. Volvé a la PC.", "crossed_swords");
             }
             // Arranco una partida que no aceptamos nosotros: o no vimos el popup, o el jugador fue mas rapido.
             // Las capturas de ese momento sirven para ajustar el detector.
@@ -505,7 +505,9 @@ namespace AutoReady
             gsiHintShown.Add(game.Id);
             Log.Write("GSI " + game.Name + ": abierto hace 90s y no llego nada");
             Notify("Activá GSI para más seguridad",
-                   game.LaunchOptionHint ?? ("Reiniciá " + game.Name + " para que cargue la integración de AutoReady."));
+                   game.GsiLaunchOption != null
+                       ? "Abrí AutoReady y tocá Activar en Protección en partida."
+                       : "Reiniciá " + game.Name + " para que cargue la integración de AutoReady.");
         }
 
         // ---------- estado e interfaz ----------

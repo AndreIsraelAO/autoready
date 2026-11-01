@@ -6,7 +6,7 @@
 
 <p align="center">
   <b>Buscá partida, andá a hacer otra cosa. AutoReady la acepta por vos.</b><br>
-  Auto-accept para Dota 2 y Counter-Strike 2 en Windows.
+  Acepta tus partidas de Steam automáticamente en Windows. Funciona con Dota 2 y Counter-Strike 2.
 </p>
 
 <p align="center">
@@ -26,7 +26,7 @@
 
 <table>
   <tr>
-    <td align="center" width="33%">🎮<br><b>Buscá partida</b><br>Apretá <i>Buscar partida</i> en Dota 2 o CS2.</td>
+    <td align="center" width="33%">🎮<br><b>Buscá partida</b><br>Apretá <i>Buscar partida</i> en tu juego.</td>
     <td align="center" width="33%">☕<br><b>Andá a hacer otra cosa</b><br>Buscá algo de tomar. AutoReady vigila el juego.</td>
     <td align="center" width="33%">✅<br><b>Volvé a tiempo</b><br>Toca <i>Aceptar</i> y te avisa.</td>
   </tr>
@@ -85,8 +85,8 @@ nada y no modifica archivos del juego. Lo único que escribe es la configuració
 <details>
 <summary><b>¿Hace clicks durante la partida?</b></summary>
 <br>
-No. Game State Integration le avisa cuando estás en partida, y deja de mirar hasta que termina. En Dota 2 además lee tu estado de
-Steam (el "Buscando partida" que ves en Steam) y solo mira la pantalla mientras estás en la cola. Si no hay ninguna de
+No. Game State Integration le avisa cuando estás en partida, y deja de mirar hasta que termina. En los juegos que lo permiten, además lee tu
+estado de Steam (el "Buscando partida" que ves en Steam) y solo mira la pantalla mientras estás en la cola. Si no hay ninguna de
 las dos, trabaja en modo seguro: nunca acepta mientras estás usando el mouse o el teclado en el juego, y solo hace click.
 </details>
 

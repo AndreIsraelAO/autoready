@@ -3,8 +3,8 @@ using System.Collections.Generic;
 
 namespace AutoReady
 {
-    // Todo lo que cambia de un juego a otro: proceso, donde va la config de GSI, como leer el estado
-    // y como es el boton de aceptar.
+    // Todo lo que cambia de un juego a otro: proceso, GSI, estado de Steam y como es el boton de aceptar.
+    // Lo que ve el usuario (avisos, panel) es generico y usa solo Name; sumar un juego es agregar un perfil aca.
     class GameProfile
     {
         public string Id;              // clave en el ini: "dota2.HueMin"
@@ -13,16 +13,17 @@ namespace AutoReady
         public int AppId;              // viene en "provider.appid" de cada POST de GSI
         public string CfgDir;          // carpeta de la config de GSI, relativa a la biblioteca de Steam
         public string StateKey;        // clave del JSON de GSI que indica la fase de la partida
-        public string LaunchOptionHint;   // null si GSI funciona sin opciones de lanzamiento
+        // Opcion de lanzamiento que el juego necesita para mandar GSI (null si no hace falta).
+        public string GsiLaunchOption;
         // Aceptar apretando Enter en vez de hacer click: no depende de donde esta el boton (resolucion, escala,
         // monitor). Si despues del Enter el popup sigue en pantalla, se hace click igual.
         public bool AcceptWithEnter;
-        // Opcion de lanzamiento que el juego necesita para mandar GSI (null si no hace falta).
-        public string GsiLaunchOption;
-        // Leer el estado de Steam (Rich Presence) para saber si busca partida o esta jugando, sin configurar nada.
-        public bool UsesPresence;
-        public string MatchStartedTitle, MatchStartedText;
+        // Estado de Steam (Rich Presence, en ingles): textos que indican que esta buscando partida o en el menu.
+        // Cualquier otro estado del juego cuenta como "en partida". Vacio = el juego no usa el estado de Steam.
+        public string[] PresenceFinding = new string[0], PresenceMenu = new string[0];
         public Func<Detector.Settings> DefaultDetector;
+
+        public bool UsesPresence { get { return PresenceFinding.Length > 0; } }
 
         public static readonly GameProfile Dota2 = new GameProfile
         {
@@ -32,13 +33,12 @@ namespace AutoReady
             AppId = 570,
             CfgDir = @"steamapps\common\dota 2 beta\game\dota\cfg\gamestate_integration",
             StateKey = "game_state",
-            LaunchOptionHint = "En Steam: Dota 2 > Propiedades > Opciones de lanzamiento, agrega -gamestateintegration y reinicia Dota.",
-            AcceptWithEnter = true,
             GsiLaunchOption = "-gamestateintegration",
-            UsesPresence = true,
-            MatchStartedTitle = "¡Empezo el pick!",
-            MatchStartedText = "Ya estan eligiendo heroes. ¡Volve!",
-            // Boton ACCEPT turquesa: H ~154, S ~0.30-0.35, V ~0.35.
+            AcceptWithEnter = true,
+            // Textos oficiales: game/dota/pak01_dir/resource/localization/richpresence_english.txt
+            PresenceFinding = new[] { "Finding A Match" },
+            PresenceMenu = new[] { "Main Menu" },
+            // Boton ACCEPT turquesa: H ~154, S ~0.36, V ~0.35 (medido en el boton real).
             DefaultDetector = () => new Detector.Settings(),
         };
 
@@ -50,10 +50,7 @@ namespace AutoReady
             AppId = 730,
             CfgDir = @"steamapps\common\Counter-Strike Global Offensive\game\csgo\cfg",
             StateKey = "phase",
-            LaunchOptionHint = null,
-            MatchStartedTitle = "¡La partida esta cargando!",
-            MatchStartedText = "Tu partida de CS2 arranca. ¡Volve!",
-            // Boton ACCEPT verde mas saturado y brillante que el de Dota.
+            // Boton ACCEPT verde brillante: H ~128, S ~0.69, V ~0.73 (medido en el boton real).
             DefaultDetector = () => new Detector.Settings
             {
                 HueMin = 85, HueMax = 150, SatMin = 0.35, ValMin = 0.40,

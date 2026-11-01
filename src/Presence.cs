@@ -11,8 +11,8 @@ namespace AutoReady
     // sin clave, sin login y sin configurar nada en el juego. Requiere que los detalles de juego del perfil sean
     // visibles; si no, el estado queda Unknown y AutoReady sigue con GSI o el modo seguro.
     //
-    // Se usa para Dota 2, donde GSI necesita una opcion de lanzamiento. Los textos son los oficiales en ingles
-    // (game/dota/.../richpresence_english.txt); se pide la pagina en ingles para no depender del idioma del usuario.
+    // Se usa en los juegos cuyo perfil trae textos de estado (GameProfile.PresenceFinding/PresenceMenu); la pagina se
+    // pide en ingles para no depender del idioma del usuario.
     enum PresenceState { Unknown, Menu, Finding, InMatch }
 
     static class Presence
@@ -24,7 +24,7 @@ namespace AutoReady
         static DateTime lastRead = DateTime.MinValue;
         static DateTime lastWorking = DateTime.MinValue;   // ultima vez que se pudo leer un estado de juego
         static Thread worker;
-        static volatile bool wanted;
+        static volatile GameProfile game;   // juego abierto que usa el estado de Steam (null = no consultar)
 
         public static event Action<PresenceState, PresenceState, string> Changed;   // (anterior, nuevo, texto)
         static PresenceState current = PresenceState.Unknown;
@@ -39,11 +39,13 @@ namespace AutoReady
         // El estado se pudo leer hace poco: la proteccion por estado de Steam esta funcionando.
         public static bool Working { get { return DateTime.Now - lastWorking < TimeSpan.FromMinutes(10); } }
 
-        // Se consulta solo mientras el juego esta abierto.
-        public static void SetWanted(bool on)
+        // Se consulta solo mientras un juego que lo usa esta abierto.
+        public static void Watch(GameProfile g)
         {
-            wanted = on;
-            if (!on || worker != null) return;
+            GameProfile use = g != null && g.UsesPresence ? g : null;
+            if (use != game) { current = PresenceState.Unknown; lastText = null; }
+            game = use;
+            if (use == null || worker != null) return;
             worker = new Thread(Loop) { IsBackground = true, Name = "presence" };
             worker.Start();
         }
@@ -53,19 +55,20 @@ namespace AutoReady
             ServicePointManager.SecurityProtocol |= (SecurityProtocolType)3072;   // TLS 1.2
             while (true)
             {
-                if (wanted)
+                GameProfile g = game;
+                if (g != null)
                 {
-                    try { Update(Read()); }
+                    try { Update(Read(), g); }
                     catch (Exception e) { Log.Write("Presence: no pude leer el estado de Steam: " + e.Message); }
                 }
                 Thread.Sleep(Every);
             }
         }
 
-        static void Update(string text)
+        static void Update(string text, GameProfile g)
         {
             lastRead = DateTime.Now;
-            PresenceState s = Classify(text);
+            PresenceState s = Classify(text, g);
             if (s != PresenceState.Unknown) lastWorking = DateTime.Now;
             bool changed = s != current || text != lastText;
             PresenceState old = current;
@@ -77,12 +80,13 @@ namespace AutoReady
             if (h != null && old != s) h(old, s, text);
         }
 
-        // Textos oficiales de Dota 2 (richpresence_english.txt).
-        public static PresenceState Classify(string text)
+        public static PresenceState Classify(string text, GameProfile g)
         {
-            if (string.IsNullOrEmpty(text)) return PresenceState.Unknown;
-            if (text.IndexOf("Finding A Match", StringComparison.OrdinalIgnoreCase) >= 0) return PresenceState.Finding;
-            if (text.StartsWith("Main Menu", StringComparison.OrdinalIgnoreCase)) return PresenceState.Menu;
+            if (string.IsNullOrEmpty(text) || g == null) return PresenceState.Unknown;
+            foreach (string f in g.PresenceFinding)
+                if (text.IndexOf(f, StringComparison.OrdinalIgnoreCase) >= 0) return PresenceState.Finding;
+            foreach (string m in g.PresenceMenu)
+                if (text.StartsWith(m, StringComparison.OrdinalIgnoreCase)) return PresenceState.Menu;
             // Cualquier otro estado del juego (seleccion de heroe, partida, post-partida, espectando, bots...) se
             // trata como "ocupado": ahi no puede aparecer el popup de aceptar.
             return PresenceState.InMatch;

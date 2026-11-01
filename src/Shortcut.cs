@@ -26,7 +26,7 @@ namespace AutoReady
 
                 t.InvokeMember("TargetPath", BindingFlags.SetProperty, null, sc, new object[] { exe });
                 t.InvokeMember("WorkingDirectory", BindingFlags.SetProperty, null, sc, new object[] { Path.GetDirectoryName(exe) });
-                t.InvokeMember("Description", BindingFlags.SetProperty, null, sc, new object[] { "Acepta tus partidas de Dota 2 y CS2" });
+                t.InvokeMember("Description", BindingFlags.SetProperty, null, sc, new object[] { "Acepta tus partidas automáticamente" });
                 t.InvokeMember("Save", BindingFlags.InvokeMethod, null, sc, null);
                 Log.Write("Acceso directo del menu Inicio: " + lnk);
             }

@@ -6,7 +6,7 @@
 
 <p align="center">
   <b>Queue up. Step away. AutoReady accepts the match for you.</b><br>
-  Auto-accept for Dota 2 and Counter-Strike 2 on Windows.
+  Match auto-accept for your Steam games on Windows. Works with Dota 2 and Counter-Strike 2.
 </p>
 
 <p align="center">
@@ -26,7 +26,7 @@
 
 <table>
   <tr>
-    <td align="center" width="33%">🎮<br><b>Queue up</b><br>Hit <i>Find match</i> in Dota 2 or CS2.</td>
+    <td align="center" width="33%">🎮<br><b>Queue up</b><br>Hit <i>Find match</i> in your game.</td>
     <td align="center" width="33%">☕<br><b>Step away</b><br>Grab a drink. AutoReady keeps an eye on the game.</td>
     <td align="center" width="33%">✅<br><b>Come back in time</b><br>It clicks <i>Accept</i> and lets you know.</td>
   </tr>
@@ -85,8 +85,8 @@ config.
 <details>
 <summary><b>Does it click anything during a match?</b></summary>
 <br>
-No. Game State Integration tells it when you're in a match, and it stops looking until the match is over. In Dota 2 it also reads your Steam status (the
-"Finding A Match" you see in Steam) and only looks at the screen while you're queuing. If neither is available, it runs in a safe mode: it never accepts while you're using your mouse or keyboard in the game, and it only clicks.
+No. Game State Integration tells it when you're in a match, and it stops looking until the match is over. In games that support it, it also reads your Steam
+status (the "Finding a match" you see in Steam) and only looks at the screen while you're queuing. If neither is available, it runs in a safe mode: it never accepts while you're using your mouse or keyboard in the game, and it only clicks.
 </details>
 
 <details>
