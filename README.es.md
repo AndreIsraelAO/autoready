@@ -40,7 +40,7 @@
       </ul>
     </td>
     <td width="290" align="center" valign="top">
-      <img src="assets/screenshot-panel-es.png" width="270" alt="El panel de AutoReady: interruptor principal, tecla de pausa, sonido y avisos al celular">
+      <img src="assets/panel-es.png" width="270" alt="El panel de AutoReady: interruptor principal, tecla de pausa, sonido y avisos al celular">
     </td>
   </tr>
 </table>

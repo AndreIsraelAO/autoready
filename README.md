@@ -40,7 +40,7 @@
       </ul>
     </td>
     <td width="290" align="center" valign="top">
-      <img src="assets/screenshot-panel.png" width="270" alt="The AutoReady panel: main switch, pause hotkey, sound and phone notifications">
+      <img src="assets/panel-en.png" width="270" alt="The AutoReady panel: main switch, pause hotkey, sound and phone notifications">
     </td>
   </tr>
 </table>
