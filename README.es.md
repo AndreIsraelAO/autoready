@@ -6,11 +6,12 @@
 
 <p align="center">
   <b>Buscá partida, andá a hacer otra cosa. AutoReady la acepta por vos.</b><br>
-  Acepta tus partidas de Steam automáticamente en Windows. Funciona con Dota 2 y Counter-Strike 2.
+  Una app gratis para Windows que acepta tus partidas de Steam y te avisa cuándo volver.<br>
+  Funciona con Dota 2 y Counter-Strike 2.
 </p>
 
 <p align="center">
-  <a href="https://github.com/hercase/autoready/releases"><img src="https://img.shields.io/badge/Descargar_para_Windows-3FB37F?style=for-the-badge" alt="Descargar para Windows"></a>
+  <a href="https://github.com/hercase/autoready/releases/latest"><img src="https://img.shields.io/badge/Descargar_para_Windows-1E7A52?style=for-the-badge" alt="Descargar para Windows"></a>
 </p>
 
 <p align="center">
@@ -22,101 +23,113 @@
   <a href="README.md">Read in English</a>
 </p>
 
-## Cómo funciona
-
-<table>
-  <tr>
-    <td align="center" width="33%">🎮<br><b>Buscá partida</b><br>Apretá <i>Buscar partida</i> en tu juego.</td>
-    <td align="center" width="33%">☕<br><b>Andá a hacer otra cosa</b><br>Buscá algo de tomar. AutoReady vigila el juego.</td>
-    <td align="center" width="33%">✅<br><b>Volvé a tiempo</b><br>Toca <i>Aceptar</i> y te avisa.</td>
-  </tr>
-</table>
-
-## Qué hace
-
 <table>
   <tr>
     <td valign="top">
+      <h3>Cómo funciona</h3>
+      <ol>
+        <li><b>Buscá partida</b> en tu juego.</li>
+        <li><b>Andá a hacer otra cosa.</b> AutoReady vigila el juego.</li>
+        <li>Cuando aparece la partida, <b>toca Aceptar</b> y te avisa con un sonido, una notificación de Windows y, si querés, en el celular.</li>
+      </ol>
+      <h3>Por qué es seguro</h3>
       <ul>
-        <li><b>Acepta la partida</b> aunque el juego esté tapado por otras ventanas o minimizado.</li>
-        <li><b>Nunca hace clicks durante una partida.</b> La integración oficial de Valve (Game State Integration) le avisa cuándo estás jugando.</li>
-        <li><b>Te avisa</b> con un sonido, una notificación de Windows y, si querés, en el celular.</li>
-        <li><b>Pausalo desde cualquier lado</b> con la tecla que elijas, incluso jugando.</li>
-        <li><b>Un solo archivo chico.</b> No se instala, no baja nada más y se actualiza solo.</li>
+        <li><b>Nunca hace click durante una partida.</b> Tu estado de Steam y la integración oficial de Valve (Game State Integration) le dicen cuándo estás jugando.</li>
+        <li><b>No toca el juego.</b> No lee memoria, no inyecta nada y no modifica archivos del juego.</li>
+        <li><b>Sin cuentas, publicidad ni telemetría.</b> Es de código abierto y solo se conecta a internet para lo que dice la <a href="PRIVACY.md">política de privacidad</a>.</li>
       </ul>
     </td>
-    <td width="280" align="center">
-      <img src="assets/screenshot-panel.png" width="260" alt="El panel de AutoReady">
+    <td width="290" align="center" valign="top">
+      <img src="assets/screenshot-panel-es.png" width="270" alt="El panel de AutoReady: interruptor principal, tecla de pausa, sonido y avisos al celular">
     </td>
   </tr>
 </table>
+
+## Empezar
+
+1. **[Descargá `AutoReady.exe`](https://github.com/hercase/autoready/releases/latest)** y abrilo.
+2. Tocá **Instalar**. Se instala para tu usuario en unos segundos, sin permisos de administrador.
+3. El ícono aparece junto al reloj (puede estar escondido en **^**: arrastralo afuera para tenerlo a mano).
+4. Buscá partida en tu juego y andá a hacer otra cosa.
+
+> [!NOTE]
+> Windows puede mostrar un aviso de SmartScreen la primera vez, porque AutoReady todavía no está firmado
+> ([en trámite](#code-signing-policy-política-de-firma-de-código)). Tocá **Más información → Ejecutar de todas formas**.
+
+## Cómo se usa
+
+Tocá el ícono para abrir el panel:
+
+- **El interruptor de arriba** activa o pausa AutoReady. El estado de al lado dice qué está haciendo.
+- **Tecla de pausa:** elegí una tecla (F1–F12 o una combinación) para pausar y reanudar desde cualquier lado, también jugando.
+- **Avisos al celular:** escaneá el código con la cámara del celular e instalá la app gratis [ntfy](https://ntfy.sh).
+- **Más opciones:** iniciar con Windows, actualizaciones automáticas y la versión instalada.
+
+Con click derecho en el ícono tenés **Pausar/Reanudar** y **Salir**. El ícono se pone gris cuando está en pausa.
+AutoReady se actualiza solo, y está en español o en inglés según el idioma de tu Windows.
 
 ## Juegos compatibles
 
 | Juego | Configuración |
 |---|---|
-| **Dota 2** | Abrí el panel y tocá **Activar** en *Protección en partida*: te abre las propiedades de Dota en Steam con la opción lista para pegar. |
-| **Counter-Strike 2** | Nada. Reiniciá CS2 una vez después de abrir AutoReady. |
+| **Dota 2** | Nada. Si hace falta un paso (una sola vez), el panel muestra **Configurar**: copia la opción de lanzamiento y abre las propiedades de Dota en Steam para que solo la pegues. |
+| **Counter-Strike 2** | Nada. Reiniciá CS2 una vez después de instalar AutoReady. |
 
-¿Querés otro juego? [Pedilo](https://github.com/hercase/autoready/issues).
-
-## Empezar
-
-1. [Bajá `AutoReady.exe`](https://github.com/hercase/autoready/releases) y abrilo.
-2. Aparece el ícono de AutoReady al lado del reloj y se abre el panel. Ya está funcionando.
-3. Buscá partida en tu juego y andá a hacer otra cosa.
-
-Tocá el ícono cuando quieras para abrir el panel: prender o apagar la aceptación, elegir una tecla para pausar y cómo
-querés que te avise. Con click derecho tenés **Pausar/Reanudar** y **Salir**. En pausa, el ícono se pone gris.
-
-> [!NOTE]
-> Windows puede mostrar un aviso de SmartScreen porque AutoReady todavía no está firmado. Tocá **Más información →
-> Ejecutar de todas formas**.
+¿Querés otro juego? [Pedilo](https://github.com/hercase/autoready/issues/new).
 
 ## Preguntas frecuentes
 
 <details>
-<summary><b>¿Me pueden banear por usarlo?</b></summary>
+<summary><b>¿Me pueden banear?</b></summary>
 <br>
-AutoReady solo mira la pantalla y toca el botón Aceptar, como harías vos. No lee ni cambia la memoria del juego, no inyecta
-nada y no modifica archivos del juego. Lo único que escribe es la configuración oficial de Game State Integration de Valve.
+AutoReady solo mira la ventana del juego y toca Aceptar, como lo harías vos. No lee ni cambia la memoria del juego, no
+inyecta nada y no modifica sus archivos. El único archivo que agrega es la configuración oficial de Game State
+Integration de Valve, que existe para herramientas de terceros. Los términos de Steam mencionan el software de
+automatización, así que el riesgo no es cero, pero nada de esto toca la partida en sí.
 </details>
 
 <details>
-<summary><b>¿Hace clicks durante la partida?</b></summary>
+<summary><b>¿Hace click en algo durante la partida?</b></summary>
 <br>
-No. Game State Integration le avisa cuando estás en partida, y deja de mirar hasta que termina. En los juegos que lo permiten, además lee tu
-estado de Steam (el "Buscando partida" que ves en Steam) y solo mira la pantalla mientras estás en la cola. Si no hay ninguna de
-las dos, trabaja en modo seguro: nunca acepta mientras estás usando el mouse o el teclado en el juego, y solo hace click.
+No. Cuando empieza la partida deja de mirar hasta que volvés al menú. Si no puede saber si estás en partida, funciona en
+modo seguro: solo hace click, y nunca mientras estás usando el mouse o el teclado en el juego.
 </details>
 
 <details>
 <summary><b>¿Lo puedo usar para quedarme AFK?</b></summary>
 <br>
-No, y por favor no lo hagas. Está para que no se te pase una partida mientras vas a buscar algo. Aceptá y volvé: irte
+No, y te pedimos que no lo hagas. Está para que no pierdas una partida mientras buscás algo. Aceptá y volvé: irte
 perjudica a los otros nueve jugadores.
 </details>
 
 <details>
-<summary><b>¿Guarda capturas de pantalla?</b></summary>
+<summary><b>No aceptó mi partida. ¿Qué hago?</b></summary>
 <br>
-Durante la beta sí, para mejorar la detección: cuando acepta una partida y cuando arranca una que no aceptó. Solo de la
-ventana del juego, solo en tu PC (<code>%APPDATA%\AutoReady\samples</code>), y guarda las últimas 15. No se sube nada. Se
-puede apagar con <code>SaveSamples=False</code> en <code>%APPDATA%\AutoReady\autoready.ini</code>.
+Fijate que el interruptor de arriba del panel esté activado y que no aparezca el aviso <b>Configurar</b>. Si igual
+falla, <a href="https://github.com/hercase/autoready/issues/new">abrí un issue</a> con tu juego, la resolución de
+pantalla y la escala de Windows.
 </details>
 
 <details>
 <summary><b>¿Funciona con dos monitores?</b></summary>
 <br>
-Debería, esté donde esté el juego. Todavía lo estamos probando con varios monitores; si algo falla,
+Debería, esté donde esté el juego. Todavía lo estamos probando con varios monitores, así que si algo no anda,
 <a href="https://github.com/hercase/autoready/issues/6">avisanos</a>.
 </details>
 
 <details>
-<summary><b>No me aceptó la partida. ¿Qué hago?</b></summary>
+<summary><b>¿Guarda capturas de pantalla?</b></summary>
 <br>
-Fijate que <b>Aceptar partidas</b> esté prendido en el panel y que <b>Protección en partida</b> diga que está activa. Si sigue fallando, <a href="https://github.com/hercase/autoready/issues">abrí un issue</a> con el
-juego, la resolución y la escala de pantalla de Windows.
+Durante la beta sí, para mejorar la detección: cuando acepta una partida, y cuando empieza una partida que no aceptó.
+Solo la ventana del juego, solo en tu PC (<code>%APPDATA%\AutoReady\samples</code>), y solo las últimas 15. No se sube
+nada. Se apagan con <code>SaveSamples=False</code> en <code>%APPDATA%\AutoReady\autoready.ini</code>.
+</details>
+
+<details>
+<summary><b>¿Cómo lo desinstalo?</b></summary>
+<br>
+<b>Configuración → Aplicaciones → Aplicaciones instaladas → AutoReady → Desinstalar.</b> Borra la app, sus accesos
+directos y los archivos de Game State Integration, y te pregunta si querés borrar también tu configuración.
 </details>
 
 ## Code signing policy (política de firma de código)
@@ -138,7 +151,7 @@ apagar. Ver la [política de privacidad](PRIVACY.md).
 ## Estado
 
 AutoReady está en **beta** (versiones 0.x). Lo que viene y los problemas conocidos están en
-[Issues](https://github.com/hercase/autoready/issues). ¿Querés compilarlo o colaborar? Empezá por
+[Issues](https://github.com/hercase/autoready/issues). ¿Querés compilarlo o ayudar? Empezá por
 [CONTRIBUTING.md](CONTRIBUTING.md).
 
 <br>

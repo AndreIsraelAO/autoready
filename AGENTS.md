@@ -40,7 +40,7 @@ vuelva a tiempo. Producto de **keis.studio** (estudio del dueño del repo). Ante
    pantalla; en "Main Menu" o cualquier estado de partida, no. Si no se puede leer (perfil privado), se cae a GSI o al modo
    seguro. No avisa el popup en sí: pasa de Finding a Hero Selection cuando todos aceptan.
 7. **Protección en partida (panel):** Dota necesita la opción de lanzamiento `-gamestateintegration`. `SteamConfig` lee
-   (nunca escribe) `userdata/<cuenta activa>/config/localconfig.vdf` para saber si está; el botón Activar copia las opciones actuales del jugador + la que falta (para reemplazar sin perder nada) y
+   (nunca escribe) `userdata/<cuenta activa>/config/localconfig.vdf` para saber si está; el botón Configurar (aviso del panel, solo si falta el paso) copia las opciones actuales del jugador + la que falta (para reemplazar sin perder nada) y
    abre `steam://gameproperties/570`. No se edita el archivo: Steam lo pisa si está abierto y puede haber cuentas ajenas.
 
 ## Sumar juegos (la estrategia)
@@ -59,7 +59,7 @@ Para sumar un juego: proceso, una captura del popup (sale de las capturas autom�
 |---|---|
 | `src/Program.cs` | Entrada, instancia única (mutex), modo `--test`, espera tras actualizar |
 | `src/TrayApp.cs` | Ícono de la bandeja, menú chico, loop de escaneo, aceptar, avisos, atajo global; implementa `IPanelHost` |
-| `src/Panel.cs` | Panel WPF (click izquierdo en el ícono): interruptor principal, atajo, avisos, celular con QR, general |
+| `src/Panel.cs` | Panel WPF (click izquierdo en el ícono): interruptor en el encabezado, aviso de protección (solo si falta), atajo, sonido, celular (QR colapsable), "Más opciones" cerrado. Menos filas y menos texto a propósito |
 | `src/Controls.cs` | Tema (claro/oscuro, contraste ≥ 4,5:1) e interruptor/botón accesibles (Tab, Enter/Espacio, Narrador) |
 | `src/Strings.cs`, `src/Lang.cs` | Todos los textos en español (voseo) e inglés; idioma de Windows o `Language=es|en` en el ini |
 | `src/Games.cs` | Perfil por juego: proceso, carpeta de GSI, clave de estado, colores/forma del botón, textos |
