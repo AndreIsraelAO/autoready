@@ -95,8 +95,9 @@
     color-scheme: dark;
     --bg: #09090B; --bg-2: #0F0F12; --card: #141418; --card-2: #1C1C21; --stroke: #26262C; --stroke-2: #34343C;
     --text: #F5F4F0; --muted: #9A9AA3; --dim: #7C7C86;
-    --ac: #23B26D; --ac-2: #178A53; --ac-text: #5FD49E; --on-ac: #04130C; --glow: rgba(35,178,109,.24);
-    --c: #00B3E6; --m: #FF2E9F; --y: #FFD400; --ok: var(--ac);
+    --ac: #10B981; --ac-2: #059669; --ac-text: #34D399; --on-ac: #022C1E; --glow: rgba(16,185,129,.22);
+    --sky: #38BDF8; --sky-text: #7DD3FC; --sky-glow: rgba(56,189,248,.30);
+    --ok: var(--ac);
     --btn-bg: var(--ac); --btn-text: var(--on-ac);
     --shadow: 0 1px 0 rgba(255,255,255,.04) inset, 0 30px 80px rgba(0,0,0,.55);
     --r-ctl: 12px; --r-card: 18px; --r-big: 24px;
@@ -121,7 +122,7 @@
   header.scrolled { border-bottom-color: var(--stroke); }
   header .wrap { display: flex; align-items: center; justify-content: space-between; min-height: 64px; gap: 16px; }
   .brand { display: inline-flex; align-items: center; gap: 10px; font-weight: 650; font-size: 17px; color: var(--text); text-decoration: none; letter-spacing: -.01em; }
-  .brand img { width: 30px; height: 30px; border-radius: 8px; }
+  .brand img { width: 32px; height: 32px; border-radius: 8px; }
   header nav { display: flex; align-items: center; gap: 4px; font-size: 14px; }
   header nav a { color: var(--muted); text-decoration: none; padding: 10px 12px; border-radius: 10px; min-height: 44px; display: inline-flex; align-items: center; }
   header nav a:hover { color: var(--text); }
@@ -136,7 +137,7 @@
                   pointer-events: none; opacity: .5;
                   background:
                     radial-gradient(closest-side at 50% 45%, var(--glow), transparent),
-                    radial-gradient(closest-side at 30% 60%, color-mix(in srgb, var(--c) 10%, transparent), transparent);
+                    radial-gradient(closest-side at 72% 62%, color-mix(in srgb, var(--sky) 12%, transparent), transparent);
                   filter: blur(30px); }
   .hero::after { content: ""; position: absolute; z-index: -1; inset: -64px 0 0; pointer-events: none;
                  background-image: linear-gradient(var(--stroke) 1px, transparent 1px), linear-gradient(90deg, var(--stroke) 1px, transparent 1px);
@@ -150,7 +151,12 @@
        margin: 0 auto 22px; max-width: 20ch; text-wrap: balance; }
   h1 .cmy { display: inline-block; color: var(--ac-text); }
   @supports (-webkit-background-clip: text) {
-    h1 .cmy { background: linear-gradient(180deg, var(--ac-text), var(--ac)); -webkit-background-clip: text; background-clip: text; color: transparent; padding-bottom: .06em; }
+    /* Degradé "flow": manchas de color que flotan dentro del texto (las mueve el script) y un brillo suave detrás. */
+    h1 .cmy { position: relative; background-image: var(--gt, linear-gradient(90deg, #34D399, #38BDF8, #10B981));
+              -webkit-background-clip: text; background-clip: text; color: transparent; padding-bottom: .06em; }
+    h1 .cmy::after { content: attr(data-text); position: absolute; inset: 0; z-index: -1; pointer-events: none;
+                     background-image: inherit; -webkit-background-clip: text; background-clip: text; color: transparent;
+                     filter: blur(14px); opacity: .25; }
   }
   .lead { font-size: clamp(17px, 2.1vw, 20px); color: var(--muted); margin: 0 auto 34px; max-width: 34em; text-wrap: pretty; }
   .ctas { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; }
@@ -176,8 +182,8 @@
             font-family: var(--sans); }
   .screen .scene { position: absolute; inset: 0;
                    background:
-                     radial-gradient(120% 80% at 15% 110%, rgba(35,178,109,.16), transparent 55%),
-                     radial-gradient(90% 70% at 100% 0%, rgba(0,179,230,.12), transparent 55%),
+                     radial-gradient(120% 80% at 15% 110%, rgba(16,185,129,.14), transparent 55%),
+                     radial-gradient(90% 70% at 100% 0%, rgba(56,189,248,.10), transparent 55%),
                      linear-gradient(180deg, #121019, #08080B); }
   .screen .scene::after { content: ""; position: absolute; inset: 0; opacity: .5;
                           background: repeating-linear-gradient(0deg, rgba(255,255,255,.025) 0 1px, transparent 1px 3px); }
@@ -186,27 +192,52 @@
   .pill { display: inline-flex; align-items: center; gap: 8px; padding: 7px 12px; border-radius: 999px; background: rgba(255,255,255,.07);
           border: 1px solid rgba(255,255,255,.09); backdrop-filter: blur(6px); }
   .pulse { width: 8px; height: 8px; border-radius: 50%; background: #F5F4F0; box-shadow: 0 0 0 0 rgba(245,244,240,.5); animation: pulse 1.6s infinite; }
-  .s-found .pulse, .s-accepted .pulse, .s-notified .pulse { background: #23B26D; box-shadow: 0 0 10px rgba(35,178,109,.6); animation: none; }
+  .s-found .pulse { background: var(--sky); box-shadow: 0 0 10px var(--sky-glow); animation: none; }
+  .s-accepted .pulse, .s-notified .pulse { background: var(--ac); box-shadow: 0 0 10px var(--glow); animation: none; }
   @keyframes pulse { 70% { box-shadow: 0 0 0 8px rgba(245,244,240,0); } 100% { box-shadow: 0 0 0 0 rgba(245,244,240,0); } }
-  .away { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); text-align: center; transition: opacity .4s ease, transform .4s ease; }
-  .away b { display: block; font-family: var(--display); font-size: clamp(22px, 3.4vw, 34px); letter-spacing: -.03em; font-weight: 700; }
-  .away span { font-family: var(--mono); font-size: 13px; color: rgba(245,244,240,.55); }
-  .screen:not(.s-search) .away { opacity: 0; transform: translate(-50%, -60%); }
+  .away { position: absolute; left: 50%; bottom: 22px; transform: translateX(-50%); text-align: center; white-space: nowrap; transition: opacity .4s ease, transform .4s ease; }
+  .away b { display: block; font-family: var(--display); font-size: clamp(17px, 2.2vw, 22px); letter-spacing: -.02em; font-weight: 700; }
+  .away span { font-family: var(--mono); font-size: 12px; color: rgba(245,244,240,.55); }
+  .screen:not(.s-search) .away { opacity: 0; transform: translate(-50%, 8px); }
+
+  /* Radar: el barrido busca partida y "encuentra un contacto" justo antes del popup. */
+  .radar { --rc: var(--ac); position: absolute; left: 50%; top: 45%; width: min(300px, 58%); aspect-ratio: 1; transform: translate(-50%, -50%);
+           border-radius: 50%; overflow: hidden; transition: opacity .45s ease, transform .6s cubic-bezier(.2,.8,.2,1);
+           background:
+             radial-gradient(circle, transparent 0 calc(25% - 1px), color-mix(in srgb, var(--rc) 22%, transparent) 25%, transparent calc(25% + 1px) calc(50% - 1px),
+               color-mix(in srgb, var(--rc) 22%, transparent) 50%, transparent calc(50% + 1px) calc(75% - 1px), color-mix(in srgb, var(--rc) 22%, transparent) 75%,
+               transparent calc(75% + 1px) calc(100% - 2px), color-mix(in srgb, var(--rc) 35%, transparent) calc(100% - 1px)),
+             linear-gradient(color-mix(in srgb, var(--rc) 16%, transparent), color-mix(in srgb, var(--rc) 16%, transparent)) center / 1px 100% no-repeat,
+             linear-gradient(color-mix(in srgb, var(--rc) 16%, transparent), color-mix(in srgb, var(--rc) 16%, transparent)) center / 100% 1px no-repeat,
+             radial-gradient(circle, color-mix(in srgb, var(--rc) 8%, transparent), transparent 70%); }
+  .radar::before { content: ""; position: absolute; inset: 0; border-radius: 50%; animation: sweep 2.4s linear infinite;
+                   background: conic-gradient(from 0deg, transparent 0 290deg, color-mix(in srgb, var(--rc) 10%, transparent) 320deg, color-mix(in srgb, var(--rc) 55%, transparent) 359deg, var(--rc) 360deg); }
+  .radar i { position: absolute; width: 10px; height: 10px; margin: -5px 0 0 -5px; border-radius: 50%; background: var(--rc); opacity: 0;
+             box-shadow: 0 0 12px var(--rc); }
+  .radar i:nth-child(1) { left: 30%; top: 64%; animation: ghost 2.4s 1.2s infinite; }
+  .radar i:nth-child(2) { left: 72%; top: 33%; }
+  .contact .radar i:nth-child(2) { opacity: 1; background: var(--sky); box-shadow: 0 0 12px var(--sky); animation: ping 1s ease-out infinite; }
+  .screen:not(.s-search) .radar { opacity: 0; transform: translate(-50%, -50%) scale(1.15); }
+  @keyframes sweep { to { transform: rotate(360deg); } }
+  @keyframes ghost { 0% { opacity: .9; } 60%, 100% { opacity: 0; } }
+  @keyframes ping { 0% { box-shadow: 0 0 0 0 var(--sky-glow); } 100% { box-shadow: 0 0 0 18px transparent; } }
 
   .popup { position: absolute; left: 50%; top: 52%; width: min(360px, 74%); padding: 26px 24px 22px; border-radius: 16px; text-align: center;
            background: linear-gradient(180deg, rgba(30,30,38,.96), rgba(16,16,21,.96)); border: 1px solid rgba(255,255,255,.12);
            box-shadow: 0 30px 80px rgba(0,0,0,.6), 0 0 0 6px rgba(255,255,255,.03);
            transform: translate(-50%, -50%) scale(.9); opacity: 0; transition: opacity .35s ease, transform .45s cubic-bezier(.2,.9,.25,1.2); }
   .screen:not(.s-search) .popup { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  .s-found .popup { border-color: color-mix(in srgb, var(--sky) 55%, transparent); box-shadow: 0 30px 80px rgba(0,0,0,.6), 0 0 0 6px rgba(56,189,248,.08), 0 0 60px rgba(56,189,248,.18); }
+  .s-found .popup small { color: var(--sky-text); }
   .popup small { display: block; font-family: var(--mono); font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: rgba(245,244,240,.55); }
   .popup strong { display: block; font-family: var(--display); font-size: clamp(20px, 2.8vw, 28px); letter-spacing: -.02em; margin: 6px 0 16px; }
   .timer { height: 4px; border-radius: 4px; background: rgba(255,255,255,.1); overflow: hidden; margin-bottom: 16px; }
-  .timer i { display: block; height: 100%; width: 100%; background: linear-gradient(90deg, #178A53, #23B26D); transform-origin: left; }
+  .timer i { display: block; height: 100%; width: 100%; background: linear-gradient(90deg, #0EA5E9, var(--sky)); transform-origin: left; }
   .s-found .timer i { animation: drain 6s linear forwards; }
-  .s-accepted .timer i, .s-notified .timer i { animation: none; transform: scaleX(1); background: #23B26D; }
+  .s-accepted .timer i, .s-notified .timer i { animation: none; transform: scaleX(1); background: var(--ac); }
   @keyframes drain { to { transform: scaleX(0); } }
   .accept { position: relative; display: flex; align-items: center; justify-content: center; gap: 8px; height: 46px; border-radius: 10px;
-            font-weight: 700; letter-spacing: .08em; font-size: 15px; color: #04130C; background: #23B26D; box-shadow: 0 8px 24px rgba(35,178,109,.25); transition: transform .12s ease, filter .2s ease; }
+            font-weight: 700; letter-spacing: .08em; font-size: 15px; color: var(--on-ac); background: var(--ac); box-shadow: 0 8px 24px var(--glow); transition: transform .12s ease, filter .2s ease; }
   .accept .done { display: none; }
   .s-accepted .accept, .s-notified .accept { filter: saturate(.6) brightness(.9); }
   .s-accepted .accept .go, .s-notified .accept .go { display: none; }
@@ -230,7 +261,7 @@
   .phone { position: absolute; left: -34px; bottom: -40px; width: 168px; aspect-ratio: 9 / 18.5; border-radius: 30px; padding: 8px;
            background: #0B0B0E; border: 1px solid var(--stroke-2); box-shadow: 0 30px 60px rgba(0,0,0,.45); transform: rotate(-6deg); }
   .phone .lock { position: relative; height: 100%; border-radius: 23px; overflow: hidden; padding: 30px 8px 0; text-align: center; color: #F5F4F0;
-                 background: radial-gradient(80% 60% at 30% 0%, rgba(35,178,109,.35), transparent 70%), radial-gradient(70% 60% at 100% 100%, rgba(0,179,230,.3), transparent 70%), #121019; }
+                 background: radial-gradient(80% 60% at 30% 0%, rgba(16,185,129,.30), transparent 70%), radial-gradient(70% 60% at 100% 100%, rgba(56,189,248,.32), transparent 70%), #121019; }
   .phone .clock { font-family: var(--display); font-size: 38px; font-weight: 600; letter-spacing: -.03em; line-height: 1; }
   .phone .date { font-size: 10px; opacity: .7; margin-bottom: 18px; }
   .phone .note { text-align: left; padding: 8px 9px; border-radius: 12px; background: rgba(255,255,255,.16); backdrop-filter: blur(8px);
@@ -248,14 +279,6 @@
     .hud .hide-sm { display: none; }
   }
 
-  /* ---------- Cinta ---------- */
-  .ribbon { margin-top: 96px; border-block: 1px solid var(--stroke); background: var(--bg-2); overflow: hidden; }
-  .track { display: flex; width: max-content; animation: slide 38s linear infinite; }
-  .track ul { display: flex; list-style: none; margin: 0; padding: 0; }
-  .track li { display: inline-flex; align-items: center; gap: 14px; padding: 18px 26px; white-space: nowrap; font-size: 17px; color: var(--muted); }
-  .track li b { color: var(--text); font-weight: 650; }
-  @keyframes slide { to { transform: translateX(-50%); } }
-
   /* ---------- Secciones ---------- */
   section { padding: 112px 0 0; }
   .eyebrow { font-family: var(--mono); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--dim); margin: 0 0 14px;
@@ -265,22 +288,68 @@
   h2 span { color: var(--dim); }
   .sub { color: var(--muted); font-size: 18px; max-width: 36em; margin: 0; text-wrap: pretty; }
 
-  .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 48px; counter-reset: s; }
-  .step { position: relative; padding: 28px; border: 1px solid var(--stroke); border-radius: var(--r-card); background: var(--card); overflow: hidden; }
-  .step .n { font-family: var(--mono); font-size: 44px; font-weight: 600; letter-spacing: -.06em; line-height: 1; margin-bottom: 40px; color: var(--text);
-             color: var(--ac-text); }
-  .step h3 { font-size: 20px; letter-spacing: -.02em; margin: 0 0 6px; font-weight: 650; }
-  .step p { margin: 0; color: var(--muted); text-wrap: pretty; }
 
+
+  .works { list-style: none; display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 18px; padding: 0; margin: 14px 0 0; font-size: 14px; color: var(--muted); }
+  .works li { display: inline-flex; align-items: center; gap: 8px; }
+  .works i { width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; color: var(--text); background: var(--card-2); border: 1px solid var(--stroke-2); }
+  .works svg { width: 14px; height: 14px; }
+  .works i.img { overflow: hidden; }
+  .works i.img img { width: 18px; height: 18px; border-radius: 50%; filter: grayscale(1) brightness(.95) contrast(1.2); }
+  .tag { font-family: var(--mono); font-size: 11px; letter-spacing: .04em; padding: 2px 7px; border-radius: 6px; color: var(--sky-text);
+         background: color-mix(in srgb, var(--sky) 16%, transparent); }
+
+  .btn-sm { min-height: 40px; padding: 0 16px; font-size: 14px; border-radius: 10px; margin-left: 8px;
+            opacity: 0; visibility: hidden; transform: translateY(-6px); transition: opacity .2s ease, transform .2s ease, visibility .2s; }
+  header.show-dl .btn-sm { opacity: 1; visibility: visible; transform: none; }
+  header .btn-sm:hover { transform: translateY(-1px); }
+
+  .cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-top: 48px; }
+  .card { position: relative; overflow: hidden; isolation: isolate; padding: 26px 24px 28px; border: 1px solid var(--stroke); border-radius: var(--r-card);
+          background: var(--card); transition: border-color .25s ease; }
+  /* Spotlight: un brillo que sigue al mouse. */
+  .card::before { content: ""; position: absolute; inset: 0; z-index: -1; opacity: 0; transition: opacity .3s ease; pointer-events: none;
+                  background: radial-gradient(260px circle at var(--mx, 50%) var(--my, 50%), color-mix(in srgb, var(--ac) 16%, transparent), transparent 70%); }
+  .card:hover { border-color: color-mix(in srgb, var(--ac) 40%, var(--stroke)); }
+  .card:hover::before { opacity: 1; }
+  .card .ic { width: 42px; height: 42px; border-radius: 11px; display: grid; place-items: center; margin-bottom: 22px;
+              background: color-mix(in srgb, var(--ac) 14%, transparent); color: var(--ac-text); }
+  .card .ic svg { width: 22px; height: 22px; }
+  .card h3 { font-size: 17px; margin: 0 0 6px; font-weight: 650; letter-spacing: -.01em; }
+  .card p { margin: 0; color: var(--muted); font-size: 15px; text-wrap: pretty; }
+
+  .steps-list { list-style: none; padding: 0; margin: 36px 0 0; display: grid; gap: 26px; }
+  .steps-list li { display: flex; gap: 20px; align-items: flex-start; }
+  .steps-list .n { font-family: var(--mono); font-size: 15px; font-weight: 600; color: var(--ac-text); min-width: 44px; height: 44px; display: grid; place-items: center;
+                   border: 1px solid var(--stroke-2); border-radius: 12px; background: var(--card); }
+  .steps-list h3 { font-size: 18px; margin: 8px 0 4px; font-weight: 650; letter-spacing: -.01em; }
+  .steps-list p { margin: 0; color: var(--muted); text-wrap: pretty; }
+
+  .faq-row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr); gap: 32px 72px; align-items: start; }
+  .faq-row h2 { max-width: 10ch; }
+  .qa { border-top: 1px solid var(--stroke); }
+  .qa details { border-bottom: 1px solid var(--stroke); }
+  .qa summary { cursor: pointer; list-style: none; display: flex; align-items: center; justify-content: space-between; gap: 16px;
+                min-height: 64px; padding: 14px 0; font-size: 18px; font-weight: 600; letter-spacing: -.01em; }
+  .qa summary::-webkit-details-marker { display: none; }
+  .qa summary::after { content: "+"; flex: none; font-family: var(--mono); font-size: 22px; font-weight: 400; color: var(--muted); transition: transform .2s ease; }
+  .qa details[open] summary::after { transform: rotate(45deg); color: var(--ac-text); }
+  .qa summary:hover { color: var(--ac-text); }
+  .qa p { margin: 0 0 22px; color: var(--muted); max-width: 62ch; text-wrap: pretty; }
+  .qa a, .more a { color: var(--ac-text); }
+  .qa b { color: var(--text); }
+  .more { margin: 8px 0 0; font-weight: 600; }
+  .more a { text-decoration: none; display: inline-flex; min-height: 44px; align-items: center; }
+  .more a:hover { text-decoration: underline; }
+  .final h2 { margin-bottom: 30px; }
+  .final .meta a { color: var(--muted); }
 
   .panel-row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 420px); gap: 72px; align-items: center; }
   .panel-shot { position: relative; justify-self: center; width: 100%; max-width: 380px; }
   .panel-shot::before { content: ""; position: absolute; inset: 8% -6% -4%; border-radius: 40px; filter: blur(40px); opacity: .5;
-                        background: radial-gradient(closest-side, var(--ac), transparent); opacity: .35; }
+                        background: radial-gradient(closest-side, var(--ac), var(--sky) 60%, transparent); opacity: .22; }
   .panel-shot img { position: relative; display: block; width: 100%; height: auto; border-radius: 14px; border: 1px solid var(--stroke-2); box-shadow: var(--shadow); }
 
-  .games { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 40px; }
-  .game { display: inline-flex; align-items: center; gap: 12px; padding: 14px 22px 14px 14px; border: 1px solid var(--stroke); border-radius: 999px;
           background: var(--card); font-weight: 650; font-size: 17px; }
   .game i { width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; color: var(--text);
             background: var(--card-2); border: 1px solid var(--stroke-2); }
@@ -291,50 +360,57 @@
 
   .final { margin: 112px 0 0; padding: 80px 24px; text-align: center; border-radius: var(--r-big); border: 1px solid var(--stroke);
            position: relative; overflow: hidden; isolation: isolate; background: var(--card); }
-  .final::before { content: ""; position: absolute; inset: auto -10% -60% -10%; height: 120%; z-index: -1; opacity: .35; filter: blur(50px);
-                   background: radial-gradient(closest-side at 50% 50%, var(--ac), transparent); }
+  .final::before { content: ""; position: absolute; inset: auto -10% -60% -10%; height: 120%; z-index: -1; opacity: .3; filter: blur(50px);
+                   background: radial-gradient(closest-side at 35% 50%, var(--ac), transparent), radial-gradient(closest-side at 70% 50%, var(--sky), transparent); }
   .final h2 { margin-left: auto; margin-right: auto; }
-  .final .sub { margin: 0 auto 34px; }
 
-  footer { margin-top: 96px; border-top: 1px solid var(--stroke); padding: 14px 0 calc(14px + env(safe-area-inset-bottom)); font-size: 14px; color: var(--muted); }
-  footer .wrap { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0 20px; }
-  footer nav { display: flex; flex-wrap: wrap; gap: 0 18px; }
-  footer a { color: var(--muted); }
-  footer nav a, footer .mark { display: inline-flex; align-items: center; min-height: 44px; }
-  footer nav a { text-decoration: none; }
+  footer { margin-top: 112px; border-top: 1px solid var(--stroke); font-size: 14px; color: var(--muted);
+           padding-bottom: env(safe-area-inset-bottom); }
+  .foot { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 16px 48px; padding-top: 32px; padding-bottom: 24px; }
+  footer nav { display: flex; flex-wrap: wrap; gap: 0 28px; }
+  footer nav a { color: var(--muted); text-decoration: none; display: inline-flex; align-items: center; min-height: 44px; }
   footer nav a:hover { color: var(--text); }
-  footer .mark img { height: 20px; width: auto; display: block; }
-  footer .legal { margin: 0 0 12px; font-size: 13px; max-width: 60ch; }
+  .foot-bottom { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px 40px;
+                 padding-top: 20px; padding-bottom: 24px; border-top: 1px solid var(--stroke); }
+  footer .legal { margin: 0; font-size: 13px; color: var(--dim); }
+  footer .mark { display: inline-flex; align-items: center; gap: 10px; min-height: 44px; color: var(--dim); text-decoration: none; font-size: 13px; }
+  footer .mark img { height: 16px; width: auto; display: block; opacity: .85; transition: opacity .2s ease; }
+  footer .mark:hover img { opacity: 1; }
 
   /* Aparecen al llegar (solo si hay JS y movimiento) */
   .js .reveal { opacity: 0; transform: translateY(24px); transition: opacity .7s ease, transform .7s cubic-bezier(.2,.8,.2,1); }
   .js .reveal.in { opacity: 1; transform: none; }
 
   @media (max-width: 900px) {
+    .faq-row { grid-template-columns: 1fr; }
+    .faq-row h2 { max-width: none; }
+    .cards { grid-template-columns: 1fr 1fr; }
     .panel-row { grid-template-columns: 1fr; gap: 56px; }
   }
   @media (max-width: 640px) {
     .hero { padding-top: 40px; }
-    .steps { grid-template-columns: 1fr; }
     .btn { width: 100%; }
+    header .btn-sm { width: auto; }
+    .cards { grid-template-columns: 1fr; }
     section { padding-top: 88px; }
-    .final { padding: 56px 20px; }
+    .final { padding: 56px 16px; }
+    .final .btn { padding: 0 16px; font-size: 16px; white-space: nowrap; }
   }
   @media (prefers-reduced-motion: reduce) {
     html { scroll-behavior: auto; }
     *, *::before, *::after { transition: none !important; animation: none !important; }
     .js .reveal { opacity: 1; transform: none; }
-    .track { flex-wrap: wrap; width: auto; } .track ul + ul { display: none; } .track ul { flex-wrap: wrap; justify-content: center; }
   }
 </style>
 </head>
 <body>
 <header id="top">
   <div class="wrap">
-    <a class="brand" href="./"><img src="assets/autoready-icon-192.png" width="30" height="30" alt="">AutoReady</a>
+    <a class="brand" href="./"><img src="assets/autoready-mark-96.png" width="32" height="32" alt="">AutoReady</a>
     <nav>
-      <a class="hide-sm" href="faq/" data-t="faq">FAQ</a>
+      <a class="hide-sm" href="#faq" data-t="faq">FAQ</a>
       <a class="hide-sm" href="https://github.com/hercase/autoready">GitHub</a>
+      <a class="btn btn-sm" id="hdr-dl" href="https://github.com/hercase/autoready/releases/latest/download/AutoReady.exe" tabindex="-1"><span data-t="dlShort">Download</span></a>
       <span class="lang"><a id="lang-en" href="?lang=en" hreflang="en" lang="en" aria-current="true">EN</a><a id="lang-es" href="?lang=es" hreflang="es" lang="es">ES</a></span>
     </nav>
   </div>
@@ -345,13 +421,19 @@
     <h1 data-t="h1">Go grab a snack. <span class="cmy">Your match accepts itself.</span></h1>
     <p class="lead" data-t="lead">A Windows app that accepts your match while you're away, and pings your PC or phone so you're back in time.</p>
     <div class="ctas">
-      <a class="btn" href="https://github.com/hercase/autoready/releases/latest/download/AutoReady.exe">
+      <a class="btn" id="hero-dl" href="https://github.com/hercase/autoready/releases/latest/download/AutoReady.exe">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
-        <span data-t="download">Download for Windows</span>
+        <span data-t="download">Download free for Windows</span>
       </a>
     </div>
-    <p class="meta" data-t="meta">Free · Open source · Windows 10 &amp; 11</p>
-    <p class="meta smart" data-t="smart">Windows may show a warning the first time. <a href="faq/#smartscreen">What to do</a></p>
+    <p class="meta" data-t="meta">Open source · Windows 10 &amp; 11</p>
+    <ul class="works" aria-label="Works with">
+      <li><i><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M 9.817 23.607 L 9.471 23.313 L 9.003 23.273 C 8.419 23.225 8.147 23.172 7.817 23.041 L 7.559 22.938 L 7.281 23.048 C 7.045 23.143 6.467 23.229 6.028 23.236 C 6.004 23.236 5.964 23.18 5.939 23.111 C 5.911 23.041 5.862 22.974 5.824 22.961 C 5.789 22.949 5.527 23.007 5.237 23.094 L 4.712 23.252 L 4.523 23.161 C 4.285 23.045 4.185 23.047 3.787 23.168 C 3.484 23.262 3.446 23.264 3.203 23.212 C 2.84 23.136 2.537 23.141 1.854 23.238 C 1.11 23.344 1.094 23.344 0.875 23.194 C 0.728 23.094 0.648 23.069 0.469 23.069 C 0.266 23.069 0.244 23.06 0.221 22.965 C 0.206 22.906 0.225 22.787 0.264 22.688 C 0.376 22.41 0.42 21.736 0.432 20.125 L 0.444 18.62 L 0.655 18.635 L 0.863 18.65 L 0.895 17.78 C 0.911 17.302 0.927 16.611 0.93 16.246 L 0.935 15.586 L 0.823 15.506 C 0.518 15.283 0.532 15.315 0.405 14.588 C 0.339 14.211 0.274 13.658 0.259 13.358 C 0.234 12.826 0.236 12.811 0.334 12.7 L 0.434 12.586 L 0.682 12.799 C 0.82 12.916 0.937 12.993 0.948 12.969 C 0.984 12.856 0.871 11.508 0.813 11.338 C 0.775 11.238 0.747 11.101 0.747 11.03 C 0.747 10.962 0.679 10.778 0.594 10.618 L 0.443 10.329 L 0.494 9.816 C 0.561 9.136 0.475 8.636 0.19 8.034 L 0.065 7.763 L 0.144 7.09 L 0.228 6.416 L 0.14 6.067 L 0.049 5.717 L 0.154 5.326 L 0.255 4.933 L 0.14 4.553 L 0.021 4.174 L 0.164 3.774 C 0.305 3.385 0.308 3.364 0.305 2.73 C 0.303 2.016 0.228 1.551 0.08 1.365 C -0.047 1.203 -0.026 1.092 0.163 0.919 C 0.253 0.834 0.328 0.726 0.328 0.681 C 0.328 0.612 0.359 0.599 0.549 0.595 C 0.669 0.595 1.039 0.563 1.372 0.525 L 1.979 0.452 L 2.773 0.569 C 3.565 0.684 3.566 0.684 4.652 0.638 L 5.74 0.591 L 5.997 0.746 L 6.257 0.899 L 7.312 0.884 L 8.368 0.869 L 8.724 0.74 C 8.918 0.669 9.229 0.545 9.414 0.461 C 9.596 0.377 9.927 0.264 10.144 0.204 L 10.542 0.099 L 11.056 0.261 L 11.57 0.425 L 12.014 0.276 L 12.456 0.127 L 12.933 0.285 C 13.196 0.371 13.684 0.583 14.022 0.757 L 14.633 1.069 L 15.273 1.051 C 15.758 1.036 15.924 1.018 15.95 0.973 C 15.97 0.942 16.031 0.758 16.083 0.566 L 16.178 0.215 L 16.783 0.235 C 17.236 0.251 17.642 0.299 18.384 0.429 L 19.379 0.605 L 19.638 0.501 C 19.778 0.444 20.046 0.375 20.233 0.351 C 20.546 0.309 20.6 0.314 21.027 0.422 C 21.425 0.522 21.562 0.537 22.109 0.537 C 22.454 0.537 22.812 0.522 22.907 0.506 C 23.07 0.478 23.097 0.489 23.428 0.728 C 23.621 0.866 23.792 1.001 23.807 1.03 C 23.824 1.057 23.86 1.203 23.884 1.354 L 23.93 1.632 L 23.721 2.028 C 23.604 2.246 23.507 2.443 23.507 2.466 C 23.507 2.489 23.555 2.527 23.611 2.554 C 23.668 2.579 23.764 2.677 23.826 2.771 L 23.937 2.941 L 23.912 5.226 C 23.897 6.483 23.872 7.604 23.858 7.715 L 23.831 7.919 L 23.486 7.897 L 23.142 7.87 L 23.113 8.061 C 23.097 8.164 23.084 8.353 23.084 8.485 C 23.084 8.677 23.054 8.778 22.924 9.031 L 22.761 9.342 L 22.851 9.471 C 22.901 9.543 23.072 9.736 23.231 9.901 L 23.523 10.206 L 23.434 10.529 L 23.344 10.854 L 23.451 11.542 C 23.575 12.369 23.566 12.577 23.363 13.293 C 23.282 13.58 23.217 13.846 23.217 13.886 C 23.217 13.961 23.272 13.98 23.644 14.031 C 23.809 14.052 23.844 14.072 23.844 14.147 C 23.844 14.196 23.87 15.251 23.904 16.492 C 24.011 20.567 24.021 21.456 23.971 22.38 C 23.944 22.862 23.913 23.262 23.904 23.271 C 23.894 23.28 23.563 23.147 23.166 22.976 L 22.443 22.668 L 22.131 22.803 C 21.809 22.942 21.777 22.978 21.735 23.245 C 21.706 23.422 21.728 23.414 20.935 23.576 L 20.468 23.672 L 20.014 23.52 C 19.594 23.379 19.537 23.369 19.206 23.391 C 18.959 23.406 18.789 23.394 18.644 23.351 C 18.436 23.292 18.436 23.292 18.087 23.453 L 17.735 23.612 L 16.435 23.612 C 15.066 23.61 14.784 23.632 13.841 23.807 C 13.189 23.927 12.96 23.922 11.819 23.785 L 11.217 23.711 L 10.796 23.807 C 10.562 23.861 10.326 23.903 10.27 23.901 C 10.202 23.901 10.046 23.8 9.819 23.607 L 9.817 23.607 Z M 7.284 19.918 C 8.289 19.539 9.118 19.223 9.123 19.216 C 9.136 19.202 5.206 15.39 4.684 14.909 C 4.539 14.775 4.409 14.672 4.399 14.682 C 4.39 14.693 4.07 15.547 3.69 16.577 C 3.27 17.715 3.011 18.476 3.032 18.508 C 3.057 18.55 5.424 20.599 5.451 20.605 C 5.454 20.605 6.279 20.296 7.284 19.918 Z M 20.796 17.829 C 21.319 16.564 21.732 15.519 21.718 15.504 C 21.699 15.483 11.888 8.858 5.02 4.226 L 4.469 3.855 L 3.569 4.262 C 3.072 4.484 2.673 4.687 2.68 4.709 C 2.69 4.737 6.011 8.219 10.064 12.449 L 17.432 20.141 L 18.638 20.133 L 19.847 20.125 L 20.796 17.829 Z M 19.434 6.972 C 19.607 6.01 19.75 5.191 19.75 5.151 C 19.75 5.108 19.497 4.902 19.074 4.605 C 18.702 4.343 18.373 4.115 18.344 4.096 C 18.291 4.063 14.442 5.104 14.447 5.149 C 14.451 5.179 19.091 8.748 19.107 8.731 C 19.115 8.725 19.261 7.932 19.434 6.972 Z"/></svg></i>Dota 2</li>
+      <li><i><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M21.7101 3.2348a.0218.0218 0 0 1-.0216-.0215c.001-.0815.003-.3698.004-.424 0-.1292-.1428-.1831-.2117-.0829-.0113.016-.1457.212-.2287.3323a.0244.0244 0 0 1-.0198.0103h-6.5508a.0473.0473 0 0 1-.0473-.0463l-.0131-.177a.0477.0477 0 0 1 .056-.0477l.335.0319a.059.059 0 0 0 .0624-.0445l.2441-.989a.0475.0475 0 0 0-.0295-.0542l-.2268-.0848a.0427.0427 0 0 1-.0263-.0295c-.0412-.1722-.3766-1.3235-1.9935-1.581-.7867-.125-1.302.2107-1.577.4784a1.594 1.594 0 0 0-.3018.4095l-.0965.2125c-.008.0164-.046.2157-.046.234l.0513.9815a.109.109 0 0 0 .0422.0856l.3546.153-.1958.3244a.055.055 0 0 1-.053.0402s-.417.0108-.6227.0192c-.3856.0155-1.2444.4858-1.8773 1.8385-.6219 1.3282-.724 1.5496-.724 1.5496a.0736.0736 0 0 1-.0684.0398l-.5776.0019c-.0356 0-.0736.0285-.0886.0608l-.8982 2.5428c-.0149.0323-.006.081.0173.1081l.627.3918a.059.059 0 0 1 .0195.059l-.3274.9664a.1916.1916 0 0 1-.0235.0618l-.4343.3824a.1056.1056 0 0 0-.0356.059l-.5978 1.5308a.0632.0632 0 0 1-.0608.0455l-.3355.0018a.1633.1633 0 0 0-.162.1488l-.2007 2.2883a1.7194 1.7194 0 0 1-.0159.1207l-.1583.908a.128.128 0 0 1-.0333.0553l-.5584.4263c-.2559.2443-.5988.6903-.7665 1.0015l-1.86 3.9235c-.045.0833-.0811.227-.0788.3221l.1321.2354c.002.0842-.0319.4559-.0707.5307L.817 23.6545a.0985.0985 0 0 0-.003.0856l.0309.0706.0932.1859 1.8913.0029c.1173.0106.247-.1396.2507-.3005l.1027-1.2965-.0268-.1952 3.6063-4.232c.0942-.1146.222-.3168.2861-.4506l1.7186-3.7892a.1712.1712 0 0 1 .1004-.088l.1086-.035a.1694.1694 0 0 1 .1827.0528c.1505.1807.5042.781.6765 1.0315.1425.2079.8495 1.2304 1.1582 1.5675.0853.0926.3481.198.4658.2696a.083.083 0 0 1 .029.1119l-1.0298 1.8083-.4549 2.1357a.9542.9542 0 0 0-.0356.1526l-.4118 1.4831c.003.1873-.141.2856-.1527.5064l-.15 1.084a.0581.0581 0 0 0 .0582.0614l2.5445.014c.0951-.0003.1902-.0045.2854-.0067a1.1049 1.1049 0 0 0 .0755-.0069c.1242-.0158.5629-.0754.75-.1503.1097-.0388.1809-.0819.2268-.1295.1855-.1935.2002-.278.2034-.3975.001-.0212-.011-.0726-.0283-.1049-.0053-.0117-.0316-.0382-.059-.0477l-1.1815-.3562a.3693.3693 0 0 1-.1889-.1338l-.3172-.469a.0865.0865 0 0 1 .0173-.0973l.618-.609a.2017.2017 0 0 0 .0483-.072l1.9036-4.488c.089-.285.0595-.6056 0-.9445-.044-.2504-.6854-1.3264-.8532-1.6236-.1476-.262-1.0677-1.8707-1.286-2.2517-.0793-.1376-.1894-.1328-.2287-.276l-.0726-1.1173a.0398.0398 0 0 1 .0356-.0505l.3312-.0276a.093.093 0 0 0 .0741-.0487l1.147-2.1544a.0958.0958 0 0 0-.002-.094l-.2349-.2907a.0874.0874 0 0 1-.001-.0875l.3515-.3796a.054.054 0 0 1 .0736-.0206l.9343.5266a.3819.3819 0 0 0 .186.0505c.259-.0019.6858-.1549.908-.2906a.3833.3833 0 0 0 .1386-.148l.4583-1.0703c.006-.0136.0262-.0117.029.0028l.1278.5953a.0635.0635 0 0 0 .0788.0501l1.3494-.3a.0662.0662 0 0 0 .05-.0786l-.318-1.3437a.0716.0716 0 0 1 .009-.0534l.1313-.2036a.281.281 0 0 0 .036-.0814l.1589-.725a.0408.0408 0 0 1 .0397-.0323l3.7327.0047a.0916.0916 0 0 0 .0932-.0931v-.6336a.022.022 0 0 1 .0216-.0216h1.4393a.0465.0465 0 0 0 .0464-.0463v-.2855a.0465.0465 0 0 0-.0464-.0463h-1.4398z"/></svg></i>Counter-Strike 2</li>
+      <li><i><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="m1.912 0 1.212 2.474v19.053L1.912 24h14.73l1.337-4.682H8.33V0ZM12 1.516c-.913 0-1.798.112-2.648.312v1.74a9.738 9.738 0 0 1 2.648-.368c5.267 0 9.536 4.184 9.536 9.348a9.203 9.203 0 0 1-2.3 6.086l-.273.954-.602 2.112c2.952-1.993 4.89-5.335 4.89-9.122C23.25 6.468 18.213 1.516 12 1.516Zm0 2.673c-.924 0-1.814.148-2.648.414v13.713h8.817a8.246 8.246 0 0 0 2.36-5.768c0-4.617-3.818-8.359-8.529-8.359zM2.104 7.312A10.858 10.858 0 0 0 .75 12.576c0 1.906.492 3.7 1.355 5.266z"/></svg></i>League of Legends</li>
+      <li><i class="img"><img src="assets/game-deadlock.jpg" width="26" height="26" alt=""></i>Deadlock <span class="tag">beta</span></li>
+    </ul>
+    <p class="meta smart" data-t="smart">Windows may warn you because the app isn't signed yet. <a href="#q-smartscreen">How to open it</a></p>
     <p class="meta mobile-only" data-t="mobile">On your phone? Open this page on your PC to download AutoReady.</p>
 
     <div class="stage s-search" id="stage">
@@ -359,8 +441,9 @@
         <div class="scene"></div>
         <div class="hud" aria-hidden="true">
           <span class="pill"><span class="pulse"></span><span id="status" data-t="stSearch">Searching for a match</span> <span id="clock">4:12</span></span>
-          <span class="pill hide-sm"><img src="assets/autoready-icon-192.png" width="16" height="16" alt="" style="border-radius:4px"> <span data-t="hudOn">AutoReady on</span></span>
+          <span class="pill hide-sm"><img src="assets/autoready-mark-64.png" width="16" height="16" alt="" style="border-radius:4px"> <span data-t="hudOn">AutoReady on</span></span>
         </div>
+        <div class="radar" aria-hidden="true"><i></i><i></i></div>
         <div class="away" aria-hidden="true"><b data-t="away">You're making coffee ☕</b><span data-t="awaySub">the queue keeps going</span></div>
         <div class="popup" aria-hidden="true">
           <small data-t="found">Match found</small>
@@ -370,7 +453,7 @@
           <svg class="cursor go-cursor" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 2.5 19.5 12l-7 1.6L9 20.5z" fill="#F5F4F0" stroke="#09090B" stroke-width="1.4" stroke-linejoin="round"/></svg>
         </div>
         <div class="toast" aria-hidden="true">
-          <img src="assets/autoready-icon-192.png" width="36" height="36" alt="">
+          <img src="assets/autoready-mark-96.png" width="36" height="36" alt="">
           <div><em>AutoReady</em><b data-t="toastT">Match accepted in Dota 2</b><span data-t="toastB">Come back, it's starting.</span></div>
         </div>
       </div>
@@ -384,63 +467,76 @@
     </div>
   </div>
 
-  <div class="ribbon" aria-hidden="true">
-    <div class="track">
-      <ul><li><span class="dots"><i></i><i></i><i></i></span><span data-t="r1"><b>Never</b> clicks during a match</span></li><li><span class="dots"><i></i><i></i><i></i></span><span data-t="r2"><b>Never</b> touches game memory</span></li><li><span class="dots"><i></i><i></i><i></i></span><span data-t="r3"><b>No</b> accounts, ads or tracking</span></li><li><span class="dots"><i></i><i></i><i></i></span><span data-t="r5"><b>No</b> admin rights</span></li></ul>
-      <ul><li><span class="dots"><i></i><i></i><i></i></span><span data-t="r1"><b>Never</b> clicks during a match</span></li><li><span class="dots"><i></i><i></i><i></i></span><span data-t="r2"><b>Never</b> touches game memory</span></li><li><span class="dots"><i></i><i></i><i></i></span><span data-t="r3"><b>No</b> accounts, ads or tracking</span></li><li><span class="dots"><i></i><i></i><i></i></span><span data-t="r5"><b>No</b> admin rights</span></li></ul>
+  <section class="wrap" id="safe">
+    <p class="eyebrow reveal"><span class="dots" aria-hidden="true"><i></i></span><span data-t="safeEy">Safe by design</span></p>
+    <h2 class="reveal" data-t="safeH">It does what you'd do. <span>Nothing more.</span></h2>
+    <div class="cards">
+      <div class="card reveal"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg></div><h3 data-t="k1h">Only looks and clicks</h3><p data-t="k1p">It watches the game window and presses Accept, like a person. It never reads game memory or injects code.</p></div>
+      <div class="card reveal"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 4 6v6c0 4.5 3.4 8.3 8 9 4.6-.7 8-4.5 8-9V6z"/><path d="m9 12 2 2 4-4"/></svg></div><h3 data-t="k2h">Never clicks in a match</h3><p data-t="k2p">It only looks for the popup while you're in queue, and stops once the match is on.</p></div>
+      <div class="card reveal"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div><h3 data-t="k3h">No accounts or telemetry</h3><p data-t="k3p">No sign-up and no ads. Your screenshots and settings never leave your PC.</p></div>
+      <div class="card reveal"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18"/></svg></div><h3 data-t="k4h">No admin rights</h3><p data-t="k4p">It installs for your user only and uninstalls from Windows Settings, like any app.</p></div>
     </div>
-  </div>
+  </section>
 
-
-
-  <section class="wrap">
+  <section class="wrap" id="setup">
     <div class="panel-row">
       <div>
-        <p class="eyebrow reveal"><span class="dots" aria-hidden="true"><i></i><i></i><i></i></span><span data-t="panEy">The panel</span></p>
-        <h2 class="reveal" data-t="panH">Everything in one click <span>on the tray icon.</span></h2>
-        <p class="sub reveal" data-t="panP">Lives in the tray. Turn it on or off, set a pause key, choose the sound and connect your phone with the free ntfy app. Changes apply right away.</p>
+        <p class="eyebrow reveal"><span class="dots" aria-hidden="true"><i></i></span><span data-t="setEy">Setup</span></p>
+        <h2 class="reveal" data-t="setH">Ready in a minute. <span>Really.</span></h2>
+        <ol class="steps-list">
+          <li class="reveal"><b class="n" aria-hidden="true">01</b><div><h3 data-t="t1h">Download it and open it</h3><p data-t="t1p">It installs for your user and lives in the tray, next to the clock.</p></div></li>
+          <li class="reveal"><b class="n" aria-hidden="true">02</b><div><h3 data-t="t2h">Queue up like always</h3><p data-t="t2p">When the match pops, AutoReady accepts it and lets you know.</p></div></li>
+          <li class="reveal"><b class="n" aria-hidden="true">03</b><div><h3 data-t="t3h">Add your phone, if you want</h3><p data-t="t3p">Scan the QR in the panel with the free ntfy app. No sign-up.</p></div></li>
+        </ol>
       </div>
       <div class="panel-shot reveal">
         <picture>
-          <img id="shot" src="assets/panel-en.png" width="540" height="670" loading="lazy" decoding="async" alt="AutoReady panel: waiting for a match in Dota 2, with pause hotkey, sound and phone notification settings">
+          <img id="shot" src="assets/panel-en.png" width="540" height="752" loading="lazy" decoding="async" alt="AutoReady panel: waiting for a match in Dota 2, with pause hotkey, sound and phone notification settings">
         </picture>
       </div>
     </div>
   </section>
 
-  <section class="wrap">
-    <p class="eyebrow reveal"><span class="dots" aria-hidden="true"><i></i><i></i><i></i></span><span data-t="gamesEy">Games</span></p>
-    <h2 class="reveal" data-t="gamesH">Works with these. <span>More on the way.</span></h2>
-    <div class="games reveal">
-      <span class="game"><i><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M 9.817 23.607 L 9.471 23.313 L 9.003 23.273 C 8.419 23.225 8.147 23.172 7.817 23.041 L 7.559 22.938 L 7.281 23.048 C 7.045 23.143 6.467 23.229 6.028 23.236 C 6.004 23.236 5.964 23.18 5.939 23.111 C 5.911 23.041 5.862 22.974 5.824 22.961 C 5.789 22.949 5.527 23.007 5.237 23.094 L 4.712 23.252 L 4.523 23.161 C 4.285 23.045 4.185 23.047 3.787 23.168 C 3.484 23.262 3.446 23.264 3.203 23.212 C 2.84 23.136 2.537 23.141 1.854 23.238 C 1.11 23.344 1.094 23.344 0.875 23.194 C 0.728 23.094 0.648 23.069 0.469 23.069 C 0.266 23.069 0.244 23.06 0.221 22.965 C 0.206 22.906 0.225 22.787 0.264 22.688 C 0.376 22.41 0.42 21.736 0.432 20.125 L 0.444 18.62 L 0.655 18.635 L 0.863 18.65 L 0.895 17.78 C 0.911 17.302 0.927 16.611 0.93 16.246 L 0.935 15.586 L 0.823 15.506 C 0.518 15.283 0.532 15.315 0.405 14.588 C 0.339 14.211 0.274 13.658 0.259 13.358 C 0.234 12.826 0.236 12.811 0.334 12.7 L 0.434 12.586 L 0.682 12.799 C 0.82 12.916 0.937 12.993 0.948 12.969 C 0.984 12.856 0.871 11.508 0.813 11.338 C 0.775 11.238 0.747 11.101 0.747 11.03 C 0.747 10.962 0.679 10.778 0.594 10.618 L 0.443 10.329 L 0.494 9.816 C 0.561 9.136 0.475 8.636 0.19 8.034 L 0.065 7.763 L 0.144 7.09 L 0.228 6.416 L 0.14 6.067 L 0.049 5.717 L 0.154 5.326 L 0.255 4.933 L 0.14 4.553 L 0.021 4.174 L 0.164 3.774 C 0.305 3.385 0.308 3.364 0.305 2.73 C 0.303 2.016 0.228 1.551 0.08 1.365 C -0.047 1.203 -0.026 1.092 0.163 0.919 C 0.253 0.834 0.328 0.726 0.328 0.681 C 0.328 0.612 0.359 0.599 0.549 0.595 C 0.669 0.595 1.039 0.563 1.372 0.525 L 1.979 0.452 L 2.773 0.569 C 3.565 0.684 3.566 0.684 4.652 0.638 L 5.74 0.591 L 5.997 0.746 L 6.257 0.899 L 7.312 0.884 L 8.368 0.869 L 8.724 0.74 C 8.918 0.669 9.229 0.545 9.414 0.461 C 9.596 0.377 9.927 0.264 10.144 0.204 L 10.542 0.099 L 11.056 0.261 L 11.57 0.425 L 12.014 0.276 L 12.456 0.127 L 12.933 0.285 C 13.196 0.371 13.684 0.583 14.022 0.757 L 14.633 1.069 L 15.273 1.051 C 15.758 1.036 15.924 1.018 15.95 0.973 C 15.97 0.942 16.031 0.758 16.083 0.566 L 16.178 0.215 L 16.783 0.235 C 17.236 0.251 17.642 0.299 18.384 0.429 L 19.379 0.605 L 19.638 0.501 C 19.778 0.444 20.046 0.375 20.233 0.351 C 20.546 0.309 20.6 0.314 21.027 0.422 C 21.425 0.522 21.562 0.537 22.109 0.537 C 22.454 0.537 22.812 0.522 22.907 0.506 C 23.07 0.478 23.097 0.489 23.428 0.728 C 23.621 0.866 23.792 1.001 23.807 1.03 C 23.824 1.057 23.86 1.203 23.884 1.354 L 23.93 1.632 L 23.721 2.028 C 23.604 2.246 23.507 2.443 23.507 2.466 C 23.507 2.489 23.555 2.527 23.611 2.554 C 23.668 2.579 23.764 2.677 23.826 2.771 L 23.937 2.941 L 23.912 5.226 C 23.897 6.483 23.872 7.604 23.858 7.715 L 23.831 7.919 L 23.486 7.897 L 23.142 7.87 L 23.113 8.061 C 23.097 8.164 23.084 8.353 23.084 8.485 C 23.084 8.677 23.054 8.778 22.924 9.031 L 22.761 9.342 L 22.851 9.471 C 22.901 9.543 23.072 9.736 23.231 9.901 L 23.523 10.206 L 23.434 10.529 L 23.344 10.854 L 23.451 11.542 C 23.575 12.369 23.566 12.577 23.363 13.293 C 23.282 13.58 23.217 13.846 23.217 13.886 C 23.217 13.961 23.272 13.98 23.644 14.031 C 23.809 14.052 23.844 14.072 23.844 14.147 C 23.844 14.196 23.87 15.251 23.904 16.492 C 24.011 20.567 24.021 21.456 23.971 22.38 C 23.944 22.862 23.913 23.262 23.904 23.271 C 23.894 23.28 23.563 23.147 23.166 22.976 L 22.443 22.668 L 22.131 22.803 C 21.809 22.942 21.777 22.978 21.735 23.245 C 21.706 23.422 21.728 23.414 20.935 23.576 L 20.468 23.672 L 20.014 23.52 C 19.594 23.379 19.537 23.369 19.206 23.391 C 18.959 23.406 18.789 23.394 18.644 23.351 C 18.436 23.292 18.436 23.292 18.087 23.453 L 17.735 23.612 L 16.435 23.612 C 15.066 23.61 14.784 23.632 13.841 23.807 C 13.189 23.927 12.96 23.922 11.819 23.785 L 11.217 23.711 L 10.796 23.807 C 10.562 23.861 10.326 23.903 10.27 23.901 C 10.202 23.901 10.046 23.8 9.819 23.607 L 9.817 23.607 Z M 7.284 19.918 C 8.289 19.539 9.118 19.223 9.123 19.216 C 9.136 19.202 5.206 15.39 4.684 14.909 C 4.539 14.775 4.409 14.672 4.399 14.682 C 4.39 14.693 4.07 15.547 3.69 16.577 C 3.27 17.715 3.011 18.476 3.032 18.508 C 3.057 18.55 5.424 20.599 5.451 20.605 C 5.454 20.605 6.279 20.296 7.284 19.918 Z M 20.796 17.829 C 21.319 16.564 21.732 15.519 21.718 15.504 C 21.699 15.483 11.888 8.858 5.02 4.226 L 4.469 3.855 L 3.569 4.262 C 3.072 4.484 2.673 4.687 2.68 4.709 C 2.69 4.737 6.011 8.219 10.064 12.449 L 17.432 20.141 L 18.638 20.133 L 19.847 20.125 L 20.796 17.829 Z M 19.434 6.972 C 19.607 6.01 19.75 5.191 19.75 5.151 C 19.75 5.108 19.497 4.902 19.074 4.605 C 18.702 4.343 18.373 4.115 18.344 4.096 C 18.291 4.063 14.442 5.104 14.447 5.149 C 14.451 5.179 19.091 8.748 19.107 8.731 C 19.115 8.725 19.261 7.932 19.434 6.972 Z"/></svg></i>Dota 2</span>
-      <span class="game"><i><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M21.7101 3.2348a.0218.0218 0 0 1-.0216-.0215c.001-.0815.003-.3698.004-.424 0-.1292-.1428-.1831-.2117-.0829-.0113.016-.1457.212-.2287.3323a.0244.0244 0 0 1-.0198.0103h-6.5508a.0473.0473 0 0 1-.0473-.0463l-.0131-.177a.0477.0477 0 0 1 .056-.0477l.335.0319a.059.059 0 0 0 .0624-.0445l.2441-.989a.0475.0475 0 0 0-.0295-.0542l-.2268-.0848a.0427.0427 0 0 1-.0263-.0295c-.0412-.1722-.3766-1.3235-1.9935-1.581-.7867-.125-1.302.2107-1.577.4784a1.594 1.594 0 0 0-.3018.4095l-.0965.2125c-.008.0164-.046.2157-.046.234l.0513.9815a.109.109 0 0 0 .0422.0856l.3546.153-.1958.3244a.055.055 0 0 1-.053.0402s-.417.0108-.6227.0192c-.3856.0155-1.2444.4858-1.8773 1.8385-.6219 1.3282-.724 1.5496-.724 1.5496a.0736.0736 0 0 1-.0684.0398l-.5776.0019c-.0356 0-.0736.0285-.0886.0608l-.8982 2.5428c-.0149.0323-.006.081.0173.1081l.627.3918a.059.059 0 0 1 .0195.059l-.3274.9664a.1916.1916 0 0 1-.0235.0618l-.4343.3824a.1056.1056 0 0 0-.0356.059l-.5978 1.5308a.0632.0632 0 0 1-.0608.0455l-.3355.0018a.1633.1633 0 0 0-.162.1488l-.2007 2.2883a1.7194 1.7194 0 0 1-.0159.1207l-.1583.908a.128.128 0 0 1-.0333.0553l-.5584.4263c-.2559.2443-.5988.6903-.7665 1.0015l-1.86 3.9235c-.045.0833-.0811.227-.0788.3221l.1321.2354c.002.0842-.0319.4559-.0707.5307L.817 23.6545a.0985.0985 0 0 0-.003.0856l.0309.0706.0932.1859 1.8913.0029c.1173.0106.247-.1396.2507-.3005l.1027-1.2965-.0268-.1952 3.6063-4.232c.0942-.1146.222-.3168.2861-.4506l1.7186-3.7892a.1712.1712 0 0 1 .1004-.088l.1086-.035a.1694.1694 0 0 1 .1827.0528c.1505.1807.5042.781.6765 1.0315.1425.2079.8495 1.2304 1.1582 1.5675.0853.0926.3481.198.4658.2696a.083.083 0 0 1 .029.1119l-1.0298 1.8083-.4549 2.1357a.9542.9542 0 0 0-.0356.1526l-.4118 1.4831c.003.1873-.141.2856-.1527.5064l-.15 1.084a.0581.0581 0 0 0 .0582.0614l2.5445.014c.0951-.0003.1902-.0045.2854-.0067a1.1049 1.1049 0 0 0 .0755-.0069c.1242-.0158.5629-.0754.75-.1503.1097-.0388.1809-.0819.2268-.1295.1855-.1935.2002-.278.2034-.3975.001-.0212-.011-.0726-.0283-.1049-.0053-.0117-.0316-.0382-.059-.0477l-1.1815-.3562a.3693.3693 0 0 1-.1889-.1338l-.3172-.469a.0865.0865 0 0 1 .0173-.0973l.618-.609a.2017.2017 0 0 0 .0483-.072l1.9036-4.488c.089-.285.0595-.6056 0-.9445-.044-.2504-.6854-1.3264-.8532-1.6236-.1476-.262-1.0677-1.8707-1.286-2.2517-.0793-.1376-.1894-.1328-.2287-.276l-.0726-1.1173a.0398.0398 0 0 1 .0356-.0505l.3312-.0276a.093.093 0 0 0 .0741-.0487l1.147-2.1544a.0958.0958 0 0 0-.002-.094l-.2349-.2907a.0874.0874 0 0 1-.001-.0875l.3515-.3796a.054.054 0 0 1 .0736-.0206l.9343.5266a.3819.3819 0 0 0 .186.0505c.259-.0019.6858-.1549.908-.2906a.3833.3833 0 0 0 .1386-.148l.4583-1.0703c.006-.0136.0262-.0117.029.0028l.1278.5953a.0635.0635 0 0 0 .0788.0501l1.3494-.3a.0662.0662 0 0 0 .05-.0786l-.318-1.3437a.0716.0716 0 0 1 .009-.0534l.1313-.2036a.281.281 0 0 0 .036-.0814l.1589-.725a.0408.0408 0 0 1 .0397-.0323l3.7327.0047a.0916.0916 0 0 0 .0932-.0931v-.6336a.022.022 0 0 1 .0216-.0216h1.4393a.0465.0465 0 0 0 .0464-.0463v-.2855a.0465.0465 0 0 0-.0464-.0463h-1.4398z"/></svg></i>Counter-Strike 2</span>
-      <span class="game"><i><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="m1.912 0 1.212 2.474v19.053L1.912 24h14.73l1.337-4.682H8.33V0ZM12 1.516c-.913 0-1.798.112-2.648.312v1.74a9.738 9.738 0 0 1 2.648-.368c5.267 0 9.536 4.184 9.536 9.348a9.203 9.203 0 0 1-2.3 6.086l-.273.954-.602 2.112c2.952-1.993 4.89-5.335 4.89-9.122C23.25 6.468 18.213 1.516 12 1.516Zm0 2.673c-.924 0-1.814.148-2.648.414v13.713h8.817a8.246 8.246 0 0 0 2.36-5.768c0-4.617-3.818-8.359-8.529-8.359zM2.104 7.312A10.858 10.858 0 0 0 .75 12.576c0 1.906.492 3.7 1.355 5.266z"/></svg></i>League of Legends</span>
-      <a class="game ask" href="https://github.com/hercase/autoready/issues/new?template=game-request.yml" data-t="askA">Play something else? Ask for it →</a>
+  <section class="wrap" id="faq">
+    <p class="eyebrow reveal"><span class="dots" aria-hidden="true"><i></i></span><span data-t="faqEy">Questions</span></p>
+    <div class="faq-row">
+    <div>
+    <h2 class="reveal" data-t="faqH">Before you download.</h2>
+    <p class="more reveal"><a href="faq/" data-t="allQ">All questions →</a></p>
+    </div>
+    <div class="qa reveal">
+      <details><summary data-t="q1">Can I get banned for this?</summary><p data-t="a1">AutoReady only looks at the game window and presses Accept, like you would. It doesn't read or change game memory and doesn't inject anything. No tool can promise zero risk, but nothing here touches the match itself. <a href="faq/#ban">More detail</a></p></details>
+      <details id="q-smartscreen"><summary data-t="q2">Why does Windows show a warning?</summary><p data-t="a2">Windows warns about apps it hasn't seen much yet, and AutoReady is new. Code signing is in progress. Until then, click <b>More info → Run anyway</b>. Every release is built from the public source code and scanned with Microsoft Defender.</p></details>
+      <details><summary data-t="q3">Which games does it work with?</summary><p data-t="a3">Dota 2, Counter-Strike 2 and League of Legends, plus Deadlock in beta. Play something else? <a href="https://github.com/hercase/autoready/issues/new?template=game-request.yml">Ask for your game</a>; a screenshot of the popup helps a lot.</p></details>
+      <details><summary data-t="q4">Can I use it to stay AFK?</summary><p data-t="a4">No. It's there so you don't miss a match while you grab something. Accept, then come back: leaving hurts the rest of your team.</p></details>
+      <details><summary data-t="q5">Does it cost anything?</summary><p data-t="a5">No. It's free and open source (MIT), with no ads and no account.</p></details>
+    </div>
     </div>
 
     <div class="final reveal">
-      <h2 data-t="finalH">Stop staring at the queue.</h2>
-      <p class="sub" data-t="finalP">Set up in about a minute.</p>
+      <h2 data-t="finalH">Never miss a match again.</h2>
       <a class="btn" href="https://github.com/hercase/autoready/releases/latest/download/AutoReady.exe">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
-        <span data-t="download">Download for Windows</span>
+        <span data-t="download">Download free for Windows</span>
       </a>
+      <p class="meta"><a href="https://github.com/hercase/autoready" data-t="code">or read the code on GitHub</a></p>
     </div>
   </section>
 </main>
 
 <footer>
-  <div class="wrap">
-    <a class="mark" href="https://keis.studio"><picture>
-      <img src="assets/keis-wordmark-dark-tight.svg" width="105" height="20" alt="keis.studio">
-    </picture></a>
-    <nav>
+  <div class="wrap foot">
+    <a class="brand" href="./"><img src="assets/autoready-mark-96.png" width="32" height="32" alt="">AutoReady</a>
+    <nav aria-label="AutoReady">
       <a href="faq/" data-t="faq">FAQ</a>
       <a href="https://github.com/hercase/autoready" data-t="source">Source code</a>
       <a href="https://github.com/hercase/autoready/blob/main/PRIVACY.md" data-t="privacy">Privacy</a>
     </nav>
   </div>
-  <p class="legal" data-t="legal">AutoReady is an independent project, not affiliated with or endorsed by the companies behind the games it supports. Game names are trademarks of their owners.</p>
+  <div class="wrap foot-bottom">
+    <p class="legal" data-t="legal">Not affiliated with the game companies. Game names are trademarks of their owners.</p>
+    <a class="mark" href="https://keis.studio"><span data-t="by">A product by</span> <img src="assets/keis-wordmark-dark-tight.svg" width="84" height="16" alt="keis.studio"></a>
+  </div>
 </footer>
 
 <script>
@@ -455,22 +551,33 @@
     var ES = {
       h1: "Andá tranquilo. <span class=\"cmy\">La partida se acepta sola.</span>",
       lead: "Una app para Windows que acepta tu partida mientras no estás, y te avisa en la PC o el celular para que vuelvas a tiempo.",
-      download: "Descargar para Windows",
-      meta: "Gratis · Código abierto · Windows 10 y 11",
-      smart: "Windows puede mostrar un aviso la primera vez. <a href=\"faq/?lang=es#smartscreen\">Qué hacer</a>",
+      download: "Descargar gratis para Windows", dlShort: "Descargar",
+      meta: "Código abierto · Windows 10 y 11",
+      smart: "Windows puede avisarte porque la app todavía no está firmada. <a href=\"#q-smartscreen\">Cómo abrirla</a>",
       mobile: "¿Estás en el celular? Abrí esta página en la PC para descargar AutoReady.",
       stSearch: "Buscando partida", stFound: "Partida encontrada", stAccepted: "Aceptada", hudOn: "AutoReady activo",
       away: "Te fuiste a hacer un café ☕", awaySub: "la búsqueda sigue",
       found: "Partida encontrada", ready: "Tu partida está lista", accept: "ACEPTAR", accepted: "ACEPTADA",
       toastT: "Partida aceptada en Dota 2", toastB: "Volvé, ya empieza.", phoneDate: "Sábado",
-      r1: "<b>Nunca</b> hace click en medio de una partida", r2: "<b>Nunca</b> toca la memoria del juego", r3: "<b>Sin</b> cuentas, publicidad ni rastreo",
-      r5: "<b>Sin</b> permisos de administrador",
-      panEy: "El panel", panH: "Todo a un click <span>en el ícono de la bandeja.</span>",
-      panP: "Vive en la bandeja. Activala o pausala, elegí una tecla de pausa, el sonido y conectá el celular con la app gratis ntfy. Los cambios se aplican al instante.",
-      gamesEy: "Juegos", gamesH: "Funciona con estos. <span>Vienen más.</span>", askA: "¿Jugás a otra cosa? Pedí que la sumemos →",
-      finalH: "No te quedes mirando la pantalla.", finalP: "Se configura en un minuto.",
-      faq: "Preguntas", source: "Código fuente", privacy: "Privacidad",
-      legal: "AutoReady es un proyecto independiente, sin afiliación ni respaldo de las empresas detrás de los juegos que soporta. Los nombres de los juegos son marcas de sus dueños.",
+      safeEy: "Seguro por diseño", safeH: "Hace lo que harías vos. <span>Nada más.</span>",
+      k1h: "Solo mira y hace click", k1p: "Mira la ventana del juego y toca Aceptar, como una persona. Nunca lee la memoria del juego ni inyecta código.",
+      k2h: "Nunca hace click en una partida", k2p: "Solo busca el aviso mientras estás en la cola, y deja de mirar cuando arranca la partida.",
+      k3h: "Sin cuentas ni telemetría", k3p: "Sin registrarte y sin publicidad. Tus capturas y tu configuración nunca salen de tu PC.",
+      k4h: "Sin permisos de administrador", k4p: "Se instala solo para tu usuario y se desinstala desde la Configuración de Windows, como cualquier app.",
+      setEy: "Configuración", setH: "Lista en un minuto. <span>En serio.</span>",
+      t1h: "Bajala y abrila", t1p: "Se instala para tu usuario y queda en la bandeja, al lado del reloj.",
+      t2h: "Buscá partida como siempre", t2p: "Cuando salta la partida, AutoReady la acepta y te avisa.",
+      t3h: "Sumá el celular, si querés", t3p: "Escaneá el QR del panel con la app gratis ntfy. Sin registrarte.",
+      faqEy: "Preguntas", faqH: "Antes de descargarla.",
+      q1: "¿Me pueden banear?", a1: "AutoReady solo mira la ventana del juego y toca Aceptar, como lo harías vos. No lee ni cambia la memoria del juego y no inyecta nada. Ninguna herramienta puede prometer riesgo cero, pero nada de esto toca la partida en sí. <a href=\"faq/?lang=es#ban-es\">Más detalle</a>",
+      q2: "¿Por qué Windows muestra un aviso?", a2: "Windows avisa con las apps que todavía vio poco, y AutoReady es nueva. La firma de código está en trámite. Mientras tanto, tocá <b>Más información → Ejecutar de todas formas</b>. Cada versión se compila desde el código público y se escanea con Microsoft Defender.",
+      q3: "¿Con qué juegos funciona?", a3: "Dota 2, Counter-Strike 2 y League of Legends, y Deadlock en beta. ¿Jugás a otra cosa? <a href=\"https://github.com/hercase/autoready/issues/new?template=game-request.yml\">Pedí que la sumemos</a>; una captura del aviso ayuda mucho.",
+      q4: "¿La puedo usar para quedarme AFK?", a4: "No. Está para que no pierdas una partida mientras buscás algo. Aceptá y volvé: irte perjudica al resto de tu equipo.",
+      q5: "¿Cuesta algo?", a5: "No. Es gratis y de código abierto (MIT), sin publicidad y sin cuenta.",
+      allQ: "Todas las preguntas →",
+      finalH: "No te pierdas nunca más una partida.", code: "o mirá el código en GitHub",
+      faq: "Preguntas", source: "Código fuente", privacy: "Privacidad", by: "Un producto de",
+      legal: "Sin afiliación con las empresas de los juegos. Los nombres de los juegos son marcas de sus dueños.",
       sceneAria: "Animación: aparece una partida mientras no estás, AutoReady hace click en Aceptar y manda un aviso"
     };
     root.lang = "es";
@@ -497,21 +604,25 @@
     [].forEach.call(document.querySelectorAll("[data-t-aria]"), function (el) {
       el.setAttribute("aria-label", ES[el.getAttribute("data-t-aria")]);
     });
-    [].forEach.call(faqLinks, function (a) { a.href = "faq/?lang=es"; });
+    [].forEach.call(faqLinks, function (a) { a.href = "faq/?lang=es" + (a.hash ? a.hash + "-es" : ""); });
     document.getElementById("lang-en").removeAttribute("aria-current");
     document.getElementById("lang-es").setAttribute("aria-current", "true");
     var shot = document.getElementById("shot");
     shot.src = "assets/panel-es.png";
     shot.alt = "Panel de AutoReady: esperando partida en Dota 2, con tecla de pausa, sonido y avisos al celular";
   } else if (q) {   // ingles elegido a mano: que las preguntas tambien salgan en ingles
-    [].forEach.call(faqLinks, function (a) { a.href = "faq/?lang=en"; });
-    document.querySelector(".smart a").href = "faq/?lang=en#smartscreen";
+    [].forEach.call(faqLinks, function (a) { a.href = "faq/?lang=en" + a.hash; });
   }
 
   // Borde del encabezado al bajar.
   var header = document.querySelector("header");
   var onScroll = function () { header.classList.toggle("scrolled", window.scrollY > 8); };
   window.addEventListener("scroll", onScroll, { passive: true }); onScroll();
+
+  var heroDl = document.getElementById("hero-dl");
+  if ("IntersectionObserver" in window) {
+    new IntersectionObserver(function (es) { header.classList.toggle("show-dl", !es[0].isIntersecting && es[0].boundingClientRect.top < 0); }).observe(heroDl);
+  }
 
   var still = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
 
@@ -525,6 +636,58 @@
   } else {
     [].forEach.call(items, function (el) { el.classList.add("in"); });
   }
+
+  // Spotlight de las tarjetas.
+  [].forEach.call(document.querySelectorAll(".card"), function (c) {
+    c.addEventListener("pointermove", function (e) {
+      var r = c.getBoundingClientRect();
+      c.style.setProperty("--mx", (e.clientX - r.left) + "px");
+      c.style.setProperty("--my", (e.clientY - r.top) + "px");
+    });
+  });
+
+  // Titular: degradé "flow" (3 s por ciclo, escala 2.25). Sin movimiento queda quieto en el primer cuadro.
+  var hot = document.querySelector("h1 .cmy");
+  if (hot) {
+    hot.setAttribute("data-text", hot.textContent);
+    var GT = ["#34D399", "#38BDF8", "#10B981"], gtTime = 0, gtLast = 0, gtRaf = 0, gtSeen = true;
+    var gtPaint = function () {
+      var spin = gtTime / 3 * Math.PI * 2, blobs = GT.map(function (c, i) {
+        var rate = 0.55 + ((i * 0.618) % 1) * 0.5;
+        var x = 50 + 44 * Math.sin(spin * rate + i * 2.1), y = 50 + 40 * Math.sin(spin * (rate * 0.83 + 0.21) + i * 1.3);
+        return "radial-gradient(ellipse 49% 127.5% at " + x.toFixed(2) + "% " + y.toFixed(2) + "%, " + c + " 0%, transparent 100%)";
+      });
+      hot.style.setProperty("--gt", blobs.join(", ") + ", linear-gradient(90deg, " + GT.join(", ") + ")");
+    };
+    var gtTick = function (now) {
+      gtRaf = 0;
+      gtTime += Math.min(0.05, Math.max(0, (now - gtLast) / 1000)); gtLast = now;
+      gtPaint();
+      if (gtSeen) gtRaf = requestAnimationFrame(gtTick);
+    };
+    gtPaint();
+    if (!still) {
+      gtLast = performance.now(); gtRaf = requestAnimationFrame(gtTick);
+      if ("IntersectionObserver" in window) new IntersectionObserver(function (es) {
+        gtSeen = es[0].isIntersecting;
+        if (gtSeen && !gtRaf) { gtLast = performance.now(); gtRaf = requestAnimationFrame(gtTick); }
+      }).observe(hot);
+    }
+  }
+
+  // Popup: "Partida encontrada" se descifra (es mono y en mayúsculas: el ancho no cambia).
+  var foundEl = document.querySelector(".popup small"), foundText = foundEl.textContent;
+  var decrypt = function () {
+    var glyphs = "ABCDEFGHJKLMNPQRSTUVWXYZ#%&*+=?", t0 = null, dur = 650;
+    var frame = function (now) {
+      if (t0 === null) t0 = now;
+      var done = Math.min(1, (now - t0) / dur), n = Math.floor(done * foundText.length), out = foundText.slice(0, n);
+      for (var i = n; i < foundText.length; i++) out += foundText[i] === " " ? " " : glyphs[Math.floor(Math.random() * glyphs.length)];
+      foundEl.textContent = out;
+      if (done < 1) requestAnimationFrame(frame); else foundEl.textContent = foundText;
+    };
+    requestAnimationFrame(frame);
+  };
 
   // Escena: buscando → partida encontrada → click en Aceptar → aviso. Se repite.
   var stage = document.getElementById("stage"), screen = document.getElementById("screen");
@@ -541,13 +704,15 @@
   var timers = [];
   var run = function () {
     timers.forEach(clearTimeout); timers = [];
+    screen.classList.remove("contact");
     setState("search");
     var at = function (ms, fn) { timers.push(setTimeout(fn, ms)); };
-    at(2600, function () { setState("found"); });
-    at(4600, function () { screen.classList.add("press"); });
-    at(4800, function () { screen.classList.remove("press"); setState("accepted"); });
-    at(5600, function () { setState("notified"); });
-    at(11000, function () { secs = 240 + Math.floor(Math.random() * 60); run(); });
+    at(2300, function () { screen.classList.add("contact"); });
+    at(3400, function () { screen.classList.remove("contact"); setState("found"); decrypt(); });
+    at(5400, function () { screen.classList.add("press"); });
+    at(5600, function () { screen.classList.remove("press"); setState("accepted"); });
+    at(6400, function () { setState("notified"); });
+    at(11800, function () { secs = 240 + Math.floor(Math.random() * 60); run(); });
   };
   // Solo anima cuando se ve (y la pestaña esta visible).
   var visible = false;

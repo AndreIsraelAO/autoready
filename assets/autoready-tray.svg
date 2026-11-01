@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- Bandeja: sin caja (como los demas iconos de la barra) y con contorno ink, para que la flecha blanca
+       se vea tambien con la barra de tareas clara. -->
+  <g transform="translate(256 256) scale(.94) translate(-203 -283)">
+    <polyline points="78,292 188,402 352,198" fill="none" stroke="#09090B" stroke-width="136" stroke-linejoin="miter"/>
+    <polygon points="440,104 274,160 412,280" fill="#09090B" stroke="#09090B" stroke-width="52" stroke-linejoin="miter"/>
+    <polyline points="86.48,263.72 61.02,238.26" fill="none" stroke="#38BDF8" stroke-width="84"/>
+    <polyline points="18.61,269.37 -4.02,246.74" fill="none" stroke="#10B981" stroke-width="84"/>
+    <polyline points="78,292 188,402 352,198" fill="none" stroke="#F5F4F0" stroke-width="84" stroke-linejoin="miter"/>
+    <polygon points="440,104 274,160 412,280" fill="#F5F4F0"/>
+  </g>
+</svg>

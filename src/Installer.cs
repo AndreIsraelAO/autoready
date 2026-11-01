@@ -211,8 +211,8 @@ namespace AutoReady
             Border footer = new Border
             {
                 Padding = new Thickness(24), BorderThickness = new Thickness(0, 1, 0, 0), Child = Buttons,
-                Background = new SolidColorBrush(theme.Dark ? Color.FromRgb(0x1C, 0x1C, 0x1C) : Color.FromRgb(0xEE, 0xEE, 0xEE)),
-                BorderBrush = new SolidColorBrush(theme.Dark ? Color.FromRgb(0x2E, 0x2E, 0x2E) : Color.FromRgb(0xE5, 0xE5, 0xE5)),
+                Background = new SolidColorBrush(theme.Dark ? Color.FromRgb(0x14, 0x14, 0x18) : Color.FromRgb(0xEE, 0xEE, 0xEE)),
+                BorderBrush = new SolidColorBrush(theme.Dark ? Color.FromRgb(0x26, 0x26, 0x2C) : Color.FromRgb(0xE5, 0xE5, 0xE5)),
             };
 
             StackPanel root = new StackPanel();

@@ -85,7 +85,7 @@ namespace AutoReady
             ShowInTaskbar = false;
             Topmost = true;
             Background = theme.Background;
-            BorderBrush = theme.Dark ? new SolidColorBrush(Color.FromRgb(0x3A, 0x3A, 0x3A)) : new SolidColorBrush(Color.FromRgb(0xD0, 0xD0, 0xD0));
+            BorderBrush = theme.Dark ? new SolidColorBrush(Color.FromRgb(0x34, 0x34, 0x3C)) : new SolidColorBrush(Color.FromRgb(0xD0, 0xD0, 0xD0));
             BorderThickness = new Thickness(0);   // el borde lo dibuja DWM (ver abajo), asi no se corta en las esquinas redondeadas
             FontFamily = new FontFamily("Segoe UI Variable Text, Segoe UI");
             FontSize = 14;
@@ -395,8 +395,8 @@ namespace AutoReady
             return new Border
             {
                 Height = 48, BorderThickness = new Thickness(0, 1, 0, 0), Child = link,
-                Background = new SolidColorBrush(theme.Dark ? Color.FromRgb(0x1C, 0x1C, 0x1C) : Color.FromRgb(0xEE, 0xEE, 0xEE)),
-                BorderBrush = new SolidColorBrush(theme.Dark ? Color.FromRgb(0x2E, 0x2E, 0x2E) : Color.FromRgb(0xE5, 0xE5, 0xE5)),
+                Background = new SolidColorBrush(theme.Dark ? Color.FromRgb(0x14, 0x14, 0x18) : Color.FromRgb(0xEE, 0xEE, 0xEE)),
+                BorderBrush = new SolidColorBrush(theme.Dark ? Color.FromRgb(0x26, 0x26, 0x2C) : Color.FromRgb(0xE5, 0xE5, 0xE5)),
             };
         }
 
