@@ -126,6 +126,16 @@ namespace AutoReady
             return TimeSpan.FromMilliseconds(unchecked((uint)Environment.TickCount - li.dwTime));
         }
 
+        [DllImport("user32.dll")] static extern IntPtr WindowFromPoint(POINT p);
+        [DllImport("user32.dll")] static extern IntPtr GetAncestor(IntPtr hwnd, uint flags);
+
+        // La ventana de nivel superior que esta debajo de ese punto de la pantalla es la del juego.
+        public static bool PointBelongsTo(IntPtr hwnd, int x, int y)
+        {
+            IntPtr under = WindowFromPoint(new POINT { X = x, Y = y });
+            return under != IntPtr.Zero && GetAncestor(under, 2 /* GA_ROOT */) == hwnd;
+        }
+
         public static void PressEnter()
         {
             const byte VK_RETURN = 0x0D;

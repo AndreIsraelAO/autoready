@@ -21,6 +21,7 @@ namespace AutoReady
         public int ScanIntervalMs = 700;
         public int CooldownAfterAcceptSec = 10;
         public int GsiPort = 53111;
+        public string GsiToken = "";   // codigo secreto que el juego manda en cada POST de GSI
         public int FallbackScanSecAfterAccept = 90;   // sin GSI: cuanto seguimos escaneando despues de aceptar
         public bool NotifyPhone = false;
         public string NtfyServer = "https://ntfy.sh";
@@ -55,6 +56,7 @@ namespace AutoReady
                 c.ScanIntervalMs = Int(kv, "ScanIntervalMs", c.ScanIntervalMs);
                 c.CooldownAfterAcceptSec = Int(kv, "CooldownAfterAcceptSec", c.CooldownAfterAcceptSec);
                 c.GsiPort = Int(kv, "GsiPort", c.GsiPort);
+                c.GsiToken = Str(kv, "GsiToken", c.GsiToken);
                 c.FallbackScanSecAfterAccept = Int(kv, "FallbackScanSecAfterAccept", c.FallbackScanSecAfterAccept);
                 c.NotifyPhone = Bool(kv, "NotifyPhone", c.NotifyPhone);
                 c.NtfyServer = Str(kv, "NtfyServer", c.NtfyServer);
@@ -83,6 +85,7 @@ namespace AutoReady
                     d.MinFill = Dbl(kv, p + "MinFill", d.MinFill);
                 }
             }
+            if (string.IsNullOrEmpty(c.GsiToken)) c.GsiToken = Guid.NewGuid().ToString("N");   // 128 bits aleatorios
             if (string.IsNullOrEmpty(c.NtfyTopic) || !c.NtfyTopic.StartsWith("ar-"))
                 c.NtfyTopic = NewTopic();
             c.Save();
@@ -109,6 +112,7 @@ namespace AutoReady
             lines.Add("ScanIntervalMs=" + ScanIntervalMs);
             lines.Add("CooldownAfterAcceptSec=" + CooldownAfterAcceptSec);
             lines.Add("GsiPort=" + GsiPort);
+            lines.Add("GsiToken=" + GsiToken);
             lines.Add("FallbackScanSecAfterAccept=" + FallbackScanSecAfterAccept);
             lines.Add("NotifyPhone=" + NotifyPhone);
             lines.Add("NtfyServer=" + NtfyServer);

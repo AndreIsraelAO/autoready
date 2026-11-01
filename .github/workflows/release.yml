@@ -21,6 +21,17 @@ jobs:
           & "$env:GITHUB_WORKSPACE\build.bat" $version
           if ($LASTEXITCODE -ne 0) { exit 1 }
 
+      # Si Microsoft Defender marca el exe, no se publica: mejor enterarse aca que por un usuario.
+      - name: Scan with Microsoft Defender
+        shell: pwsh
+        run: |
+          $mp = "$env:ProgramFiles\Windows Defender\MpCmdRun.exe"
+          if (-not (Test-Path $mp)) { Write-Host "Defender no disponible en el runner; se omite el escaneo"; exit 0 }
+          & $mp -SignatureUpdate | Out-Null
+          & $mp -Scan -ScanType 3 -File "$env:GITHUB_WORKSPACE\dist\AutoReady.exe" -DisableRemediation
+          if ($LASTEXITCODE -eq 2) { Write-Error "Defender detecto una amenaza en AutoReady.exe"; exit 1 }
+          exit 0
+
       - name: Checksum
         shell: pwsh
         run: |

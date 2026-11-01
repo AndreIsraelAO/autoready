@@ -21,6 +21,11 @@ namespace AutoReady
             // Coordenadas en pixeles fisicos; si no, con escala 125%/150% el click cae fuera del boton.
             Win32.SetProcessDPIAware();
 
+            // Un error inesperado se registra en vez de cerrar la app sin explicacion.
+            Application.SetUnhandledExceptionMode(UnhandledExceptionMode.CatchException);
+            Application.ThreadException += (s, e) => Log.Write("Error no manejado (UI): " + e.Exception);
+            AppDomain.CurrentDomain.UnhandledException += (s, e) => Log.Write("Error no manejado: " + e.ExceptionObject);
+
             // AutoReady.exe --test captura.png [dota2|cs2]  -> corre el detector sobre una imagen y guarda captura.result.png
             // Codigo de salida: 0 = boton encontrado, 1 = no encontrado, 2 = error.
             if (args.Length >= 2 && args[0] == "--test")
@@ -35,14 +40,24 @@ namespace AutoReady
             }
             Updater.CleanupOldExe();
 
+            // Desinstalar (lo llama Configuracion > Aplicaciones) o, si es un exe recien bajado, ofrecer instalarlo.
+            if (args.Length >= 1 && args[0] == "--uninstall") return Installer.Uninstall();
+            if (Installer.ShouldOffer(args))
+            {
+                Installer.Choice choice = Installer.Offer();
+                if (choice != Installer.Choice.Portable) return 0;   // instalado (ya arranco la copia instalada) o cancelado
+            }
+
             bool created;
             using (Mutex mutex = new Mutex(true, @"Local\AutoReady", out created))
             {
                 if (!created)
                 {
-                    MessageBox.Show("AutoReady ya esta abierto (mira el icono al lado del reloj).", "AutoReady");
+                    MessageBox.Show(Lang.T("AutoReady ya está abierto: buscá su ícono al lado del reloj.",
+                                           "AutoReady is already running: look for its icon next to the clock."), "AutoReady");
                     return 0;
                 }
+                if (Installer.IsInstalledCopy) Installer.Register();   // la version mostrada en Aplicaciones se actualiza
                 Application.EnableVisualStyles();
                 Application.SetCompatibleTextRenderingDefault(false);
                 Application.Run(new TrayApp());

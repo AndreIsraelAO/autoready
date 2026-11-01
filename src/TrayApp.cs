@@ -30,7 +30,7 @@ namespace AutoReady
 
         volatile bool paused;
         volatile bool running = true;
-        IntPtr flashedWindow = IntPtr.Zero;   // ultima ventana que titilo en la barra de tareas
+        volatile IntPtr flashedWindow = IntPtr.Zero;   // ultima ventana que titilo en la barra de tareas
         AppState state = AppState.Starting;
         GameProfile activeGame;               // juego abierto que estamos vigilando
         DateTime cooldownUntil = DateTime.MinValue;
@@ -41,6 +41,7 @@ namespace AutoReady
         Point lastHit;
         DateTime lastBusySkip = DateTime.MinValue;
         bool useToasts;
+        int installing;   // 1 mientras se instala una actualizacion
 
         public TrayApp()
         {
@@ -80,7 +81,7 @@ namespace AutoReady
             };
             tray.BalloonTipClicked += (s, e) => OpenPanel();
 
-            gsi = new Gsi(cfg.GsiPort);
+            gsi = new Gsi(cfg.GsiPort, cfg.GsiToken);
             foreach (GameProfile g in GameProfile.All) gsi.InstallConfig(g);
             gsi.Start();
             gsi.StateChanged += OnGameStateChanged;
@@ -236,8 +237,8 @@ namespace AutoReady
             switch (s)
             {
                 case AppState.Paused: text = "En pausa"; break;
-                case AppState.InMatch: text = "En partida de " + game.Name; break;
-                case AppState.Searching: text = "Esperando partida en " + game.Name; break;
+                case AppState.InMatch: text = game != null ? "En partida de " + game.Name : "En partida"; break;
+                case AppState.Searching: text = game != null ? "Esperando partida en " + game.Name : "Esperando partida"; break;
                 default: text = paused ? "En pausa" : "Listo: abrí tu juego y buscá partida"; break;
             }
             PanelStatus st = new PanelStatus
@@ -293,7 +294,7 @@ namespace AutoReady
                 updateMessage = r.Tag + " disponible";
                 Log.Write("Updater: hay una version nueva " + r.Tag);
                 PushStatus();
-                if (isNew) Notify("Versión " + r.Tag + " disponible", "Se instala en unos segundos.", "Actualizar", InstallUpdate);
+                if (isNew) Notify("Versión " + r.Tag + " disponible", "Tocá Actualizar para instalarla.", "Actualizar", InstallUpdate);
             });
         }
 
@@ -301,9 +302,11 @@ namespace AutoReady
         {
             Updater.Release r = pendingUpdate;
             if (r == null) return;
-            if (gsi.InAnyMatch())
+            if (Interlocked.CompareExchange(ref installing, 1, 0) != 0) return;   // ya se esta instalando
+            if (gsi.InAnyMatch() || Presence.Current == PresenceState.InMatch)
             {
                 updateMessage = "se actualiza cuando termine la partida";
+                installing = 0;
                 PushStatus();
                 return;
             }
@@ -321,6 +324,7 @@ namespace AutoReady
                 {
                     Log.Write("Updater: fallo la actualizacion: " + e.Message);
                     updateMessage = "no se pudo actualizar";
+                    installing = 0;
                     PushStatus();
                 }
             });
@@ -335,7 +339,7 @@ namespace AutoReady
                 int wait = cfg.ScanIntervalMs;
                 try { wait = Tick(); }
                 catch (Exception e) { Log.Write("scanner: " + e); }
-                Thread.Sleep(wait);
+                Thread.Sleep(Math.Max(100, Math.Min(5000, wait)));   // acotado: un valor raro en el ini no puede trabar ni romper el loop
             }
         }
 
@@ -371,12 +375,11 @@ namespace AutoReady
 
             if (gsi.InMatch(game)) { SetState(AppState.InMatch); return 1000; }
 
-            // Estado de Steam (Dota): el popup solo puede aparecer mientras dice "Finding A Match".
-            // En el menu o en partida no se mira la pantalla: imposible tocar algo jugando.
+            // Estado de Steam (Dota sin GSI): en partida no se mira la pantalla. El estado llega con algunos segundos de
+            // demora, asi que solo se usa para frenar, nunca para relajar las reglas del modo seguro.
             PresenceState ps = game.UsesPresence && !gsi.Connected(game) ? Presence.Current : PresenceState.Unknown;
             if (ps == PresenceState.InMatch) { SetState(AppState.InMatch); consecutiveHits = 0; return 1000; }
             SetState(AppState.Searching);
-            if (ps == PresenceState.Menu) { consecutiveHits = 0; return 1000; }
             if (ps == PresenceState.Unknown) MaybeShowGsiHint(game);
             if (DateTime.Now < cooldownUntil) return 500;
 
@@ -391,7 +394,8 @@ namespace AutoReady
                 return 500;
             }
 
-            if (Win32.IsIconic(hwnd))
+            if (!Win32.IsIconic(hwnd)) flashedWindow = IntPtr.Zero;   // un titileo viejo no tiene que restaurar el juego despues
+            else
             {
                 // Juego minimizado: no se puede capturar. Cuando encuentra partida hace titilar la barra de tareas;
                 // en ese momento lo restauramos para poder ver el boton.
@@ -403,20 +407,25 @@ namespace AutoReady
             }
 
             // Modo seguro: sin GSI no sabemos si ya hay una partida en curso, asi que se exige mas antes de tocar nada.
-            // Con el estado de Steam en "Finding A Match" sabemos que no hay partida en curso: no hace falta el modo seguro.
-            bool safe = !gsi.Connected(game) && ps != PresenceState.Finding;
+            bool safe = !gsi.Connected(game);
             int needed = safe ? 3 : 2;   // detecciones seguidas
 
             Detector.Hit hit;
+            Bitmap decisive = null;   // la captura con la que se decide; se guarda solo si de verdad se acepta
             using (Bitmap shot = Win32.Capture(hwnd))
             {
                 if (shot == null) return cfg.ScanIntervalMs;
                 hit = Detector.FindButton(shot, game, cfg.For(game).Detector);
                 Samples.Remember(shot);
-                if (hit != null && consecutiveHits + 1 >= needed)   // la que dispara el click
-                    Samples.Accepted(shot, game, Detector.Roi(shot.Width, shot.Height, cfg.For(game).Detector));
+                if (hit != null && consecutiveHits + 1 >= needed) decisive = new Bitmap(shot);
             }
             if (hit == null) { consecutiveHits = 0; return cfg.ScanIntervalMs; }
+            using (decisive)
+                return Decide(game, hwnd, hit, safe, needed, decisive);
+        }
+
+        int Decide(GameProfile game, IntPtr hwnd, Detector.Hit hit, bool safe, int needed, Bitmap decisive)
+        {
 
             // El popup no se mueve: en modo seguro la deteccion tiene que repetirse en el mismo lugar.
             if (safe && consecutiveHits > 0 &&
@@ -435,14 +444,30 @@ namespace AutoReady
                 lastBusySkip = DateTime.Now;
                 return 500;
             }
-            Accept(game, hwnd, hit, safe);
+            if (Accept(game, hwnd, hit, safe) && decisive != null)
+                Samples.Accepted(decisive, game, Detector.Roi(decisive.Width, decisive.Height, cfg.For(game).Detector));
             return 500;
         }
 
-        void Accept(GameProfile game, IntPtr hwnd, Detector.Hit hit, bool safe)
+        // Pausado o en partida: se revisa otra vez justo antes de cada accion, porque el usuario puede pausar (atajo,
+        // panel) o la partida empezar en el segundo que tarda aceptar.
+        bool MustStop(GameProfile game)
         {
+            return paused || gsi.InMatch(game) || (game.UsesPresence && Presence.Current == PresenceState.InMatch);
+        }
+
+        bool Accept(GameProfile game, IntPtr hwnd, Detector.Hit hit, bool safe)
+        {
+            if (MustStop(game)) return false;
             Win32.Focus(hwnd);
             Thread.Sleep(250);
+            // Si Windows no dejo traer el juego al frente, no se manda nada: la tecla o el click irian a otra ventana.
+            if (Win32.GetForegroundWindow() != hwnd)
+            {
+                Log.Write(game.Name + ": popup detectado, pero no pude traer el juego al frente; no toco nada");
+                return false;
+            }
+            if (MustStop(game)) return false;
             string how;
             // Enter solo con GSI: si por error no fuera el popup, en Dota abriria el chat en medio de la partida.
             if (game.AcceptWithEnter && !safe)
@@ -454,9 +479,10 @@ namespace AutoReady
                 using (Bitmap again = Win32.Capture(hwnd))
                     if (again != null) still = Detector.FindButton(again, game, cfg.For(game).Detector);
                 if (still == null) how = "con Enter";
-                else { ClickButton(hwnd, still); how = "con click (el Enter no alcanzo)"; }
+                else how = !MustStop(game) && ClickButton(hwnd, still) ? "con click (el Enter no alcanzo)" : null;
             }
-            else { ClickButton(hwnd, hit); how = "con click"; }
+            else how = ClickButton(hwnd, hit) ? "con click" : null;
+            if (how == null) return false;   // el click se cancelo: no se cuenta como aceptada
 
             lastAccept = DateTime.Now;
             cooldownUntil = DateTime.Now.AddSeconds(cfg.CooldownAfterAcceptSec);
@@ -464,12 +490,21 @@ namespace AutoReady
             Notify("Partida aceptada", "Tu partida de " + game.Name + " está por empezar. Volvé a la PC.");
             if (cfg.Sound) Beep(true);
             Notifier.Phone(cfg, "Partida aceptada", "AutoReady aceptó tu partida de " + game.Name + ". Volvé a la PC.", "video_game");
+            return true;
         }
 
-        static void ClickButton(IntPtr hwnd, Detector.Hit hit)
+        static bool ClickButton(IntPtr hwnd, Detector.Hit hit)
         {
             Rectangle rc = Win32.ClientRectOnScreen(hwnd);
-            Win32.Click(rc.X + hit.Center.X, rc.Y + hit.Center.Y);
+            int x = rc.X + hit.Center.X, y = rc.Y + hit.Center.Y;
+            // El punto tiene que caer en la ventana del juego (no en algo que quedo encima).
+            if (Win32.GetForegroundWindow() != hwnd || !Win32.PointBelongsTo(hwnd, x, y))
+            {
+                Log.Write("Click cancelado: el punto no esta sobre la ventana del juego");
+                return false;
+            }
+            Win32.Click(x, y);
+            return true;
         }
 
         void OnGameStateChanged(GameProfile game, string oldState, string newState)

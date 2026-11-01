@@ -220,6 +220,16 @@ namespace AutoReady
             if ((Keyboard.Modifiers & ModifierKeys.Alt) != 0) mods |= 0x1;
             if ((Keyboard.Modifiers & ModifierKeys.Control) != 0) mods |= 0x2;
             if ((Keyboard.Modifiers & ModifierKeys.Shift) != 0) mods |= 0x4;
+            // Una tecla comun sin Ctrl/Alt/Shift quedaria tomada en todo Windows (dejaria de escribirse). Solo F1-F24 y
+            // Pausa pueden ir solas.
+            bool special = (vk >= 0x70 && vk <= 0x87) || vk == 0x13;
+            if (vk != 0 && mods == 0 && !special)
+            {
+                capturingHotkey = false;
+                hotkeyLabel.Text = host.HotkeyText;
+                hotkeyHint.Text = "Usá una tecla F (F1–F12) o combiná con Ctrl, Alt o Shift.";
+                return;
+            }
             bool ok = host.SetHotkey(vk, mods);
             capturingHotkey = false;
             hotkeyLabel.Text = host.HotkeyText;
@@ -342,7 +352,8 @@ namespace AutoReady
                 // Se copian las opciones que el jugador ya tenia + la nueva: reemplazando todo no pierde las suyas.
                 string options = host.LaunchOptionsWithProtection(protectionGame);
                 bool hadOwn = options != protectionGame.GsiLaunchOption;
-                Clipboard.SetText(options);
+                try { Clipboard.SetText(options); }
+                catch { }   // portapapeles ocupado por otra app: igual se abre Steam
                 host.FixProtection(protectionGame);
                 protectionText.Text = hadOwn
                     ? "Copié tus opciones de " + protectionGame.Name + " con lo que falta agregado. En Steam, en Opciones de lanzamiento, " +
@@ -380,7 +391,7 @@ namespace AutoReady
             general.Children.Add(Divider());
             Toggle autoUpdate = new Toggle(theme, host.Cfg.AutoUpdateCheck);
             autoUpdate.Changed += on => host.SetAutoUpdate(on);
-            general.Children.Add(Row("Actualizar automáticamente", null, autoUpdate));
+            general.Children.Add(Row("Buscar actualizaciones automáticamente", null, autoUpdate));
             general.Children.Add(Divider());
             updateText = new TextBlock { FontSize = 12, Foreground = theme.TextSecondary, VerticalAlignment = VerticalAlignment.Center };
             general.Children.Add(Row(updateText, Link("Buscar actualizaciones", () => host.CheckUpdatesNow())));

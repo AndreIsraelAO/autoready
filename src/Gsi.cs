@@ -24,12 +24,16 @@ namespace AutoReady
         }
 
         readonly int port;
+        // Codigo secreto que el juego manda en cada POST ("auth" en la config de GSI). Sin el, cualquier programa
+        // o pagina web podria hacerse pasar por el juego mandando POSTs a este puerto.
+        readonly string token;
+        const int MaxHeader = 8 * 1024, MaxBody = 256 * 1024;
         readonly Dictionary<int, GameState> states = new Dictionary<int, GameState>();
         readonly object gate = new object();
 
         public event Action<GameProfile, string, string> StateChanged;   // (juego, anterior, nuevo)
 
-        public Gsi(int port) { this.port = port; }
+        public Gsi(int port, string token) { this.port = port; this.token = token; }
 
         public bool Connected(GameProfile g)
         {
@@ -66,12 +70,16 @@ namespace AutoReady
             libs.Add(Path.GetFullPath(steam));
 
             string vdf = Path.Combine(steam, @"steamapps\libraryfolders.vdf");
-            if (File.Exists(vdf))
-                foreach (Match m in Regex.Matches(File.ReadAllText(vdf), "\"path\"\\s+\"([^\"]+)\""))
-                {
-                    string lib = Path.GetFullPath(m.Groups[1].Value.Replace(@"\\", @"\"));
-                    if (!libs.Exists(x => string.Equals(x, lib, StringComparison.OrdinalIgnoreCase))) libs.Add(lib);
-                }
+            try
+            {
+                if (File.Exists(vdf))
+                    foreach (Match m in Regex.Matches(File.ReadAllText(vdf), "\"path\"\\s+\"([^\"]+)\""))
+                    {
+                        string lib = Path.GetFullPath(m.Groups[1].Value.Replace(@"\\", @"\"));
+                        if (!libs.Exists(x => string.Equals(x, lib, StringComparison.OrdinalIgnoreCase))) libs.Add(lib);
+                    }
+            }
+            catch (Exception e) { Log.Write("Steam: no pude leer las bibliotecas: " + e.Message); }   // Steam puede tenerlo bloqueado
             return libs;
         }
 
@@ -80,6 +88,18 @@ namespace AutoReady
             foreach (string lib in SteamLibraries())
                 if (Directory.Exists(Path.GetDirectoryName(Path.Combine(lib, g.CfgDir)))) return true;
             return false;
+        }
+
+        // Al desinstalar: borra el .cfg de AutoReady de todos los juegos, para que no siga mandando datos a un puerto vacio.
+        public static void RemoveAllConfigs()
+        {
+            foreach (GameProfile g in GameProfile.All)
+                foreach (string lib in SteamLibraries())
+                {
+                    string target = Path.Combine(Path.Combine(lib, g.CfgDir), CfgName);
+                    try { if (File.Exists(target)) File.Delete(target); }
+                    catch (Exception e) { Log.Write("GSI: no pude borrar " + target + ": " + e.Message); }
+                }
         }
 
         // Escribe el .cfg de GSI en cada instalacion encontrada del juego. Devuelve la cantidad escrita.
@@ -95,6 +115,9 @@ namespace AutoReady
                 "    \"data\"\r\n    {\r\n" +
                 "        \"provider\"  \"1\"\r\n" +
                 "        \"map\"       \"1\"\r\n" +
+                "    }\r\n" +
+                "    \"auth\"\r\n    {\r\n" +
+                "        \"token\"     \"" + token + "\"\r\n" +
                 "    }\r\n}\r\n";
             int written = 0;
             foreach (string lib in SteamLibraries())
@@ -144,20 +167,32 @@ namespace AutoReady
             {
                 try
                 {
-                    using (TcpClient client = listener.AcceptTcpClient())
-                    {
-                        client.ReceiveTimeout = 3000;
-                        NetworkStream ns = client.GetStream();
-                        string body = ReadHttpBody(ns);
-                        byte[] ok = Encoding.ASCII.GetBytes("HTTP/1.1 200 OK\r\nContent-Length: 0\r\nConnection: close\r\n\r\n");
-                        ns.Write(ok, 0, ok.Length);
-                        if (body != null) Handle(body);
-                    }
+                    TcpClient client = listener.AcceptTcpClient();
+                    // Cada conexion en su propio hilo: una lenta o trabada no bloquea a las demas.
+                    ThreadPool.QueueUserWorkItem(_ => Respond(client));
                 }
-                catch (Exception e) { Log.Write("GSI: error en request: " + e.Message); }
+                catch (Exception e) { Log.Write("GSI: error aceptando conexion: " + e.Message); }
             }
         }
 
+        void Respond(TcpClient client)
+        {
+            try
+            {
+                using (client)
+                {
+                    client.ReceiveTimeout = 2000;
+                    NetworkStream ns = client.GetStream();
+                    string body = ReadHttpBody(ns);
+                    byte[] ok = Encoding.ASCII.GetBytes("HTTP/1.1 200 OK\r\nContent-Length: 0\r\nConnection: close\r\n\r\n");
+                    ns.Write(ok, 0, ok.Length);
+                    if (body != null) Handle(body);
+                }
+            }
+            catch (Exception e) { Log.Write("GSI: error en request: " + e.Message); }
+        }
+
+        // Devuelve el cuerpo, o null si el pedido no es del juego (viene de un navegador) o es demasiado grande.
         static string ReadHttpBody(NetworkStream ns)
         {
             MemoryStream buf = new MemoryStream();
@@ -170,12 +205,16 @@ namespace AutoReady
                 buf.Write(chunk, 0, n);
                 if (headerEnd < 0)
                 {
-                    string soFar = Encoding.ASCII.GetString(buf.GetBuffer(), 0, (int)buf.Length);
+                    string soFar = Encoding.ASCII.GetString(buf.GetBuffer(), 0, (int)Math.Min(buf.Length, MaxHeader));
                     int i = soFar.IndexOf("\r\n\r\n", StringComparison.Ordinal);
-                    if (i < 0) continue;
+                    if (i < 0) { if (buf.Length > MaxHeader) return null; continue; }
                     headerEnd = i + 4;
-                    Match m = Regex.Match(soFar.Substring(0, i), @"Content-Length:\s*(\d+)", RegexOptions.IgnoreCase);
+                    string headers = soFar.Substring(0, i);
+                    // Los navegadores siempre mandan Origin en un POST; el juego no. Asi una web no puede hablarle.
+                    if (Regex.IsMatch(headers, @"^Origin:", RegexOptions.IgnoreCase | RegexOptions.Multiline)) return null;
+                    Match m = Regex.Match(headers, @"Content-Length:\s*(\d{1,9})", RegexOptions.IgnoreCase);
                     if (m.Success) contentLength = int.Parse(m.Groups[1].Value);
+                    if (contentLength > MaxBody) return null;
                 }
                 if (buf.Length - headerEnd >= contentLength)
                     return Encoding.UTF8.GetString(buf.GetBuffer(), headerEnd, contentLength);
@@ -184,11 +223,16 @@ namespace AutoReady
 
         void Handle(string json)
         {
+            // Solo el juego conoce el codigo secreto (va en la config de GSI que escribimos en su carpeta).
+            if (!Regex.IsMatch(json, "\"token\"\\s*:\\s*\"" + Regex.Escape(token) + "\"")) return;
             Match app = Regex.Match(json, "\"appid\"\\s*:\\s*(\\d+)");
             GameProfile g = app.Success ? GameProfile.ByAppId(int.Parse(app.Groups[1].Value)) : null;
             if (g == null) return;
 
-            // En el menu el juego no manda la seccion "map"; dentro de una partida trae la fase.
+            // En el menu el juego no manda la seccion "map"; dentro de una partida trae la fase. Se ignora "previously"
+            // (el estado anterior), que trae la fase vieja justo al salir de la partida.
+            int prev = json.IndexOf("\"previously\"", StringComparison.Ordinal);
+            if (prev >= 0) json = json.Substring(0, prev);
             Match m = Regex.Match(json, "\"" + g.StateKey + "\"\\s*:\\s*\"(\\w+)\"");
             string phase = m.Success ? m.Groups[1].Value : null;
 
