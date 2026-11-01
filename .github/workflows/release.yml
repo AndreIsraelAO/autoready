@@ -1,4 +1,8 @@
-# Al subir un tag vX.Y.Z: compila AutoReady.exe con esa version y publica el Release con el exe y su SHA-256.
+# Al subir un tag vX.Y.Z: compila AutoReady.exe con esa version, lo escanea con Defender, lo firma con SignPath (si
+# esta configurado) y publica el Release con el exe y su SHA-256.
+#
+# Firma (SignPath Foundation): se activa sola cuando existen en el repo la variable SIGNPATH_ORGANIZATION_ID y el
+# secreto SIGNPATH_API_TOKEN (Settings > Secrets and variables > Actions). Cada firma se aprueba a mano en SignPath.
 name: release
 
 on:
@@ -32,6 +36,37 @@ jobs:
           if ($LASTEXITCODE -eq 2) { Write-Error "Defender detecto una amenaza en AutoReady.exe"; exit 1 }
           exit 0
 
+      - name: Upload unsigned build
+        id: unsigned
+        if: ${{ vars.SIGNPATH_ORGANIZATION_ID != '' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: AutoReady-unsigned
+          path: dist/AutoReady.exe
+          if-no-files-found: error
+
+      - name: Sign with SignPath
+        if: ${{ vars.SIGNPATH_ORGANIZATION_ID != '' }}
+        uses: signpath/github-action-submit-signing-request@v2
+        with:
+          api-token: ${{ secrets.SIGNPATH_API_TOKEN }}
+          organization-id: ${{ vars.SIGNPATH_ORGANIZATION_ID }}
+          project-slug: autoready
+          signing-policy-slug: release-signing
+          github-artifact-id: ${{ steps.unsigned.outputs.artifact-id }}
+          wait-for-completion: true
+          wait-for-completion-timeout-in-seconds: 3600
+          output-artifact-directory: dist-signed
+
+      - name: Use signed build
+        if: ${{ vars.SIGNPATH_ORGANIZATION_ID != '' }}
+        shell: pwsh
+        run: |
+          Copy-Item dist-signed/AutoReady.exe dist/AutoReady.exe -Force
+          $sig = Get-AuthenticodeSignature dist/AutoReady.exe
+          "Firma: $($sig.Status) - $($sig.SignerCertificate.Subject)"
+          if ($sig.Status -ne 'Valid') { Write-Error "El exe firmado no tiene una firma valida"; exit 1 }
+
       - name: Checksum
         shell: pwsh
         run: |
@@ -46,4 +81,5 @@ jobs:
         run: |
           # Mientras sea 0.x (beta) se publica como pre-release.
           $pre = if ($env:GITHUB_REF_NAME -like 'v0.*') { '--prerelease' } else { $null }
-          gh release create $env:GITHUB_REF_NAME dist/AutoReady.exe dist/AutoReady.exe.sha256 --title "AutoReady $env:GITHUB_REF_NAME" --generate-notes $pre
+          $notes = "Code signing policy: https://github.com/hercase/autoready#code-signing-policy`n`nPrivacy policy: https://github.com/hercase/autoready/blob/main/PRIVACY.md"
+          gh release create $env:GITHUB_REF_NAME dist/AutoReady.exe dist/AutoReady.exe.sha256 --title "AutoReady $env:GITHUB_REF_NAME" --notes "$notes" --generate-notes $pre

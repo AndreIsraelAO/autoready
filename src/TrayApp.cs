@@ -157,7 +157,7 @@ namespace AutoReady
             {
                 if (g.GsiLaunchOption == null || !cfg.For(g).Enabled || !Gsi.IsInstalled(g)) continue;
                 if (gsi.Connected(g)) continue;
-                if (g.UsesPresence && Presence.Working) continue;   // el estado de Steam ya alcanza
+                if (g.UsesPresence && cfg.UseSteamStatus && Presence.Working) continue;   // el estado de Steam ya alcanza
                 string lo = SteamConfig.LaunchOptions(g.AppId);
                 if (lo != null && !SteamConfig.HasOption(g.AppId, g.GsiLaunchOption)) return g;
             }
@@ -369,7 +369,7 @@ namespace AutoReady
                 if (game != null) Log.Write(game.Name + " abierto");
                 state = AppState.Starting;
             }
-            Presence.Watch(game);
+            Presence.Watch(cfg.UseSteamStatus ? game : null);
             if (paused) { SetState(AppState.Paused); return 500; }
             if (game == null) { SetState(AppState.GameClosed); return 2000; }
 
@@ -377,7 +377,7 @@ namespace AutoReady
 
             // Estado de Steam (Dota sin GSI): en partida no se mira la pantalla. El estado llega con algunos segundos de
             // demora, asi que solo se usa para frenar, nunca para relajar las reglas del modo seguro.
-            PresenceState ps = game.UsesPresence && !gsi.Connected(game) ? Presence.Current : PresenceState.Unknown;
+            PresenceState ps = cfg.UseSteamStatus && game.UsesPresence && !gsi.Connected(game) ? Presence.Current : PresenceState.Unknown;
             if (ps == PresenceState.InMatch) { SetState(AppState.InMatch); consecutiveHits = 0; return 1000; }
             SetState(AppState.Searching);
             if (ps == PresenceState.Unknown) MaybeShowGsiHint(game);

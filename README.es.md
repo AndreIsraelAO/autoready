@@ -119,6 +119,22 @@ Fijate que <b>Aceptar partidas</b> esté prendido en el panel y que <b>Protecci�
 juego, la resolución y la escala de pantalla de Windows.
 </details>
 
+## Code signing policy (política de firma de código)
+
+Free code signing provided by [SignPath.io](https://about.signpath.io), certificate by [SignPath Foundation](https://signpath.org).
+(Firma de código gratuita de SignPath.io, certificado de SignPath Foundation. La solicitud está en curso: hasta que
+la aprueben, las versiones todavía no están firmadas.)
+
+- Autores y revisores: [hercase](https://github.com/hercase)
+- Aprobadores: [hercase](https://github.com/hercase)
+
+Cada versión se compila desde este repositorio con GitHub Actions, se escanea con Microsoft Defender y se firma solo
+después de una aprobación manual.
+
+**Privacidad:** AutoReady no tiene cuentas, estadísticas ni telemetría. Solo se conecta a GitHub (actualizaciones), a
+la Comunidad de Steam (tu propio estado) y a ntfy (avisos al celular, apagado por defecto), y cada una se puede
+apagar. Ver la [política de privacidad](PRIVACY.md).
+
 ## Estado
 
 AutoReady está en **beta** (versiones 0.x). Lo que viene y los problemas conocidos están en

@@ -45,12 +45,18 @@ namespace AutoReady
             return w.Result;
         }
 
-        public static void Install(bool desktop, bool autostart)
+        public static void Install(bool desktop, bool autostart, bool updates, bool steamStatus)
         {
             string self = Path.GetFullPath(System.Windows.Forms.Application.ExecutablePath);
             CloseOtherInstances();
             Directory.CreateDirectory(InstallDir);
             File.Copy(self, InstalledExe, true);
+
+            // Lo que se eligio en el instalador sobre conexiones (ver PRIVACY.md) queda guardado antes del primer arranque.
+            Config cfg = Config.Load();
+            cfg.AutoUpdateCheck = updates;
+            cfg.UseSteamStatus = steamStatus;
+            cfg.Save();
 
             Shortcut.Create(Shortcut.StartMenuPath, InstalledExe);
             if (desktop) Shortcut.Create(Shortcut.DesktopPath, InstalledExe);
@@ -172,13 +178,37 @@ namespace AutoReady
             card.Children.Add(Row(Lang.T("Acceso directo en el escritorio", "Desktop shortcut"), desktop));
             card.Children.Add(new Border { Height = 1, Background = theme.CardStroke });
             card.Children.Add(Row(Lang.T("Iniciar con Windows", "Start with Windows"), autostart));
-            root.Children.Add(new Border { Background = theme.Card, BorderBrush = theme.CardStroke, BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(8), Child = card });
+            root.Children.Add(Card(card));
 
+            // Privacidad (PRIVACY.md): cada conexion automatica se puede apagar desde aca o despues en el panel.
+            root.Children.Add(new TextBlock { Text = Lang.T("Conexiones", "Connections"), FontSize = 13, FontWeight = FontWeights.SemiBold, Margin = new Thickness(2, 16, 0, 8) });
+            Toggle updates = new Toggle(theme, true), steam = new Toggle(theme, true);
+            StackPanel net = new StackPanel();
+            net.Children.Add(Row(Lang.T("Buscar actualizaciones", "Check for updates"), updates,
+                Lang.T("Consulta GitHub al iniciar y una vez por día", "Asks GitHub at startup and once a day")));
+            net.Children.Add(new Border { Height = 1, Background = theme.CardStroke });
+            net.Children.Add(Row(Lang.T("Usar mi estado de Steam", "Use my Steam status"), steam,
+                Lang.T("Lee tu perfil público de Steam mientras un juego compatible está abierto",
+                       "Reads your public Steam profile while a supported game is open")));
+            root.Children.Add(Card(net));
+            TextBlock privacy = new TextBlock
+            {
+                Text = Lang.T("Política de privacidad", "Privacy policy"), Foreground = theme.Link, Cursor = Cursors.Hand,
+                FontSize = 12, Margin = new Thickness(2, 8, 0, 0), HorizontalAlignment = HorizontalAlignment.Left,
+            };
+            privacy.MouseLeftButtonUp += (s, e) => Process.Start("https://github.com/hercase/autoready/blob/main/PRIVACY.md");
+            root.Children.Add(privacy);
+
+            // Cambios al sistema, avisados antes de instalar.
             root.Children.Add(new TextBlock
             {
-                Text = Lang.T("Se instala solo para tu usuario, sin permisos de administrador. Se desinstala desde Configuración > Aplicaciones.",
-                              "Installs for your user only, no admin rights needed. Uninstall it from Settings > Apps."),
-                FontSize = 12, Foreground = theme.TextSecondary, TextWrapping = TextWrapping.Wrap, Margin = new Thickness(0, 12, 0, 20),
+                Text = Lang.T("Se instala solo para tu usuario, sin permisos de administrador, en " + Installer.InstallDir + ". " +
+                              "Agrega un archivo de configuración oficial (Game State Integration) en las carpetas de tus juegos " +
+                              "compatibles para saber cuándo estás en partida. Se desinstala desde Configuración > Aplicaciones, y ahí se borra todo.",
+                              "Installs for your user only, no admin rights needed, in " + Installer.InstallDir + ". " +
+                              "It adds an official config file (Game State Integration) to the folders of your supported games to know " +
+                              "when you're in a match. Uninstall it from Settings > Apps, which removes everything."),
+                FontSize = 12, Foreground = theme.TextSecondary, TextWrapping = TextWrapping.Wrap, Margin = new Thickness(0, 14, 0, 20),
             });
 
             Grid buttons = new Grid();
@@ -193,7 +223,7 @@ namespace AutoReady
             {
                 try
                 {
-                    Installer.Install(desktop.IsOn, autostart.IsOn);
+                    Installer.Install(desktop.IsOn, autostart.IsOn, updates.IsOn, steam.IsOn);
                     Result = Installer.Choice.Installed;
                     Close();
                 }
@@ -210,12 +240,21 @@ namespace AutoReady
             KeyDown += (s, e) => { if (e.Key == Key.Escape) Close(); };
         }
 
-        Grid Row(string title, UIElement right)
+        Border Card(StackPanel content)
+        {
+            return new Border { Background = theme.Card, BorderBrush = theme.CardStroke, BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(8), Child = content };
+        }
+
+        Grid Row(string title, UIElement right, string subtitle = null)
         {
             Grid g = new Grid { Margin = new Thickness(14, 12, 14, 12) };
             g.ColumnDefinitions.Add(new ColumnDefinition());
             g.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
-            g.Children.Add(new TextBlock { Text = title, VerticalAlignment = VerticalAlignment.Center });
+            StackPanel left = new StackPanel { VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 12, 0) };
+            left.Children.Add(new TextBlock { Text = title });
+            if (subtitle != null)
+                left.Children.Add(new TextBlock { Text = subtitle, FontSize = 12, Foreground = theme.TextSecondary, TextWrapping = TextWrapping.Wrap });
+            g.Children.Add(left);
             Grid.SetColumn((FrameworkElement)right, 1);
             g.Children.Add(right);
             return g;

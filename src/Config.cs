@@ -29,6 +29,7 @@ namespace AutoReady
         public bool NotifyMatchStarted = true;
         public bool Sound = true;
         public bool AutoUpdateCheck = true;
+        public bool UseSteamStatus = true;   // leer el estado de Steam (ver Presence.cs y PRIVACY.md)
         public int HotkeyVk = 0;       // 0 = sin atajo
         public int HotkeyMods = 0;     // 1 Alt, 2 Ctrl, 4 Shift
         public bool Welcomed = false;  // la primera vez se abre el panel solo
@@ -64,6 +65,7 @@ namespace AutoReady
                 c.NotifyMatchStarted = Bool(kv, "NotifyMatchStarted", c.NotifyMatchStarted);
                 c.Sound = Bool(kv, "Sound", c.Sound);
                 c.AutoUpdateCheck = Bool(kv, "AutoUpdateCheck", c.AutoUpdateCheck);
+                c.UseSteamStatus = Bool(kv, "UseSteamStatus", c.UseSteamStatus);
                 c.HotkeyVk = Int(kv, "HotkeyVk", c.HotkeyVk);
                 c.HotkeyMods = Int(kv, "HotkeyMods", c.HotkeyMods);
                 c.Welcomed = Bool(kv, "Welcomed", c.Welcomed);
@@ -120,6 +122,7 @@ namespace AutoReady
             lines.Add("NotifyMatchStarted=" + NotifyMatchStarted);
             lines.Add("Sound=" + Sound);
             lines.Add("AutoUpdateCheck=" + AutoUpdateCheck);
+            lines.Add("UseSteamStatus=" + UseSteamStatus);
             lines.Add("HotkeyVk=" + HotkeyVk);
             lines.Add("HotkeyMods=" + HotkeyMods);
             lines.Add("Welcomed=" + Welcomed);

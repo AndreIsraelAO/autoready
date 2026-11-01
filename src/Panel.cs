@@ -393,6 +393,10 @@ namespace AutoReady
             autoUpdate.Changed += on => host.SetAutoUpdate(on);
             general.Children.Add(Row("Buscar actualizaciones automáticamente", null, autoUpdate));
             general.Children.Add(Divider());
+            Toggle steamStatus = new Toggle(theme, host.Cfg.UseSteamStatus);
+            steamStatus.Changed += on => { host.Cfg.UseSteamStatus = on; host.Cfg.Save(); };
+            general.Children.Add(Row("Usar mi estado de Steam", "Para saber si estás buscando partida o jugando", steamStatus));
+            general.Children.Add(Divider());
             updateText = new TextBlock { FontSize = 12, Foreground = theme.TextSecondary, VerticalAlignment = VerticalAlignment.Center };
             general.Children.Add(Row(updateText, Link("Buscar actualizaciones", () => host.CheckUpdatesNow())));
             root.Children.Add(Wrap(general, new Thickness(0)));

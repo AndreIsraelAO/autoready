@@ -9,6 +9,7 @@ if not exist dist mkdir dist
 if not exist obj mkdir obj
 > obj\Version.cs echo [assembly: System.Reflection.AssemblyVersion("%VERSION%.0")]
 >> obj\Version.cs echo [assembly: System.Reflection.AssemblyInformationalVersion("%VERSION%")]
+>> obj\Version.cs echo [assembly: System.Reflection.AssemblyFileVersion("%VERSION%.0")]
 set NET=%WINDIR%\Microsoft.NET\Framework64\v4.0.30319
 rem Notificaciones nativas: metadatos de Windows (WinRT) que vienen con Windows 10/11.
 set WINMD=%WINDIR%\System32\WinMetadata

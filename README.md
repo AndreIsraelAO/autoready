@@ -118,6 +118,21 @@ Check that <b>Accept matches</b> is on in the panel and that <b>In-match protect
 screen resolution and Windows display scale.
 </details>
 
+## Code signing policy
+
+Free code signing provided by [SignPath.io](https://about.signpath.io), certificate by [SignPath Foundation](https://signpath.org).
+(The application is in progress: until it's approved, releases are not signed yet.)
+
+- Committers and reviewers: [hercase](https://github.com/hercase)
+- Approvers: [hercase](https://github.com/hercase)
+
+Every release is built from this repository by GitHub Actions, scanned with Microsoft Defender and signed only after
+manual approval.
+
+**Privacy:** AutoReady has no accounts, analytics or telemetry. It only connects to GitHub (updates), Steam Community
+(your own Steam status) and ntfy (phone notifications, off by default), and each one can be turned off. See the
+[privacy policy](PRIVACY.md).
+
 ## Status
 
 AutoReady is in **beta** (versions 0.x). See what's coming and known issues in

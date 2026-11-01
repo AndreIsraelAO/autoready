@@ -6,7 +6,8 @@ using System.Threading;
 using System.Windows.Forms;
 
 [assembly: System.Reflection.AssemblyTitle("AutoReady")]
-[assembly: System.Reflection.AssemblyProduct("AutoReady - match auto-accept")]
+[assembly: System.Reflection.AssemblyProduct("AutoReady")]
+[assembly: System.Reflection.AssemblyDescription("Match auto-accept for Steam games")]
 [assembly: System.Reflection.AssemblyCompany("keis.studio")]
 [assembly: System.Reflection.AssemblyCopyright("© 2026 keis.studio")]
 // La version la genera build.bat en obj\Version.cs (en los releases sale del tag de git).

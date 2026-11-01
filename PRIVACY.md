@@ -1,0 +1,47 @@
+# Privacy policy
+
+[Español](#política-de-privacidad)
+
+AutoReady runs on your PC. It has no accounts, no analytics and no telemetry, and it never sends your screenshots,
+settings or logs anywhere. It only connects to the internet for the features below, and each one can be turned off.
+
+| Service | What is sent | When | How to turn it off |
+|---|---|---|---|
+| **GitHub** (`api.github.com`, `github.com`) | A request for the list of AutoReady releases, and the download of a new version if you choose to update | At startup and once a day | Panel → General → *Check for updates automatically* (or during installation) |
+| **Steam Community** (`steamcommunity.com`) | A request for the public mini-profile of the Steam account signed in on this PC, to read its status (for example "Finding A Match") | Every few seconds, only while a supported game that uses it (Dota 2) is open | Panel → General → *Use my Steam status* (or during installation) |
+| **ntfy** (`ntfy.sh`) | The notification text (for example "Match accepted") sent to your private topic | Only if you turn on *Phone* notifications, and only when there's something to notify | Panel → Notifications → *Phone* (off by default) |
+
+What stays on your PC:
+
+- Settings and logs in `%APPDATA%\AutoReady`.
+- During the beta, screenshots of the game window to improve detection, in `%APPDATA%\AutoReady\samples` (latest 15).
+  They are never uploaded. Turn them off with `SaveSamples=False` in `%APPDATA%\AutoReady\autoready.ini`.
+- A Game State Integration config file in the Dota 2 and CS2 folders, so those games tell AutoReady (and only AutoReady,
+  on `127.0.0.1`) when you're in a match.
+
+These services have their own privacy policies: [GitHub](https://docs.github.com/site-policy/privacy-policies/github-general-privacy-statement),
+[Steam](https://store.steampowered.com/privacy_agreement/), [ntfy](https://ntfy.sh/docs/privacy/).
+
+---
+
+# Política de privacidad
+
+AutoReady funciona en tu PC. No tiene cuentas, ni estadísticas, ni telemetría, y nunca manda tus capturas, tu
+configuración ni tus logs a ningún lado. Solo se conecta a internet para estas funciones, y cada una se puede apagar.
+
+| Servicio | Qué se envía | Cuándo | Cómo apagarlo |
+|---|---|---|---|
+| **GitHub** (`api.github.com`, `github.com`) | Un pedido de la lista de versiones de AutoReady, y la descarga de una versión nueva si elegís actualizar | Al iniciar y una vez por día | Panel → General → *Buscar actualizaciones automáticamente* (o al instalar) |
+| **Comunidad de Steam** (`steamcommunity.com`) | Un pedido del mini-perfil público de la cuenta de Steam conectada en esta PC, para leer su estado (por ejemplo "Buscando partida") | Cada pocos segundos, solo mientras está abierto un juego que lo usa (Dota 2) | Panel → General → *Usar mi estado de Steam* (o al instalar) |
+| **ntfy** (`ntfy.sh`) | El texto del aviso (por ejemplo "Partida aceptada") enviado a tu canal privado | Solo si activás los avisos al *Celular*, y solo cuando hay algo para avisar | Panel → Avisos → *Celular* (apagado por defecto) |
+
+Lo que queda en tu PC:
+
+- La configuración y los logs, en `%APPDATA%\AutoReady`.
+- Durante la beta, capturas de la ventana del juego para mejorar la detección, en `%APPDATA%\AutoReady\samples` (las
+  últimas 15). Nunca se suben. Se apagan con `SaveSamples=False` en `%APPDATA%\AutoReady\autoready.ini`.
+- Un archivo de configuración de Game State Integration en las carpetas de Dota 2 y CS2, para que esos juegos le avisen
+  a AutoReady (y solo a AutoReady, en `127.0.0.1`) cuando estás en partida.
+
+Estos servicios tienen sus propias políticas de privacidad: [GitHub](https://docs.github.com/site-policy/privacy-policies/github-general-privacy-statement),
+[Steam](https://store.steampowered.com/privacy_agreement/), [ntfy](https://ntfy.sh/docs/privacy/).
