@@ -25,12 +25,18 @@ namespace AutoReady
 
         string stale;
         bool seen;
+        // GSI dijo que la partida termino: mientras Steam no muestre el menu o una busqueda, "en partida" es el estado viejo.
+        bool matchEnded;
 
-        public void Reset() { stale = null; seen = false; }
+        public void Reset() { stale = null; seen = false; matchEnded = false; }
 
-        // Se llama en cada vuelta con lo ultimo que se leyo; solo importa la primera lectura valida.
+        public void MatchEnded() { matchEnded = true; }
+        public void MatchStarted() { matchEnded = false; }
+
+        // Se llama en cada vuelta con lo ultimo que se leyo; de la primera lectura valida depende la sesion nueva.
         public void Observe(PresenceState state, string text, bool freshSession)
         {
+            if (state == PresenceState.Menu || state == PresenceState.Finding) matchEnded = false;
             if (seen || state == PresenceState.Unknown) return;
             seen = true;
             if (freshSession && state == PresenceState.InMatch) stale = text;
@@ -38,7 +44,8 @@ namespace AutoReady
 
         public PresenceState Filter(PresenceState state, string text)
         {
-            return state == PresenceState.InMatch && stale != null && text == stale ? PresenceState.Unknown : state;
+            if (state != PresenceState.InMatch) return state;
+            return matchEnded || (stale != null && text == stale) ? PresenceState.Unknown : state;
         }
     }
 

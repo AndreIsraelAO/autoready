@@ -19,6 +19,7 @@ namespace AutoReady
         bool gsiHintShown;
         readonly StalePresence stalePresence = new StalePresence();
         volatile bool freshSession;   // el juego se abrio hace poco (ver StalePresence)
+        bool wasGsiInMatch;
 
         public ScreenStrategy(GameProfile game, IGameHost host) : base(game, host) { }
 
@@ -36,6 +37,7 @@ namespace AutoReady
             openedAt = DateTime.Now;
             flashedWindow = IntPtr.Zero;   // un titileo de antes de vigilarlo no cuenta
             stalePresence.Reset();
+            wasGsiInMatch = false;
             freshSession = GameProcessAge() < StalePresence.FreshSession;
         }
 
@@ -96,7 +98,12 @@ namespace AutoReady
         {
             int interval = Cfg.ScanIntervalMs;
             if (resetRequested) { resetRequested = false; consecutiveHits = 0; }
-            if (Gsi.InMatch(Game)) { Host.SetState(AppState.InMatch); return 1000; }
+            bool gsiInMatch = Gsi.InMatch(Game);
+            // La partida termino segun GSI: el estado de Steam puede seguir diciendo "en partida" un buen rato.
+            if (wasGsiInMatch && !gsiInMatch) stalePresence.MatchEnded();
+            if (gsiInMatch) stalePresence.MatchStarted();
+            wasGsiInMatch = gsiInMatch;
+            if (gsiInMatch) { Host.SetState(AppState.InMatch); return 1000; }
 
             // Estado de Steam (Dota sin GSI): en partida no se mira la pantalla. El estado llega con algunos segundos de
             // demora, asi que solo se usa para frenar, nunca para relajar las reglas del modo seguro.
@@ -151,8 +158,7 @@ namespace AutoReady
         int Decide(Detector.Hit hit, bool safe, int needed, Bitmap decisive)
         {
             // El popup no se mueve: en modo seguro la deteccion tiene que repetirse en el mismo lugar.
-            if (safe && consecutiveHits > 0 &&
-                (Math.Abs(hit.Center.X - lastHit.X) > 12 || Math.Abs(hit.Center.Y - lastHit.Y) > 12))
+            if (safe && consecutiveHits > 0 && !SameSpot(hit.Center, lastHit))
                 consecutiveHits = 0;
             lastHit = hit.Center;
             if (++consecutiveHits < needed) return 250;
@@ -172,6 +178,24 @@ namespace AutoReady
             return 500;
         }
 
+        // Dos detecciones del boton en el mismo lugar (el popup no se mueve).
+        public static bool SameSpot(Point a, Point b)
+        {
+            return Math.Abs(a.X - b.X) <= 12 && Math.Abs(a.Y - b.Y) <= 12;
+        }
+
+        // Justo antes de tocar: el popup tiene que seguir ahi. Si la persona lo acepto a mano en el segundo que
+        // tardo todo esto, el click caeria sobre la pantalla siguiente (seleccion de heroe, por ejemplo).
+        Detector.Hit StillThere(Detector.Hit hit)
+        {
+            using (Bitmap again = Win32.Capture(hwnd))
+            {
+                if (again == null) return null;
+                Detector.Hit now = Detector.FindButton(again, Game, Cfg.For(Game).Detector);
+                return now != null && SameSpot(now.Center, hit.Center) ? now : null;
+            }
+        }
+
         // Pausado o en partida: se revisa otra vez justo antes de cada accion, porque el usuario puede pausar (atajo,
         // panel) o la partida empezar en el segundo que tarda aceptar.
         bool MustStop() { return Host.Paused || InMatch; }
@@ -188,6 +212,12 @@ namespace AutoReady
                 return false;
             }
             if (MustStop()) return false;
+            Detector.Hit confirmed = StillThere(hit);
+            if (confirmed == null)
+            {
+                Log.Write(Game.Name + ": el popup ya no estaba al ir a aceptar (probablemente lo aceptaste vos); no toco nada");
+                return false;
+            }
             string how;
             // Enter solo con GSI: si por error no fuera el popup, en Dota abriria el chat en medio de la partida.
             if (Game.AcceptWithEnter && !safe)
@@ -201,7 +231,7 @@ namespace AutoReady
                 if (still == null) how = "con Enter";
                 else how = !MustStop() && ClickButton(still) ? "con click (el Enter no alcanzo)" : null;
             }
-            else how = ClickButton(hit) ? "con click" : null;
+            else how = ClickButton(confirmed) ? "con click" : null;
             if (how == null) return false;   // el click se cancelo: no se cuenta como aceptada
 
             StartCooldown();

@@ -151,6 +151,20 @@ namespace AutoReady.Tests
             sp.Observe(PresenceState.Menu, "Main Menu", true);
             sp.Observe(PresenceState.InMatch, "Hero Selection", true);   // no es la primera lectura: no se descarta
             Check(sp.Filter(PresenceState.InMatch, "Hero Selection") == PresenceState.InMatch, "empezando en el menu, la partida cuenta");
+            // Bug real: la partida termino (GSI: menu) pero Steam siguio diciendo "Turbo: Lvl 23 ..." y no se miro la
+            // pantalla para aceptar la siguiente. Despues de terminar, "en partida" se ignora hasta ver menu o busqueda.
+            StalePresence ended = new StalePresence();
+            ended.Observe(PresenceState.Menu, "Main Menu", false);
+            ended.MatchEnded();
+            Check(ended.Filter(PresenceState.InMatch, "Turbo: Lvl 23 Necrophos") == PresenceState.Unknown, "terminada la partida: el 'en partida' de Steam se ignora");
+            ended.Observe(PresenceState.Finding, "Finding A Match", false);
+            Check(ended.Filter(PresenceState.InMatch, "Hero Selection") == PresenceState.InMatch, "con la busqueda a la vista, una partida nueva cuenta");
+            ended.MatchEnded();
+            ended.MatchStarted();
+            Check(ended.Filter(PresenceState.InMatch, "Hero Selection") == PresenceState.InMatch, "si GSI ve una partida nueva, cuenta");
+
+            Check(ScreenStrategy.SameSpot(new System.Drawing.Point(100, 100), new System.Drawing.Point(110, 90)) &&
+                  !ScreenStrategy.SameSpot(new System.Drawing.Point(100, 100), new System.Drawing.Point(120, 100)), "mismo lugar del boton (12 px)");
             StalePresence old = new StalePresence();
             old.Observe(PresenceState.InMatch, "Playing Ranked", false);   // el juego ya llevaba rato abierto: se confia
             Check(old.Filter(PresenceState.InMatch, "Playing Ranked") == PresenceState.InMatch, "sesion vieja: el estado de partida se respeta");
