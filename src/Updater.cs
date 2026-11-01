@@ -7,13 +7,13 @@ using System.Security.Cryptography;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
 
-namespace ReadyUp
+namespace AutoReady
 {
     // Busca versiones nuevas en los Releases de GitHub y se reemplaza a si mismo.
     static class Updater
     {
         // La lista incluye los pre-releases (las 0.x lo son); /releases/latest no. Viene ordenada del mas nuevo al mas viejo.
-        const string ReleasesApi = "https://api.github.com/repos/hercase/readyup/releases?per_page=5";
+        const string ReleasesApi = "https://api.github.com/repos/hercase/autoready/releases?per_page=5";
 
         public class Release
         {
@@ -43,7 +43,7 @@ namespace ReadyUp
         static WebClient Client()
         {
             WebClient wc = new WebClient();
-            wc.Headers[HttpRequestHeader.UserAgent] = "ReadyUp/" + CurrentVersionText;
+            wc.Headers[HttpRequestHeader.UserAgent] = "AutoReady/" + CurrentVersionText;
             return wc;
         }
 
@@ -57,8 +57,8 @@ namespace ReadyUp
             if (!tag.Success) return null;
             // Los assets tienen que ser de ese mismo tag (si el release mas nuevo quedo sin exe, no tomamos el de otro).
             string dl = "[^\"]+/download/v" + Regex.Escape(tag.Groups[1].Value) + "/";
-            Match exe = Regex.Match(json, "\"browser_download_url\"\\s*:\\s*\"(" + dl + "ReadyUp\\.exe)\"");
-            Match sha = Regex.Match(json, "\"browser_download_url\"\\s*:\\s*\"(" + dl + "ReadyUp\\.exe\\.sha256)\"");
+            Match exe = Regex.Match(json, "\"browser_download_url\"\\s*:\\s*\"(" + dl + "AutoReady\\.exe)\"");
+            Match sha = Regex.Match(json, "\"browser_download_url\"\\s*:\\s*\"(" + dl + "AutoReady\\.exe\\.sha256)\"");
             if (!exe.Success || !sha.Success) return null;
 
             Version v = new Version(tag.Groups[1].Value);
@@ -67,14 +67,14 @@ namespace ReadyUp
         }
 
         // Baja el exe nuevo, verifica el SHA-256 y lo pone en lugar del actual. Windows deja renombrar un exe
-        // en ejecucion, asi que el actual pasa a ReadyUp.old.exe y se borra en el proximo arranque.
+        // en ejecucion, asi que el actual pasa a AutoReady.old.exe y se borra en el proximo arranque.
         // Devuelve la ruta del exe nuevo listo para lanzar.
         public static string DownloadAndInstall(Release r)
         {
             string exePath = Application.ExecutablePath;
             string dir = Path.GetDirectoryName(exePath);
-            string newPath = Path.Combine(dir, "ReadyUp.new.exe");
-            string oldPath = Path.Combine(dir, "ReadyUp.old.exe");
+            string newPath = Path.Combine(dir, "AutoReady.new.exe");
+            string oldPath = Path.Combine(dir, "AutoReady.old.exe");
 
             string expected;
             using (WebClient wc = Client())
@@ -109,7 +109,7 @@ namespace ReadyUp
         {
             try
             {
-                string old = Path.Combine(Path.GetDirectoryName(Application.ExecutablePath), "ReadyUp.old.exe");
+                string old = Path.Combine(Path.GetDirectoryName(Application.ExecutablePath), "AutoReady.old.exe");
                 if (File.Exists(old)) File.Delete(old);
             }
             catch { }

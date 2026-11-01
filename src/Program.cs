@@ -5,13 +5,13 @@ using System.IO;
 using System.Threading;
 using System.Windows.Forms;
 
-[assembly: System.Reflection.AssemblyTitle("ReadyUp")]
-[assembly: System.Reflection.AssemblyProduct("ReadyUp - auto-accept for Dota 2 and CS2")]
+[assembly: System.Reflection.AssemblyTitle("AutoReady")]
+[assembly: System.Reflection.AssemblyProduct("AutoReady - auto-accept for Dota 2 and CS2")]
 [assembly: System.Reflection.AssemblyCompany("keis.studio")]
 [assembly: System.Reflection.AssemblyCopyright("© 2026 keis.studio")]
 // La version la genera build.bat en obj\Version.cs (en los releases sale del tag de git).
 
-namespace ReadyUp
+namespace AutoReady
 {
     static class Program
     {
@@ -21,7 +21,7 @@ namespace ReadyUp
             // Coordenadas en pixeles fisicos; si no, con escala 125%/150% el click cae fuera del boton.
             Win32.SetProcessDPIAware();
 
-            // ReadyUp.exe --test captura.png [dota2|cs2]  -> corre el detector sobre una imagen y guarda captura.result.png
+            // AutoReady.exe --test captura.png [dota2|cs2]  -> corre el detector sobre una imagen y guarda captura.result.png
             // Codigo de salida: 0 = boton encontrado, 1 = no encontrado, 2 = error.
             if (args.Length >= 2 && args[0] == "--test")
                 return TestImage(args[1], GameProfile.ById(args.Length > 2 ? args[2] : "dota2") ?? GameProfile.Dota2);
@@ -36,11 +36,11 @@ namespace ReadyUp
             Updater.CleanupOldExe();
 
             bool created;
-            using (Mutex mutex = new Mutex(true, @"Local\ReadyUp", out created))
+            using (Mutex mutex = new Mutex(true, @"Local\AutoReady", out created))
             {
                 if (!created)
                 {
-                    MessageBox.Show("ReadyUp ya esta abierto (mira el icono al lado del reloj).", "ReadyUp");
+                    MessageBox.Show("AutoReady ya esta abierto (mira el icono al lado del reloj).", "AutoReady");
                     return 0;
                 }
                 Application.EnableVisualStyles();

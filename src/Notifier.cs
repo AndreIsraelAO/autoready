@@ -3,7 +3,7 @@ using System.Net;
 using System.Text;
 using System.Threading;
 
-namespace ReadyUp
+namespace AutoReady
 {
     // Push al celular con ntfy (https://ntfy.sh): app gratis, sin cuenta. El usuario se suscribe a su topic.
     static class Notifier

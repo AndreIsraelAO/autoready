@@ -4,7 +4,7 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.Runtime.InteropServices;
 
-namespace ReadyUp
+namespace AutoReady
 {
     // Busca el boton verde "ACCEPT" en una captura de la ventana de Dota.
     // Idea: mascara de pixeles verde-turquesa -> componentes conectados -> quedarse con el que tenga forma de boton.

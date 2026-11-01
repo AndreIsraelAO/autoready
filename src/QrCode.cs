@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Text;
 
-namespace ReadyUp
+namespace AutoReady
 {
     // Generador de codigos QR minimo: modo byte, correccion de errores nivel M, versiones 1 a 6
     // (hasta 106 bytes, sobra para un link de ntfy). Desde la version 7 el QR necesita un bloque extra

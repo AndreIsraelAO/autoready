@@ -3,9 +3,9 @@ using System.IO;
 using System.Reflection;
 using System.Windows.Forms;
 
-namespace ReadyUp
+namespace AutoReady
 {
-    // Acceso directo en el menu Inicio para que ReadyUp aparezca al buscarlo en Windows.
+    // Acceso directo en el menu Inicio para que AutoReady aparezca al buscarlo en Windows.
     // Como es un exe suelto (sin instalador), lo crea la propia app y lo corrige si el exe cambio de lugar.
     static class Shortcut
     {
@@ -14,7 +14,7 @@ namespace ReadyUp
             try
             {
                 string dir = Environment.GetFolderPath(Environment.SpecialFolder.Programs);
-                string lnk = Path.Combine(dir, "ReadyUp.lnk");
+                string lnk = Path.Combine(dir, "AutoReady.lnk");
                 string exe = Application.ExecutablePath;
 
                 Type shellType = Type.GetTypeFromProgID("WScript.Shell");

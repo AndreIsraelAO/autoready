@@ -3,14 +3,14 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 
-namespace ReadyUp
+namespace AutoReady
 {
-    // Configuracion en %APPDATA%\ReadyUp\readyup.ini (clave=valor). Se reescribe con todas las claves al guardar.
+    // Configuracion en %APPDATA%\AutoReady\autoready.ini (clave=valor). Se reescribe con todas las claves al guardar.
     // Lo de cada juego va con prefijo: "dota2.Enabled", "cs2.HueMin", etc.
     class Config
     {
-        public static readonly string Dir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "ReadyUp");
-        static readonly string FilePath = Path.Combine(Dir, "readyup.ini");
+        public static readonly string Dir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "AutoReady");
+        static readonly string FilePath = Path.Combine(Dir, "autoready.ini");
 
         public class GameSettings
         {
@@ -81,19 +81,29 @@ namespace ReadyUp
                     d.MinFill = Dbl(kv, p + "MinFill", d.MinFill);
                 }
             }
-            if (string.IsNullOrEmpty(c.NtfyTopic))
-            {
-                // Los topics de ntfy.sh son publicos: quien sabe el nombre lo lee. Por eso uno aleatorio por usuario.
-                c.NtfyTopic = "readyup-" + Guid.NewGuid().ToString("N").Substring(0, 12);
-            }
+            if (string.IsNullOrEmpty(c.NtfyTopic) || !c.NtfyTopic.StartsWith("ar-"))
+                c.NtfyTopic = NewTopic();
             c.Save();
             return c;
+        }
+
+        // Los topics de ntfy.sh son publicos: quien sabe el nombre lo lee. Por eso uno aleatorio por usuario,
+        // corto para poder escribirlo en el celular y sin letras que se confunden (0/o, 1/l/i).
+        static string NewTopic()
+        {
+            const string alphabet = "abcdefghjkmnpqrstuvwxyz23456789";
+            byte[] rnd = new byte[8];
+            using (System.Security.Cryptography.RandomNumberGenerator rng = System.Security.Cryptography.RandomNumberGenerator.Create())
+                rng.GetBytes(rnd);
+            char[] chars = new char[8];
+            for (int i = 0; i < 8; i++) chars[i] = alphabet[rnd[i] % alphabet.Length];
+            return "ar-" + new string(chars);   // 31^8: unos 850 mil millones de combinaciones
         }
 
         public void Save()
         {
             List<string> lines = new List<string>();
-            lines.Add("; ReadyUp - configuracion. Reinicia ReadyUp despues de editar a mano.");
+            lines.Add("; AutoReady - configuracion. Reinicia AutoReady despues de editar a mano.");
             lines.Add("ScanIntervalMs=" + ScanIntervalMs);
             lines.Add("CooldownAfterAcceptSec=" + CooldownAfterAcceptSec);
             lines.Add("GsiPort=" + GsiPort);
@@ -143,7 +153,7 @@ namespace ReadyUp
     static class Log
     {
         static readonly object Gate = new object();
-        public static readonly string FilePath = Path.Combine(Config.Dir, "readyup.log");
+        public static readonly string FilePath = Path.Combine(Config.Dir, "autoready.log");
 
         public static void Write(string msg)
         {

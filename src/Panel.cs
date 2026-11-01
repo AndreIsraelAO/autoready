@@ -11,7 +11,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using Microsoft.Win32;
 
-namespace ReadyUp
+namespace AutoReady
 {
     // Lo que el panel muestra; lo arma TrayApp cada vez que algo cambia.
     class PanelStatus
@@ -21,7 +21,6 @@ namespace ReadyUp
         public bool Paused;
         public string UpdateTag;       // "v0.2.3" si hay version nueva, si no null
         public string UpdateMessage;   // resultado de "Buscar actualizaciones"
-        public string Games;           // estado por juego, para Avanzado
     }
 
     // Lo que el panel puede pedirle a la app. Cada cambio se aplica al instante (sin boton Guardar).
@@ -36,8 +35,6 @@ namespace ReadyUp
         void SetAutoUpdate(bool on);
         void CheckUpdatesNow();
         void InstallUpdate();
-        void SaveDebugCapture();
-        void OpenDataFolder();
         string HotkeyText { get; }
         // Registra el atajo global (vk = 0 lo borra). Devuelve false si otra app ya usa esa combinacion.
         bool SetHotkey(int vk, int mods);
@@ -135,12 +132,12 @@ namespace ReadyUp
 
         readonly IPanelHost host;
         readonly Theme theme;
-        TextBlock statusText, updateText, gamesText;
+        TextBlock statusText, updateText;
         Ellipse statusDot;
         Toggle acceptToggle, phoneToggle;
         Border updateButton;
-        StackPanel phoneDetails, advanced;
-        TextBlock advancedChevron, hotkeyLabel, hotkeyHint;
+        StackPanel phoneDetails;
+        TextBlock hotkeyLabel, hotkeyHint;
         Border hotkeyButton;
         bool capturingHotkey;
         DateTime hiddenAt = DateTime.MinValue;
@@ -150,7 +147,7 @@ namespace ReadyUp
             this.host = host;
             theme = Theme.FromSystem();
 
-            Title = "ReadyUp";
+            Title = "AutoReady";
             Width = 380;
             SizeToContent = SizeToContent.Height;
             WindowStyle = WindowStyle.None;
@@ -194,7 +191,7 @@ namespace ReadyUp
             if (!capturingHotkey) return;
             capturingHotkey = false;
             hotkeyLabel.Text = host.HotkeyText;
-            hotkeyHint.Text = "Pausa o reanuda desde cualquier lado, incluso dentro del juego";
+            hotkeyHint.Text = "Pausa o reanuda desde cualquier lado";
         }
 
         void OnPreviewKeyDown(object sender, KeyEventArgs e)
@@ -219,7 +216,7 @@ namespace ReadyUp
             bool ok = host.SetHotkey(vk, mods);
             capturingHotkey = false;
             hotkeyLabel.Text = host.HotkeyText;
-            hotkeyHint.Text = ok ? "Pausa o reanuda desde cualquier lado, incluso dentro del juego"
+            hotkeyHint.Text = ok ? "Pausa o reanuda desde cualquier lado"
                                  : "Esa tecla ya la usa otra app. Probá con otra.";
         }
 
@@ -253,7 +250,6 @@ namespace ReadyUp
             statusText.Text = st.Text;
             statusDot.Fill = st.Good ? theme.Good : theme.Idle;
             acceptToggle.IsOn = !st.Paused;
-            gamesText.Text = st.Games;
 
             bool hasUpdate = st.UpdateTag != null;
             updateButton.Visibility = hasUpdate ? Visibility.Visible : Visibility.Collapsed;
@@ -271,11 +267,11 @@ namespace ReadyUp
             Grid header = new Grid();
             header.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
             header.ColumnDefinitions.Add(new ColumnDefinition());
-            Image logo = new Image { Source = LoadPng("ReadyUp.logo-64.png"), Width = 40, Height = 40, Margin = new Thickness(0, 0, 12, 0) };
+            Image logo = new Image { Source = LoadPng("AutoReady.logo-64.png"), Width = 40, Height = 40, Margin = new Thickness(0, 0, 12, 0) };
             RenderOptions.SetBitmapScalingMode(logo, BitmapScalingMode.HighQuality);
             header.Children.Add(logo);
             StackPanel titles = new StackPanel { VerticalAlignment = VerticalAlignment.Center };
-            titles.Children.Add(new TextBlock { Text = "ReadyUp", FontSize = 16, FontWeight = FontWeights.SemiBold });
+            titles.Children.Add(new TextBlock { Text = "AutoReady", FontSize = 16, FontWeight = FontWeights.SemiBold });
             StackPanel statusLine = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 2, 0, 0) };
             statusDot = new Ellipse { Width = 8, Height = 8, Fill = theme.Idle, Margin = new Thickness(0, 0, 6, 0), VerticalAlignment = VerticalAlignment.Center };
             statusText = new TextBlock { Text = "Iniciando…", FontSize = 12, Foreground = theme.TextSecondary };
@@ -300,7 +296,7 @@ namespace ReadyUp
             acceptToggle = new Toggle(theme, true);
             acceptToggle.Changed += on => host.SetPaused(!on);
             StackPanel main = new StackPanel();
-            main.Children.Add(Row("Aceptar partidas", "Apagalo para pausar sin cerrar ReadyUp", acceptToggle));
+            main.Children.Add(Row("Aceptar partidas", "Apagalo para pausar", acceptToggle));
             main.Children.Add(Divider());
             hotkeyLabel = new TextBlock { Text = host.HotkeyText, FontSize = 13 };
             hotkeyButton = new Border
@@ -311,7 +307,7 @@ namespace ReadyUp
             hotkeyButton.MouseLeftButtonUp += (s, e) => StartHotkeyCapture();
             StackPanel hotkeyLeft = new StackPanel { VerticalAlignment = VerticalAlignment.Center };
             hotkeyLeft.Children.Add(new TextBlock { Text = "Atajo" });
-            hotkeyHint = new TextBlock { Text = "Pausa o reanuda desde cualquier lado, incluso dentro del juego", FontSize = 12, Foreground = theme.TextSecondary, TextWrapping = TextWrapping.Wrap };
+            hotkeyHint = new TextBlock { Text = "Pausa o reanuda desde cualquier lado", FontSize = 12, Foreground = theme.TextSecondary, TextWrapping = TextWrapping.Wrap };
             hotkeyLeft.Children.Add(hotkeyHint);
             main.Children.Add(Row(hotkeyLeft, hotkeyButton));
             root.Children.Add(Wrap(main, new Thickness(0, 14, 0, 0)));
@@ -329,7 +325,7 @@ namespace ReadyUp
             alerts.Children.Add(Divider());
             phoneToggle = new Toggle(theme, host.Cfg.NotifyPhone);
             phoneToggle.Changed += on => { host.SetPhone(on); phoneDetails.Visibility = on ? Visibility.Visible : Visibility.Collapsed; };
-            alerts.Children.Add(Row("Celular", "Te llega un aviso con la app gratuita ntfy", phoneToggle));
+            alerts.Children.Add(Row("Celular", "Avisos en el celular con la app gratis ntfy", phoneToggle));
             phoneDetails = BuildPhoneDetails();
             phoneDetails.Visibility = host.Cfg.NotifyPhone ? Visibility.Visible : Visibility.Collapsed;
             alerts.Children.Add(phoneDetails);
@@ -348,28 +344,15 @@ namespace ReadyUp
             general.Children.Add(Divider());
             updateText = new TextBlock { FontSize = 12, Foreground = theme.TextSecondary, VerticalAlignment = VerticalAlignment.Center };
             general.Children.Add(Row(updateText, Link("Buscar actualizaciones", () => host.CheckUpdatesNow())));
-            general.Children.Add(Divider());
-            advancedChevron = new TextBlock { Text = "", FontFamily = new FontFamily("Segoe Fluent Icons, Segoe MDL2 Assets"), FontSize = 12, Foreground = theme.TextSecondary, VerticalAlignment = VerticalAlignment.Center };
-            Grid advRow = Row("Avanzado", null, advancedChevron);
-            advRow.Cursor = Cursors.Hand;
-            advRow.Background = Brushes.Transparent;   // para que todo el renglon reciba el click
-            advRow.MouseLeftButtonUp += (s, e) =>
-            {
-                bool open = advanced.Visibility != Visibility.Visible;
-                advanced.Visibility = open ? Visibility.Visible : Visibility.Collapsed;
-                advancedChevron.Text = open ? "" : "";
-                ShowPanel();   // reacomoda la posicion con la nueva altura
-            };
-            general.Children.Add(advRow);
-            advanced = BuildAdvanced();
-            general.Children.Add(advanced);
             root.Children.Add(Wrap(general, new Thickness(0)));
 
-            // Pie: keis.studio.
-            TextBlock brand = new TextBlock { HorizontalAlignment = HorizontalAlignment.Center, Margin = new Thickness(0, 14, 0, 0), FontSize = 12, Foreground = theme.TextSecondary, Cursor = Cursors.Hand };
-            brand.Inlines.Add(new System.Windows.Documents.Run("keis"));
-            brand.Inlines.Add(new System.Windows.Documents.Run(".") { Foreground = new SolidColorBrush(Color.FromRgb(0x00, 0xB4, 0xD8)) });
-            brand.Inlines.Add(new System.Windows.Documents.Run("studio"));
+            // Pie: el wordmark de keis.studio. Las planchas de color de la k solo se ven desde unos 26 px de alto
+            // (guia de marca), por eso no va mas chico.
+            Image brand = new Image
+            {
+                Source = KeisMark.BuildWordmark(theme.Dark), Height = 26, HorizontalAlignment = HorizontalAlignment.Center,
+                Margin = new Thickness(0, 20, 0, 6), Cursor = Cursors.Hand, ToolTip = "keis.studio",
+            };
             brand.MouseLeftButtonUp += (s, e) => System.Diagnostics.Process.Start("https://keis.studio");
             root.Children.Add(brand);
 
@@ -378,51 +361,40 @@ namespace ReadyUp
 
         StackPanel BuildPhoneDetails()
         {
-            StackPanel p = new StackPanel { Margin = new Thickness(14, 0, 14, 12) };
+            StackPanel p = new StackPanel { Margin = new Thickness(14, 2, 14, 14) };
             Grid g = new Grid();
             g.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
             g.ColumnDefinitions.Add(new ColumnDefinition());
 
-            // El QR con el link ntfy:// suscribe en un paso en Android (abre la app con el codigo ya puesto).
-            Border qrBox = new Border { Background = Brushes.White, CornerRadius = new CornerRadius(6), Padding = new Thickness(6), Margin = new Thickness(0, 0, 14, 0) };
-            qrBox.Child = new Image { Source = QrImage("ntfy://ntfy.sh/" + host.Cfg.NtfyTopic + "?display=ReadyUp"), Width = 112, Height = 112 };
+            // Un solo QR para cualquier celular: la camara abre https://ntfy.sh/<codigo>, que ya queda suscripto.
+            Border qrBox = new Border { Background = Brushes.White, CornerRadius = new CornerRadius(6), Padding = new Thickness(6), Margin = new Thickness(0, 0, 14, 0), VerticalAlignment = VerticalAlignment.Top };
+            qrBox.Child = new Image { Source = QrImage("https://ntfy.sh/" + host.Cfg.NtfyTopic), Width = 108, Height = 108 };
             g.Children.Add(qrBox);
 
-            StackPanel steps = new StackPanel { VerticalAlignment = VerticalAlignment.Center };
-            steps.Children.Add(Small("1. Instalá ntfy en el celular"));
-            steps.Children.Add(Small("2. Escaneá el código con la cámara"));
-            steps.Children.Add(Small("3. Tocá Enviar prueba"));
+            StackPanel right = new StackPanel { VerticalAlignment = VerticalAlignment.Center };
+            right.Children.Add(new TextBlock { Text = "Escaneá con la cámara", FontSize = 13, FontWeight = FontWeights.SemiBold });
+            right.Children.Add(Small("o agregá este código en ntfy:"));
+
+            // El codigo a la vista y seleccionable: se lee de una para escribirlo en el celular.
+            TextBox code = new TextBox
+            {
+                Text = host.Cfg.NtfyTopic, IsReadOnly = true, BorderThickness = new Thickness(0), Background = Brushes.Transparent,
+                Foreground = theme.Text, FontFamily = new FontFamily("Cascadia Mono, Consolas"), FontSize = 17,
+                FontWeight = FontWeights.SemiBold, Padding = new Thickness(0), Margin = new Thickness(0, 4, 0, 0), CaretBrush = Brushes.Transparent,
+            };
+            right.Children.Add(code);
+
             Border test = new Border
             {
                 BorderBrush = theme.ControlStroke, BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(4),
-                Padding = new Thickness(10, 4, 10, 4), Margin = new Thickness(0, 8, 0, 0), HorizontalAlignment = HorizontalAlignment.Left, Cursor = Cursors.Hand,
+                Padding = new Thickness(10, 4, 10, 4), Margin = new Thickness(0, 10, 0, 0), HorizontalAlignment = HorizontalAlignment.Left, Cursor = Cursors.Hand,
                 Child = new TextBlock { Text = "Enviar prueba", FontSize = 12 },
             };
-            test.MouseLeftButtonUp += (s, e) => { host.SendTestPush(); ((TextBlock)test.Child).Text = "Enviada"; };
-            steps.Children.Add(test);
-            Grid.SetColumn(steps, 1);
-            g.Children.Add(steps);
+            test.MouseLeftButtonUp += (s, e) => { host.SendTestPush(); ((TextBlock)test.Child).Text = "Enviada al celular"; };
+            right.Children.Add(test);
+            Grid.SetColumn(right, 1);
+            g.Children.Add(right);
             p.Children.Add(g);
-
-            // iPhone: ntfy no tiene ese link, asi que el codigo se copia y se pega en la app.
-            StackPanel ios = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 10, 0, 0) };
-            ios.Children.Add(Small("¿iPhone? En ntfy tocá + y pegá el código. "));
-            ios.Children.Add(Link("Copiar código", () => Clipboard.SetText(host.Cfg.NtfyTopic), 12));
-            p.Children.Add(ios);
-            return p;
-        }
-
-        StackPanel BuildAdvanced()
-        {
-            StackPanel p = new StackPanel { Margin = new Thickness(14, 0, 14, 12), Visibility = Visibility.Collapsed };
-            gamesText = Small("");
-            p.Children.Add(gamesText);
-            StackPanel links = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 8, 0, 0) };
-            links.Children.Add(Link("Guardar captura", () => host.SaveDebugCapture(), 12));
-            links.Children.Add(Small("   ·   "));
-            links.Children.Add(Link("Abrir carpeta de logs", () => host.OpenDataFolder(), 12));
-            p.Children.Add(links);
-            p.Children.Add(Small("La captura sirve con el popup de ACCEPT en pantalla."));
             return p;
         }
 

@@ -8,14 +8,14 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using Microsoft.Win32;
 
-namespace ReadyUp
+namespace AutoReady
 {
     // Game State Integration: la forma oficial de Valve de saber en que estado esta el juego (Dota 2 y CS2).
     // El juego manda POSTs con JSON a un servidor local; cada POST trae el appid del juego que lo envia.
     // Lo usamos solo para saber si estas dentro de una partida (y ahi no escanear nada).
     class Gsi
     {
-        const string CfgName = "gamestate_integration_readyup.cfg";
+        const string CfgName = "gamestate_integration_autoready.cfg";
 
         class GameState
         {
@@ -79,7 +79,7 @@ namespace ReadyUp
         public int InstallConfig(GameProfile g)
         {
             string content =
-                "\"ReadyUp\"\r\n{\r\n" +
+                "\"AutoReady\"\r\n{\r\n" +
                 "    \"uri\"           \"http://127.0.0.1:" + port + "/\"\r\n" +
                 "    \"timeout\"       \"5.0\"\r\n" +
                 "    \"buffer\"        \"0.1\"\r\n" +

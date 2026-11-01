@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace ReadyUp
+namespace AutoReady
 {
     // Todo lo que cambia de un juego a otro: proceso, donde va la config de GSI, como leer el estado
     // y como es el boton de aceptar.

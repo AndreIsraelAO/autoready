@@ -8,7 +8,7 @@ using System.Threading;
 using System.Windows.Forms;
 using Microsoft.Win32;
 
-namespace ReadyUp
+namespace AutoReady
 {
     enum AppState { Starting, GameClosed, Paused, Searching, InMatch }
 
@@ -23,7 +23,7 @@ namespace ReadyUp
         readonly NotifyIcon tray;
         readonly Panel panel;
         readonly ToolStripMenuItem pauseItem;
-        readonly Icon iconOn, iconOff, iconWait;
+        readonly Icon iconOn, iconOff;
         System.Threading.Timer updateTimer;
         Updater.Release pendingUpdate;
         string updateMessage;
@@ -42,26 +42,25 @@ namespace ReadyUp
         public TrayApp()
         {
             cfg = Config.Load();
-            iconOn = MakeIcon(TrayTint.Normal);
-            iconOff = MakeIcon(TrayTint.Gray);
-            iconWait = MakeIcon(TrayTint.Amber);
+            iconOn = MakeIcon(false);
+            iconOff = MakeIcon(true);
 
             ui = new HiddenWindow();
             ui.WindowFlashed += h => { flashedWindow = h; };
-            ui.HotkeyPressed += () => { SetPaused(!paused); Notify(paused ? "ReadyUp en pausa" : "ReadyUp activo", null); Beep(!paused); };
+            ui.HotkeyPressed += () => { SetPaused(!paused); Notify(paused ? "AutoReady en pausa" : "AutoReady activo", null); Beep(!paused); };
 
             panel = new Panel(this);
 
             // Menu chico: lo demas esta en el panel (click izquierdo).
             pauseItem = new ToolStripMenuItem("Pausar", null, (s, e) => SetPaused(!paused));
             ContextMenuStrip menu = new ContextMenuStrip();
-            menu.Items.Add(new ToolStripMenuItem("Abrir ReadyUp", null, (s, e) => OpenPanel()) { Font = new Font(SystemFonts.MenuFont, FontStyle.Bold) });
+            menu.Items.Add(new ToolStripMenuItem("Abrir AutoReady", null, (s, e) => OpenPanel()) { Font = new Font(SystemFonts.MenuFont, FontStyle.Bold) });
             menu.Items.Add(new ToolStripSeparator());
             menu.Items.Add(pauseItem);
             menu.Items.Add(new ToolStripSeparator());
             menu.Items.Add(new ToolStripMenuItem("Salir", null, (s, e) => Quit()));
 
-            tray = new NotifyIcon { Icon = iconWait, Text = "ReadyUp", ContextMenuStrip = menu, Visible = true };
+            tray = new NotifyIcon { Icon = iconOn, Text = "AutoReady", ContextMenuStrip = menu, Visible = true };
             tray.MouseClick += (s, e) =>
             {
                 if (e.Button != MouseButtons.Left) return;
@@ -79,7 +78,7 @@ namespace ReadyUp
                 Log.Write("Atajo: no se pudo registrar (otra app lo usa)");
             Shortcut.EnsureStartMenu();
 
-            Log.Write("ReadyUp v" + Updater.CurrentVersionText + " iniciado");
+            Log.Write("AutoReady v" + Updater.CurrentVersionText + " iniciado");
             Thread scanner = new Thread(ScanLoop) { IsBackground = true, Name = "scanner" };
             scanner.Start();
 
@@ -123,7 +122,7 @@ namespace ReadyUp
 
         public void SendTestPush()
         {
-            Notifier.Send(cfg, "ReadyUp conectado", "Los avisos funcionan. ¡Buena suerte en la cola!", "white_check_mark");
+            Notifier.Send(cfg, "AutoReady conectado", "Los avisos funcionan. ¡Buena suerte en la cola!", "white_check_mark");
         }
 
         public bool AutostartEnabled
@@ -131,7 +130,7 @@ namespace ReadyUp
             get
             {
                 using (RegistryKey k = Registry.CurrentUser.OpenSubKey(RunKey))
-                    return k != null && k.GetValue("ReadyUp") != null;
+                    return k != null && k.GetValue("AutoReady") != null;
             }
         }
 
@@ -139,8 +138,8 @@ namespace ReadyUp
         {
             using (RegistryKey k = Registry.CurrentUser.CreateSubKey(RunKey))
             {
-                if (on) k.SetValue("ReadyUp", "\"" + Application.ExecutablePath + "\"");
-                else k.DeleteValue("ReadyUp", false);
+                if (on) k.SetValue("AutoReady", "\"" + Application.ExecutablePath + "\"");
+                else k.DeleteValue("AutoReady", false);
             }
         }
 
@@ -151,12 +150,6 @@ namespace ReadyUp
         }
 
         public void CheckUpdatesNow() { CheckUpdates(true); }
-
-        public void OpenDataFolder()
-        {
-            Directory.CreateDirectory(Config.Dir);
-            Process.Start("explorer.exe", "\"" + Config.Dir + "\"");
-        }
 
         public string HotkeyText
         {
@@ -202,22 +195,15 @@ namespace ReadyUp
                 case AppState.Paused: text = "En pausa"; break;
                 case AppState.InMatch: text = "En partida de " + game.Name; break;
                 case AppState.Searching: text = "Esperando partida en " + game.Name; break;
-                default: text = paused ? "En pausa" : "Esperando que abras Dota 2 o CS2"; break;
-            }
-            List<string> games = new List<string>();
-            foreach (GameProfile g in GameProfile.All)
-            {
-                bool open = Win32.FindGameWindow(g.Process) != IntPtr.Zero;
-                games.Add(g.Name + ": " + (open ? "abierto" : "cerrado") + " · GSI " + (gsi.Connected(g) ? "conectado" : "sin datos"));
+                default: text = paused ? "En pausa" : "Listo: abrí tu juego y buscá partida"; break;
             }
             PanelStatus st = new PanelStatus
             {
                 Text = text,
-                Good = !paused && (s == AppState.Searching || s == AppState.InMatch),
+                Good = !paused,
                 Paused = paused,
                 UpdateTag = pendingUpdate != null ? pendingUpdate.Tag : null,
                 UpdateMessage = updateMessage,
-                Games = string.Join("\n", games.ToArray()),
             };
             ui.Post(() =>
             {
@@ -257,7 +243,7 @@ namespace ReadyUp
                 updateMessage = r.Tag + " disponible";
                 Log.Write("Updater: hay una version nueva " + r.Tag);
                 PushStatus();
-                if (isNew) Notify("ReadyUp " + r.Tag + " disponible", "Abrí ReadyUp para actualizar.");
+                if (isNew) Notify("AutoReady " + r.Tag + " disponible", "Abrí AutoReady para actualizar.");
             });
         }
 
@@ -344,7 +330,7 @@ namespace ReadyUp
             {
                 lastAccept = DateTime.MinValue;
                 SetPaused(true);
-                Notify("ReadyUp en pausa", "Sin GSI no sé si estás en partida, así que me pausé. Reanudalo desde el panel.");
+                Notify("AutoReady en pausa", "Sin GSI no sé si estás en partida, así que me pausé. Reanudalo desde el panel.");
                 return 500;
             }
 
@@ -385,9 +371,9 @@ namespace ReadyUp
             lastAccept = DateTime.Now;
             cooldownUntil = DateTime.Now.AddSeconds(cfg.CooldownAfterAcceptSec);
             Log.Write(game.Name + ": partida encontrada, click en ACCEPT (" + (rc.X + p.X) + "," + (rc.Y + p.Y) + ")");
-            Notify("Partida aceptada", "ReadyUp aceptó tu partida de " + game.Name + ".");
+            Notify("Partida aceptada", "AutoReady aceptó tu partida de " + game.Name + ".");
             if (cfg.Sound) Beep(true);
-            Notifier.Phone(cfg, "Partida aceptada", "ReadyUp aceptó tu partida de " + game.Name + ". Volvé a la PC.", "video_game");
+            Notifier.Phone(cfg, "Partida aceptada", "AutoReady aceptó tu partida de " + game.Name + ". Volvé a la PC.", "video_game");
         }
 
         void OnGameStateChanged(GameProfile game, string oldState, string newState)
@@ -409,7 +395,7 @@ namespace ReadyUp
             gsiHintShown.Add(game.Id);
             Log.Write("GSI " + game.Name + ": abierto hace 90s y no llego nada");
             Notify("Activá GSI para más seguridad",
-                   game.LaunchOptionHint ?? ("Reiniciá " + game.Name + " para que cargue la integración de ReadyUp."));
+                   game.LaunchOptionHint ?? ("Reiniciá " + game.Name + " para que cargue la integración de AutoReady."));
         }
 
         // ---------- estado e interfaz ----------
@@ -420,42 +406,19 @@ namespace ReadyUp
             state = s;
             ui.Post(() =>
             {
-                Icon icon = s == AppState.Paused ? iconOff : (s == AppState.GameClosed ? iconWait : iconOn);
+                Icon icon = s == AppState.Paused ? iconOff : iconOn;
                 tray.Icon = icon;
                 string name = activeGame != null ? activeGame.Name : "";
                 string text = s == AppState.Paused ? "en pausa"
                             : s == AppState.GameClosed ? "esperando un juego"
                             : s == AppState.InMatch ? "en partida de " + name
                             : "esperando partida en " + name;
-                tray.Text = Truncate("ReadyUp: " + text, 63);
+                tray.Text = Truncate("AutoReady: " + text, 63);
             });
             PushStatus();
         }
 
         static string Truncate(string s, int max) { return s.Length <= max ? s : s.Substring(0, max); }
-
-        public void SaveDebugCapture()
-        {
-            IntPtr hwnd;
-            GameProfile game = FindRunningGame(out hwnd);
-            if (game == null)
-            {
-                MessageBox.Show("Sirve para revisar la detección: abrí Dota 2 o CS2, buscá partida y usalo cuando aparezca el popup de ACCEPT.", "ReadyUp");
-                return;
-            }
-            using (Bitmap shot = Win32.Capture(hwnd))
-            {
-                if (shot == null) { MessageBox.Show("No pude capturar " + game.Name + " (¿está minimizado?).", "ReadyUp"); return; }
-                Detector.Settings ds = cfg.For(game).Detector;
-                Detector.Hit hit = Detector.Find(shot, ds);
-                Directory.CreateDirectory(Config.Dir);
-                string file = Path.Combine(Config.Dir, "captura-" + game.Id + "-" + DateTime.Now.ToString("yyyyMMdd-HHmmss") + ".png");
-                using (Bitmap annotated = Detector.Annotate(shot, hit, ds))
-                    annotated.Save(file);
-                Log.Write("Captura de prueba: " + file + (hit != null ? " (boton encontrado)" : " (sin boton)"));
-                Process.Start("explorer.exe", "/select,\"" + file + "\"");
-            }
-        }
 
         void Notify(string title, string text)
         {
@@ -478,17 +441,16 @@ namespace ReadyUp
             Win32.UnregisterHotKey(ui.Handle, HotkeyId);
             tray.Visible = false;
             panel.Close();
-            Log.Write("ReadyUp cerrado");
+            Log.Write("AutoReady cerrado");
             ExitThread();
         }
 
-        enum TrayTint { Normal, Gray, Amber }
-
-        // Icono de la bandeja a partir del logo embebido: verde = activo, gris = pausa, ambar = esperando el juego.
-        static Icon MakeIcon(TrayTint tint)
+        // Icono de la bandeja a partir del logo embebido: verde = activo, gris = en pausa.
+        // (Windows usa este mismo icono en las notificaciones.)
+        static Icon MakeIcon(bool gray)
         {
             int size = SystemInformation.SmallIconSize.Width;
-            string res = size > 16 ? "ReadyUp.tray-32.png" : "ReadyUp.tray-16.png";
+            string res = size > 16 ? "AutoReady.tray-32.png" : "AutoReady.tray-16.png";
             using (Stream s = typeof(TrayApp).Assembly.GetManifestResourceStream(res))
             using (Bitmap logo = new Bitmap(s))
             using (Bitmap bmp = new Bitmap(size, size))
@@ -498,18 +460,15 @@ namespace ReadyUp
                     g.InterpolationMode = InterpolationMode.HighQualityBicubic;
                     g.DrawImage(logo, 0, 0, size, size);
                 }
-                if (tint != TrayTint.Normal)
+                if (gray)
                     for (int y = 0; y < size; y++)
                         for (int x = 0; x < size; x++)
                         {
                             Color c = bmp.GetPixel(x, y);
                             if (c.A == 0 || c.G - c.R < 40) continue;   // solo la flecha verde
                             // Gris claro: tiene que leerse sobre la barra de tareas oscura.
-                            int gray = Math.Min(255, (c.R + c.G + c.B) / 3 + 75);
-                            Color t = tint == TrayTint.Gray
-                                ? Color.FromArgb(c.A, gray, gray, gray)
-                                : Color.FromArgb(c.A, Math.Min(255, c.G + 40), Math.Min(255, c.G * 3 / 4), 40);
-                            bmp.SetPixel(x, y, t);
+                            int v = Math.Min(255, (c.R + c.G + c.B) / 3 + 75);
+                            bmp.SetPixel(x, y, Color.FromArgb(c.A, v, v, v));
                         }
                 return Icon.FromHandle(bmp.GetHicon());
             }

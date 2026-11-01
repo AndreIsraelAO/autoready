@@ -5,7 +5,7 @@ using System.Drawing.Imaging;
 using System.Runtime.InteropServices;
 using System.Threading;
 
-namespace ReadyUp
+namespace AutoReady
 {
     // Wrappers de Win32: buscar la ventana de Dota, capturarla, darle foco y hacer click.
     static class Win32

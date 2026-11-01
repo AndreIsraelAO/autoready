@@ -1,4 +1,4 @@
-# Al subir un tag vX.Y.Z: compila ReadyUp.exe con esa version y publica el Release con el exe y su SHA-256.
+# Al subir un tag vX.Y.Z: compila AutoReady.exe con esa version y publica el Release con el exe y su SHA-256.
 name: release
 
 on:
@@ -24,8 +24,8 @@ jobs:
       - name: Checksum
         shell: pwsh
         run: |
-          $hash = (Get-FileHash dist/ReadyUp.exe -Algorithm SHA256).Hash.ToLower()
-          Set-Content dist/ReadyUp.exe.sha256 "$hash  ReadyUp.exe" -Encoding ascii -NoNewline
+          $hash = (Get-FileHash dist/AutoReady.exe -Algorithm SHA256).Hash.ToLower()
+          Set-Content dist/AutoReady.exe.sha256 "$hash  AutoReady.exe" -Encoding ascii -NoNewline
           "SHA-256: $hash"
 
       - name: Publish release
@@ -35,4 +35,4 @@ jobs:
         run: |
           # Mientras sea 0.x (beta) se publica como pre-release.
           $pre = if ($env:GITHUB_REF_NAME -like 'v0.*') { '--prerelease' } else { $null }
-          gh release create $env:GITHUB_REF_NAME dist/ReadyUp.exe dist/ReadyUp.exe.sha256 --title "ReadyUp $env:GITHUB_REF_NAME" --generate-notes $pre
+          gh release create $env:GITHUB_REF_NAME dist/AutoReady.exe dist/AutoReady.exe.sha256 --title "AutoReady $env:GITHUB_REF_NAME" --generate-notes $pre
