@@ -333,19 +333,26 @@ namespace AutoReady
             g.ColumnDefinitions.Add(new ColumnDefinition());
             g.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
             g.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
-            g.Children.Add(new TextBlock
+            // Icono y textos juntos, centrados respecto del boton; el icono va a la altura de la primera linea, asi queda
+            // alineado con un renglon solo (version nueva) y con varios (bienvenida).
+            Grid content = new Grid { VerticalAlignment = VerticalAlignment.Center };
+            content.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+            content.ColumnDefinitions.Add(new ColumnDefinition());
+            content.Children.Add(new TextBlock
             {
                 Text = glyph, FontFamily = new FontFamily("Segoe Fluent Icons, Segoe MDL2 Assets"), FontSize = 16,
                 Foreground = caution ? t.CautionIcon : t.InfoIcon, Margin = new Thickness(0, 2, 12, 0), VerticalAlignment = VerticalAlignment.Top,
             });
-            StackPanel texts = new StackPanel { VerticalAlignment = VerticalAlignment.Center };
+            StackPanel texts = new StackPanel();
             Title = new TextBlock { Text = title ?? "", FontWeight = FontWeights.SemiBold, TextWrapping = TextWrapping.Wrap, Visibility = title == null ? Visibility.Collapsed : Visibility.Visible };
             Message = new TextBlock { Text = message ?? "", TextWrapping = TextWrapping.Wrap, Visibility = message == null ? Visibility.Collapsed : Visibility.Visible };
             if (title != null && message != null) Message.Margin = new Thickness(0, 2, 0, 0);
             texts.Children.Add(Title);
             texts.Children.Add(Message);
             Grid.SetColumn(texts, 1);
-            g.Children.Add(texts);
+            content.Children.Add(texts);
+            Grid.SetColumnSpan(content, 2);
+            g.Children.Add(content);
             if (action != null)
             {
                 action.Margin = new Thickness(12, 0, 0, 0);

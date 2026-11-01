@@ -472,7 +472,7 @@ namespace AutoReady
                 System.Windows.Threading.DispatcherTimer back = new System.Windows.Threading.DispatcherTimer { Interval = TimeSpan.FromSeconds(2) };
                 back.Tick += (s2, e2) => { back.Stop(); copyIcon.Text = ""; };
                 back.Start();
-            }, S.CopyCode) { Width = 26, Height = 26, CornerRadius = new CornerRadius(4), Margin = new Thickness(2, 2, 0, 0), ToolTip = S.CopyCode };
+            }, S.CopyCode) { Width = 26, Height = 26, CornerRadius = new CornerRadius(4), Margin = new Thickness(2, 0, 0, 0), VerticalAlignment = VerticalAlignment.Center, ToolTip = S.CopyCode };
             copy.SetBackgrounds(Brushes.Transparent, theme.SubtleHover, theme.SubtlePressed);
             copy.SetLabelColors(copyIcon, theme.TextSecondary, theme.Text, theme.TextSecondary);
             StackPanel codeRow = new StackPanel { Orientation = Orientation.Horizontal };
