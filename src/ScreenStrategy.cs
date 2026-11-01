@@ -42,6 +42,12 @@ namespace AutoReady
             get { return Gsi.InMatch(Game) || (Game.UsesPresence && Presence.Current == PresenceState.InMatch); }
         }
 
+        // En el menu segun el estado de Steam (el unico que distingue "menu" de "buscando"). Sin eso no se sabe: false.
+        public override bool IdleForUpdate
+        {
+            get { return Game.UsesPresence && Cfg.UseSteamStatus && Presence.Current == PresenceState.Menu && !Gsi.InMatch(Game); }
+        }
+
         // Juego instalado al que le falta la opcion de lanzamiento para GSI. Cuenta como resuelto si GSI ya manda
         // datos o si alcanza con el estado de Steam.
         public override bool NeedsSetup()

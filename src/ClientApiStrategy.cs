@@ -12,6 +12,7 @@ namespace AutoReady
         string phase;            // ultima fase leida (null = desconocida)
         bool phaseKnown;         // ya se leyo una vez desde que se empezo a vigilar
         volatile bool inMatch;
+        volatile bool idle;      // el cliente esta en reposo (ver Lcu.IsIdle)
 
         public ClientApiStrategy(GameProfile game, IGameHost host) : this(game, host, new Lcu()) { }
 
@@ -32,11 +33,14 @@ namespace AutoReady
             phase = null;
             phaseKnown = false;
             inMatch = false;
+            idle = false;
         }
 
-        public override void Deactivated() { inMatch = false; }
+        public override void Deactivated() { inMatch = false; idle = false; }
 
         public override bool InMatch { get { return inMatch; } }
+
+        public override bool IdleForUpdate { get { return idle && !inMatch; } }
 
         public override int Tick()
         {
@@ -52,6 +56,7 @@ namespace AutoReady
                 phaseKnown = true;
             }
             inMatch = Lcu.IsInMatch(now);
+            idle = Lcu.IsIdle(now);
             if (inMatch) { Host.SetState(AppState.InMatch); return 1000; }
             Host.SetState(AppState.Searching);
             if (now != "ReadyCheck" || InCooldown) return 1000;

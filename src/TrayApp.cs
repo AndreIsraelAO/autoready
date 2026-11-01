@@ -28,7 +28,7 @@ namespace AutoReady
         string updateMessage;
 
         volatile bool paused;
-        volatile bool installWhenGameCloses;   // actualizacion automatica esperando que se cierre el juego
+        volatile bool installWhenIdle;   // actualizacion automatica esperando el menu (o que se cierre el juego)
         volatile bool running = true;
         AppState state = AppState.Starting;
         readonly List<GameStrategy> strategies;   // una por juego, en el orden de GameProfile.All
@@ -285,11 +285,12 @@ namespace AutoReady
                 Log.Write("Updater: hay una version nueva " + r.Tag);
                 if (cfg.AutoUpdateCheck)
                 {
-                    // "Actualizar automaticamente": se instala sola, pero nunca con un juego abierto (podria estar
-                    // buscando partida); en ese caso, al cerrarlo (ver Tick).
-                    if (ActiveGame == null) { ui.Post(InstallUpdate); return; }
-                    installWhenGameCloses = true;
-                    updateMessage = S.UpdateWhenGameCloses(r.Tag);
+                    // "Actualizar automaticamente": se instala sola con el juego cerrado o con el juego abierto en el menu,
+                    // sin buscar ni jugar (el reinicio dura unos segundos). Si no, espera a que pase eso (ver Tick).
+                    GameStrategy a = active;
+                    if (a == null || a.IdleForUpdate) { ui.Post(InstallUpdate); return; }
+                    installWhenIdle = true;
+                    updateMessage = S.UpdateWhenIdle(r.Tag);
                     PushStatus();
                     return;
                 }
@@ -368,9 +369,9 @@ namespace AutoReady
                     Log.Write(active.Game.Name + " cerrado: se reanuda solo");
                     SetPaused(false);
                 }
-                if (now == null && installWhenGameCloses)
+                if (now == null && installWhenIdle)
                 {
-                    installWhenGameCloses = false;
+                    installWhenIdle = false;
                     ui.Post(InstallUpdate);
                 }
                 if (active != null) active.Deactivated();
@@ -379,6 +380,12 @@ namespace AutoReady
                 state = AppState.Starting;
             }
             Presence.Watch(cfg.UseSteamStatus && active != null ? active.Game : null);
+            // Volvio al menu con una actualizacion esperando: se instala ahora, sin cerrar el juego.
+            if (installWhenIdle && active != null && active.IdleForUpdate)
+            {
+                installWhenIdle = false;
+                ui.Post(InstallUpdate);
+            }
             if (paused) { SetState(AppState.Paused); return 500; }
             if (active == null) { SetState(AppState.GameClosed); return 2000; }
             return active.Tick();

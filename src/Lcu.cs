@@ -48,6 +48,12 @@ namespace AutoReady
         }
 
         // Fases en las que no se hace nada: ya hay partida (o se esta armando) y el jugador tiene que estar.
+        // Cliente en reposo: ni buscando ni en partida (sin cola, el lobby no corre ningun riesgo de perder un popup).
+        public static bool IsIdle(string phase)
+        {
+            return phase == "None" || phase == "Lobby";
+        }
+
         public static bool IsInMatch(string phase)
         {
             return phase == "ChampSelect" || phase == "GameStart" || phase == "InProgress" || phase == "Reconnect" ||

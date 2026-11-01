@@ -65,6 +65,10 @@ namespace AutoReady
         // En partida (o armandola): la app no se actualiza ni hace nada que moleste.
         public virtual bool InMatch { get { return false; } }
 
+        // Confirmado en el menu: ni en partida ni buscando una. Es cuando la app puede reiniciarse para actualizar sin
+        // cerrar el juego. Si la estrategia no puede saberlo (sin GSI ni estado), queda en false y se espera al cierre.
+        public virtual bool IdleForUpdate { get { return false; } }
+
         // Falta un paso de configuracion (lo muestra el panel con el boton Configurar). Se consulta aunque el juego
         // este cerrado.
         public virtual bool NeedsSetup() { return false; }

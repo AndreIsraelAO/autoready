@@ -63,7 +63,7 @@ namespace AutoReady
         public static string Checking { get { return T("Buscando…", "Checking…"); } }
         public static string CheckFailed { get { return T("No se pudo buscar. Probá más tarde.", "Couldn't check. Try again later."); } }
         public static string Available(string tag) { return string.Format(T("{0} disponible", "{0} available"), tag); }
-        public static string UpdateWhenGameCloses(string tag) { return string.Format(T("{0} se instala al cerrar el juego", "{0} installs when you close the game"), tag); }
+        public static string UpdateWhenIdle(string tag) { return string.Format(T("{0} se instala cuando no estés en partida", "{0} installs when you're not in a match"), tag); }
         public static string Updating { get { return T("Actualizando…", "Updating…"); } }
         public static string UpdateFailed { get { return T("No se pudo actualizar. Probá más tarde.", "Couldn't update. Try again later."); } }
         public static string UpdateAfterMatch { get { return T("Se actualiza al terminar la partida", "Updates after this match"); } }

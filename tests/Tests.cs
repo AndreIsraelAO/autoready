@@ -121,6 +121,9 @@ namespace AutoReady.Tests
             Check(GameProfile.ById("deadlock") == GameProfile.Deadlock && GameProfile.ByAppId(1422450) == GameProfile.Deadlock, "Deadlock: perfil por id y por AppId");
             Check(Installer.IsQuietInstall(new[] { "--install", "--quiet" }) && !Installer.IsQuietInstall(new[] { "--install" })
                   && !Installer.IsQuietInstall(new[] { "--quiet" }) && !Installer.IsQuietInstall(new string[0]), "instalacion silenciosa solo con --install --quiet");
+            // Sin estado de Steam (o sin GSI) no se sabe si esta buscando: nunca se considera en reposo.
+            Check(!GameProfile.Dota2.NewStrategy(GameProfile.Dota2, new FakeHost()).IdleForUpdate, "Dota 2 sin estado de Steam: no hay reposo confirmado");
+            Check(!GameProfile.Cs2.NewStrategy(GameProfile.Cs2, new FakeHost()).IdleForUpdate, "CS2: no hay reposo confirmado");
             Check(GameProfile.League.NewStrategy(GameProfile.League, new FakeHost()) is ClientApiStrategy, "LoL usa la API del cliente");
             Check(GameProfile.ByAppId(570) == GameProfile.Dota2 && GameProfile.ByAppId(730) == GameProfile.Cs2, "ByAppId");
         }
@@ -394,6 +397,16 @@ namespace AutoReady.Tests
             fake.Phase = "Matchmaking";
             s.Tick();
             Check(fake.Accepts == 0 && host.State == AppState.Searching, "buscando: no acepta nada");
+
+            // Actualizar sin cerrar el juego: solo con el cliente en reposo (nunca buscando ni en partida).
+            Check(!s.IdleForUpdate, "buscando: no se actualiza");
+            fake.Phase = "Lobby";
+            s.Tick();
+            Check(s.IdleForUpdate, "en el lobby: se puede actualizar");
+            fake.Phase = "Matchmaking";
+            s.Tick();
+            Check(!s.IdleForUpdate, "volvio a buscar: ya no se puede actualizar");
+            Check(Lcu.IsIdle("None") && Lcu.IsIdle("Lobby") && !Lcu.IsIdle("ReadyCheck") && !Lcu.IsIdle("ChampSelect") && !Lcu.IsIdle(null), "fases en reposo");
 
             fake.Phase = "ReadyCheck";
             host.Paused = true;
