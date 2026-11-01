@@ -20,7 +20,7 @@
   <img src="https://img.shields.io/github/downloads/hercase/autoready/total" alt="Downloads">
   <img src="https://img.shields.io/github/license/hercase/autoready" alt="MIT license">
   <br>
-  <a href="README.es.md">Leer en español</a>
+  <a href="https://hercase.github.io/autoready/">Website</a> · <a href="README.es.md">Leer en español</a>
 </p>
 
 <table>

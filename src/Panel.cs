@@ -52,6 +52,8 @@ namespace AutoReady
         [DllImport("dwmapi.dll")] static extern int DwmSetWindowAttribute(IntPtr hwnd, int attr, ref int value, int size);
         const int DWMWA_USE_IMMERSIVE_DARK_MODE = 20, DWMWA_WINDOW_CORNER_PREFERENCE = 33, DWMWA_BORDER_COLOR = 34, DWMWCP_ROUND = 2;
 
+        const string PhonePageUrl = "https://hercase.github.io/autoready/phone/";
+
         readonly IPanelHost host;
         readonly Theme theme;
         TextBlock statusText, updateText;
@@ -424,9 +426,14 @@ namespace AutoReady
             g.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
             g.ColumnDefinitions.Add(new ColumnDefinition());
 
-            // Un solo QR para cualquier celular: la camara abre https://ntfy.sh/<codigo>, que ya queda suscripto.
+            // Un solo QR para cualquier celular: abre la pagina de ayuda (docs/phone), que en Android suscribe ntfy de un toque
+            // y en iPhone guia a copiar y pegar el codigo. El codigo va despues del #, asi nunca llega a un servidor.
+            // Con un servidor de ntfy propio, el link directo a ese servidor.
+            string qrUrl = host.Cfg.NtfyServer.TrimEnd('/') == "https://ntfy.sh"
+                ? PhonePageUrl + "#" + host.Cfg.NtfyTopic
+                : host.Cfg.NtfyServer.TrimEnd('/') + "/" + host.Cfg.NtfyTopic;
             Border qrBox = new Border { Background = Brushes.White, CornerRadius = new CornerRadius(6), Padding = new Thickness(5), Margin = new Thickness(0, 0, 14, 0), VerticalAlignment = VerticalAlignment.Top };
-            qrBox.Child = new Image { Source = QrImage("https://ntfy.sh/" + host.Cfg.NtfyTopic), Width = 96, Height = 96 };
+            qrBox.Child = new Image { Source = QrImage(qrUrl), Width = 96, Height = 96 };
             AutomationProperties.SetName(qrBox, S.PhoneScan);
             g.Children.Add(qrBox);
 

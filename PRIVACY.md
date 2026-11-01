@@ -19,6 +19,10 @@ What stays on your PC:
 - A Game State Integration config file in the Dota 2 and CS2 folders, so those games tell AutoReady (and only AutoReady,
   on `127.0.0.1`) when you're in a match.
 
+The phone setup page ([hercase.github.io/autoready/phone](https://hercase.github.io/autoready/phone/)) that the QR code
+opens is a static page on GitHub Pages with no cookies, analytics or third-party scripts. Your code goes after the `#`
+in the link, so the browser never sends it to any server.
+
 These services have their own privacy policies: [GitHub](https://docs.github.com/site-policy/privacy-policies/github-general-privacy-statement),
 [Steam](https://store.steampowered.com/privacy_agreement/), [ntfy](https://ntfy.sh/docs/privacy/).
 
@@ -42,6 +46,10 @@ Lo que queda en tu PC:
   últimas 15). Nunca se suben. Se apagan con `SaveSamples=False` en `%APPDATA%\AutoReady\autoready.ini`.
 - Un archivo de configuración de Game State Integration en las carpetas de Dota 2 y CS2, para que esos juegos le avisen
   a AutoReady (y solo a AutoReady, en `127.0.0.1`) cuando estás en partida.
+
+La página para conectar el celular ([hercase.github.io/autoready/phone](https://hercase.github.io/autoready/phone/)) que
+abre el código QR es una página estática en GitHub Pages, sin cookies, estadísticas ni scripts de terceros. Tu código va
+después del `#` en el link, así que el navegador nunca lo manda a ningún servidor.
 
 Estos servicios tienen sus propias políticas de privacidad: [GitHub](https://docs.github.com/site-policy/privacy-policies/github-general-privacy-statement),
 [Steam](https://store.steampowered.com/privacy_agreement/), [ntfy](https://ntfy.sh/docs/privacy/).
