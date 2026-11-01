@@ -13,182 +13,94 @@
 <link rel="icon" href="assets/autoready-icon-192.png">
 <link rel="apple-touch-icon" href="assets/autoready-icon-192.png">
 <style>
-  /* Pagina de descarga. Sin scripts de terceros, sin fuentes externas ni cookies. */
+  /* Pagina de descarga: una sola pantalla. Sin scripts de terceros, sin fuentes externas ni cookies. */
   :root {
-    --bg: #F3F3F3; --card: #FFFFFF; --stroke: #E5E5E5; --text: #1B1B1B; --muted: #5F5F5F;
-    --fill: #1E7A52; --on-fill: #FFFFFF; --accent: #176B47; --soft: #E7F3EC;
-    --shadow: 0 1px 2px rgba(0,0,0,.04), 0 12px 32px rgba(0,0,0,.07);
-    --glow: rgba(30,122,82,.18);
+    --bg: #F3F3F3; --stroke: #E5E5E5; --text: #1B1B1B; --muted: #5F5F5F;
+    --fill: #1E7A52; --on-fill: #FFFFFF; --accent: #176B47;
+    --shadow: 0 1px 2px rgba(0,0,0,.04), 0 16px 40px rgba(0,0,0,.10);
+    --glow: rgba(30,122,82,.16);
   }
   @media (prefers-color-scheme: dark) {
     :root {
-      --bg: #161616; --card: #222222; --stroke: #2E2E2E; --text: #FFFFFF; --muted: #B5B5B5;
-      --fill: #1E7A52; --on-fill: #FFFFFF; --accent: #5FD49E; --soft: #17301F;
-      --shadow: 0 1px 2px rgba(0,0,0,.3), 0 12px 32px rgba(0,0,0,.4);
-      --glow: rgba(63,179,127,.16);
+      --bg: #161616; --stroke: #2E2E2E; --text: #FFFFFF; --muted: #B5B5B5;
+      --fill: #1E7A52; --on-fill: #FFFFFF; --accent: #5FD49E;
+      --shadow: 0 1px 2px rgba(0,0,0,.3), 0 16px 40px rgba(0,0,0,.45);
+      --glow: rgba(63,179,127,.14);
     }
   }
   * { box-sizing: border-box; }
   html { -webkit-text-size-adjust: 100%; }
   body {
-    margin: 0; background: var(--bg); color: var(--text);
+    margin: 0; min-height: 100vh; display: flex; flex-direction: column; background: var(--bg); color: var(--text);
     font: 17px/1.55 "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", Arial, sans-serif;
   }
-  .wrap { max-width: 1040px; margin: 0 auto; padding: 0 20px; }
-  a { color: var(--accent); }
-  a:focus-visible, button:focus-visible { outline: 2px solid var(--text); outline-offset: 3px; border-radius: 6px; }
+  a:focus-visible { outline: 2px solid var(--text); outline-offset: 3px; border-radius: 6px; }
 
-  /* Hero */
-  .hero { position: relative; overflow: hidden; padding: 72px 0 56px; }
-  .hero::before { content: ""; position: absolute; inset: -40% -10% auto; height: 520px; pointer-events: none;
-                  background: radial-gradient(closest-side, var(--glow), transparent); }
-  .hero .wrap { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 56px; align-items: center; }
-  .brand { display: flex; align-items: center; gap: 12px; font-weight: 650; font-size: 20px; margin-bottom: 28px; }
+  main { flex: 1; display: grid; place-items: center; position: relative; overflow: hidden; padding: 56px 20px; }
+  main::before { content: ""; position: absolute; inset: -30% -10% auto; height: 560px; pointer-events: none;
+                 background: radial-gradient(closest-side, var(--glow), transparent); }
+  .hero { position: relative; width: 100%; max-width: 980px; display: grid; grid-template-columns: minmax(0, 1fr) 320px;
+          gap: 64px; align-items: center; }
+
+  .brand { display: flex; align-items: center; gap: 12px; font-weight: 650; font-size: 20px; margin-bottom: 26px; }
   .brand img { width: 40px; height: 40px; border-radius: 10px; }
-  h1 { font-size: clamp(36px, 6vw, 56px); line-height: 1.05; letter-spacing: -.025em; margin: 0 0 18px; font-weight: 700; }
+  h1 { font-size: clamp(36px, 6vw, 54px); line-height: 1.05; letter-spacing: -.025em; margin: 0 0 16px; font-weight: 700; }
   h1 em { font-style: normal; color: var(--accent); }
-  .lead { font-size: 19px; color: var(--muted); margin: 0 0 30px; max-width: 30em; }
-  .cta { display: flex; flex-wrap: wrap; align-items: center; gap: 14px 18px; }
+  .lead { font-size: 19px; color: var(--muted); margin: 0 0 28px; max-width: 30em; }
+
   .btn { display: inline-flex; align-items: center; gap: 10px; min-height: 54px; padding: 0 26px; border-radius: 12px;
          background: var(--fill); color: var(--on-fill); font-weight: 650; font-size: 18px; text-decoration: none;
          box-shadow: 0 8px 22px rgba(30,122,82,.32); transition: transform .08s ease, filter .15s ease; }
   .btn:hover { filter: brightness(1.08); }
   .btn:active { transform: scale(.98); }
   .btn svg { width: 22px; height: 22px; }
-  .meta { color: var(--muted); font-size: 14px; line-height: 1.4; }
-  .meta b { color: var(--text); font-weight: 600; }
-  .shot { justify-self: center; width: 100%; height: auto; max-width: 340px; border-radius: 14px; box-shadow: var(--shadow);
-          border: 1px solid var(--stroke); display: block; }
+  .meta { margin: 12px 0 0; color: var(--muted); font-size: 14px; }
 
-  /* Secciones */
-  section { padding: 56px 0; }
-  h2 { font-size: 28px; letter-spacing: -.015em; margin: 0 0 8px; line-height: 1.2; }
-  .sub { color: var(--muted); margin: 0 0 28px; }
-  .grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
-  .card { background: var(--card); border: 1px solid var(--stroke); border-radius: 16px; padding: 24px; box-shadow: var(--shadow); }
-  .card h3 { margin: 14px 0 6px; font-size: 18px; }
-  .card p { margin: 0; color: var(--muted); font-size: 16px; }
-  .badge { width: 40px; height: 40px; border-radius: 12px; background: var(--soft); color: var(--accent);
-           display: grid; place-items: center; font-weight: 700; }
-  .badge svg { width: 22px; height: 22px; }
+  .points { list-style: none; padding: 0; margin: 32px 0 0; display: grid; gap: 10px; font-size: 16px; }
+  .points li { display: flex; gap: 10px; align-items: flex-start; }
+  .points svg { width: 20px; height: 20px; flex: none; margin-top: 2px; color: var(--accent); }
 
-  .games { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
-  .game { display: flex; gap: 14px; align-items: flex-start; }
-  .game strong { display: block; font-size: 18px; }
-  .game span { color: var(--muted); font-size: 16px; }
+  .shot { justify-self: center; width: 100%; height: auto; max-width: 320px; display: block; border-radius: 14px;
+          border: 1px solid var(--stroke); box-shadow: var(--shadow); }
 
-  details { background: var(--card); border: 1px solid var(--stroke); border-radius: 14px; padding: 0 20px; margin-bottom: 10px; }
-  summary { cursor: pointer; padding: 18px 0; font-weight: 600; list-style: none; display: flex; justify-content: space-between; gap: 12px; }
-  summary::-webkit-details-marker { display: none; }
-  summary::after { content: "+"; color: var(--muted); font-weight: 400; font-size: 22px; line-height: 1; }
-  details[open] summary::after { content: "–"; }
-  details p { margin: 0 0 18px; color: var(--muted); font-size: 16px; }
-
-  .final { text-align: center; }
-  .final .cta { justify-content: center; }
-
-  footer { border-top: 1px solid var(--stroke); padding: 28px 0 calc(28px + env(safe-area-inset-bottom)); font-size: 14px; color: var(--muted); }
-  footer .wrap { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px; }
+  footer { border-top: 1px solid var(--stroke); padding: 22px 20px calc(22px + env(safe-area-inset-bottom)); font-size: 14px; color: var(--muted); }
+  footer .wrap { max-width: 980px; margin: 0 auto; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 20px; }
   footer nav { display: flex; flex-wrap: wrap; gap: 18px; }
-  footer nav a { color: var(--muted); text-decoration: none; }
+  footer a { color: var(--muted); }
+  footer nav a { text-decoration: none; }
   footer nav a:hover { color: var(--text); }
   footer .mark img { height: 20px; display: block; }
   footer .mark .dark { display: none; }
-  .signing { width: 100%; margin: 0; font-size: 13px; }
-  .signing a { color: var(--muted); }
   @media (prefers-color-scheme: dark) { footer .mark .dark { display: block; } footer .mark .light { display: none; } }
+  .signing { width: 100%; margin: 0; font-size: 12px; }
 
   @media (max-width: 820px) {
-    .hero { padding: 44px 0 32px; }
-    .hero .wrap { grid-template-columns: 1fr; gap: 36px; }
-    .brand { margin-bottom: 20px; }
-    .grid3, .games { grid-template-columns: 1fr; }
-    section { padding: 40px 0; }
+    main { padding: 40px 20px; place-items: start center; }
+    .hero { grid-template-columns: 1fr; gap: 40px; }
     .shot { max-width: 300px; }
   }
 </style>
 </head>
 <body>
-<header class="hero">
-  <div class="wrap">
+<main>
+  <div class="hero">
     <div>
       <div class="brand"><img src="assets/autoready-icon-192.png" alt="">AutoReady</div>
       <h1 data-t="h1">Queue up. Step away.<br><em>We'll accept it.</em></h1>
-      <p class="lead" data-t="lead">A free Windows app that accepts your Steam match while you're away and tells you when to come back.</p>
-      <div class="cta">
-        <a class="btn" href="https://github.com/hercase/autoready/releases/latest/download/AutoReady.exe">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
-          <span data-t="download">Download for Windows</span>
-        </a>
-        <div class="meta"><b data-t="free">Free</b> · Windows 10 &amp; 11<br><span id="version" data-t="games">Dota 2 and Counter-Strike 2</span></div>
-      </div>
+      <p class="lead" data-t="lead">A free Windows app that accepts your Dota 2 and CS2 matches while you're away, and tells you when to come back.</p>
+      <a class="btn" href="https://github.com/hercase/autoready/releases/latest/download/AutoReady.exe">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
+        <span data-t="download">Download for Windows</span>
+      </a>
+      <p class="meta" data-t="meta">Free · Windows 10 and 11 · Installs in seconds, no admin rights</p>
+      <ul class="points">
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg><span data-t="p1">Never clicks during a match</span></li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg><span data-t="p2">Doesn't read or change the game, it just presses Accept</span></li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg><span data-t="p3">No accounts, ads or tracking. Open source</span></li>
+      </ul>
     </div>
-    <img class="shot" id="shot" src="assets/panel-en.png" width="360" height="456" alt="The AutoReady panel">
+    <img class="shot" id="shot" src="assets/panel-en.png" width="540" height="685" alt="The AutoReady panel">
   </div>
-</header>
-
-<main>
-  <section>
-    <div class="wrap">
-      <h2 data-t="howTitle">How it works</h2>
-      <p class="sub" data-t="howSub">Three steps, and the last one is up to AutoReady.</p>
-      <div class="grid3">
-        <div class="card"><div class="badge">1</div><h3 data-t="s1">Queue up</h3><p data-t="s1t">Hit Find match in your game, like always.</p></div>
-        <div class="card"><div class="badge">2</div><h3 data-t="s2">Step away</h3><p data-t="s2t">Grab a drink. AutoReady keeps an eye on the game.</p></div>
-        <div class="card"><div class="badge">3</div><h3 data-t="s3">Come back in time</h3><p data-t="s3t">It clicks Accept and lets you know with a sound, a Windows notification or your phone.</p></div>
-      </div>
-    </div>
-  </section>
-
-  <section>
-    <div class="wrap">
-      <h2 data-t="safeTitle">Built to be safe</h2>
-      <p class="sub" data-t="safeSub">It only does one thing, and it stays out of your way.</p>
-      <div class="grid3">
-        <div class="card"><div class="badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
-          <h3 data-t="f1">Never clicks mid-match</h3><p data-t="f1t">Your Steam status and Valve's official Game State Integration tell it when you're playing.</p></div>
-        <div class="card"><div class="badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div>
-          <h3 data-t="f2">Doesn't touch the game</h3><p data-t="f2t">No memory reading, no injection, no modified game files. It just presses Accept, like you would.</p></div>
-        <div class="card"><div class="badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M4.9 4.9l14.2 14.2"/></svg></div>
-          <h3 data-t="f3">No accounts or tracking</h3><p data-t="f3t">No ads, no analytics, open source. Installs for your user, no admin rights.</p></div>
-      </div>
-    </div>
-  </section>
-
-  <section>
-    <div class="wrap">
-      <h2 data-t="gamesTitle">Supported games</h2>
-      <p class="sub" data-t="gamesSub">More are coming. <a href="https://github.com/hercase/autoready/issues/new">Ask for yours</a>.</p>
-      <div class="games">
-        <div class="card game"><div class="badge">D2</div><div><strong>Dota 2</strong><span data-t="dota">Works right away. If a one-time step is needed, AutoReady shows you a Set up button.</span></div></div>
-        <div class="card game"><div class="badge">CS</div><div><strong>Counter-Strike 2</strong><span data-t="cs">Works right away. Restart CS2 once after installing.</span></div></div>
-      </div>
-    </div>
-  </section>
-
-  <section>
-    <div class="wrap">
-      <h2 data-t="faqTitle">Questions</h2>
-      <p class="sub"></p>
-      <details><summary data-t="q1">Can I get banned for this?</summary><p data-t="a1">AutoReady only looks at the game window and presses Accept. It doesn't read or change game memory or files. Steam's terms do mention automation software, so the risk isn't zero, but nothing here touches the match itself.</p></details>
-      <details><summary data-t="q2">Windows shows a SmartScreen warning</summary><p data-t="a2">AutoReady is new and not code-signed yet (it's in progress). Click More info, then Run anyway.</p></details>
-      <details><summary data-t="q3">Can I use it to stay AFK?</summary><p data-t="a3">No, please don't. It's there so you don't miss a match while you grab something. Accept, then come back: leaving hurts the other nine players.</p></details>
-      <details><summary data-t="q4">How do I uninstall it?</summary><p data-t="a4">Settings → Apps → Installed apps → AutoReady → Uninstall. It removes everything it added.</p></details>
-    </div>
-  </section>
-
-  <section class="final">
-    <div class="wrap">
-      <h2 data-t="finalTitle">Never miss a match again</h2>
-      <p class="sub" data-t="finalSub">Installs in seconds. Updates itself.</p>
-      <div class="cta">
-        <a class="btn" href="https://github.com/hercase/autoready/releases/latest/download/AutoReady.exe">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
-          <span data-t="download">Download for Windows</span>
-        </a>
-      </div>
-    </div>
-  </section>
 </main>
 
 <footer>
@@ -198,9 +110,9 @@
       <img class="dark" src="assets/keis-wordmark-dark-tight.svg" alt="keis.studio">
     </a>
     <nav>
+      <a href="https://github.com/hercase/autoready#faq" data-t="faq">FAQ</a>
       <a href="https://github.com/hercase/autoready" data-t="source">Source code</a>
       <a href="https://github.com/hercase/autoready/blob/main/PRIVACY.md" data-t="privacy">Privacy</a>
-      <a href="https://github.com/hercase/autoready/releases" data-t="versions">All versions</a>
     </nav>
     <p class="signing">Free code signing provided by <a href="https://about.signpath.io">SignPath.io</a>, certificate by <a href="https://signpath.org">SignPath Foundation</a>.</p>
   </div>
@@ -212,26 +124,13 @@
   if (!/^es\b/i.test(navigator.language || "")) return;
   var ES = {
     h1: "Buscá partida. Andá a hacer otra cosa.<br><em>Nosotros la aceptamos.</em>",
-    lead: "Una app gratis para Windows que acepta tu partida de Steam mientras no estás y te avisa cuándo volver.",
-    download: "Descargar para Windows", free: "Gratis", games: "Dota 2 y Counter-Strike 2",
-    howTitle: "Cómo funciona", howSub: "Tres pasos, y el último lo hace AutoReady.",
-    s1: "Buscá partida", s1t: "Tocá Buscar partida en tu juego, como siempre.",
-    s2: "Andá a hacer otra cosa", s2t: "Buscá algo de tomar. AutoReady vigila el juego.",
-    s3: "Volvé a tiempo", s3t: "Toca Aceptar y te avisa con un sonido, una notificación de Windows o en el celular.",
-    safeTitle: "Pensado para ser seguro", safeSub: "Hace una sola cosa y no se mete en tu juego.",
-    f1: "Nunca toca nada en partida", f1t: "Tu estado de Steam y la integración oficial de Valve le dicen cuándo estás jugando.",
-    f2: "No toca el juego", f2t: "No lee memoria, no inyecta nada y no modifica archivos. Solo toca Aceptar, como vos.",
-    f3: "Sin cuentas ni rastreo", f3t: "Sin publicidad ni estadísticas, y de código abierto. Se instala para tu usuario, sin permisos de administrador.",
-    gamesTitle: "Juegos compatibles", gamesSub: "Vienen más. <a href=\"https://github.com/hercase/autoready/issues/new\">Pedí el tuyo</a>.",
-    dota: "Funciona de una. Si hace falta un paso (una sola vez), AutoReady te muestra un botón Configurar.",
-    cs: "Funciona de una. Reiniciá CS2 una vez después de instalar.",
-    faqTitle: "Preguntas",
-    q1: "¿Me pueden banear?", a1: "AutoReady solo mira la ventana del juego y toca Aceptar. No lee ni cambia la memoria ni los archivos del juego. Los términos de Steam mencionan el software de automatización, así que el riesgo no es cero, pero nada de esto toca la partida.",
-    q2: "Windows muestra un aviso de SmartScreen", a2: "AutoReady es nuevo y todavía no está firmado (está en trámite). Tocá Más información y después Ejecutar de todas formas.",
-    q3: "¿Lo puedo usar para quedarme AFK?", a3: "No, por favor. Está para que no pierdas una partida mientras buscás algo. Aceptá y volvé: irte perjudica a los otros nueve jugadores.",
-    q4: "¿Cómo lo desinstalo?", a4: "Configuración → Aplicaciones → Aplicaciones instaladas → AutoReady → Desinstalar. Borra todo lo que agregó.",
-    finalTitle: "No pierdas más partidas", finalSub: "Se instala en segundos y se actualiza solo.",
-    source: "Código fuente", privacy: "Privacidad", versions: "Todas las versiones"
+    lead: "Una app gratis para Windows que acepta tus partidas de Dota 2 y CS2 mientras no estás, y te avisa cuándo volver.",
+    download: "Descargar para Windows",
+    meta: "Gratis · Windows 10 y 11 · Se instala en segundos, sin permisos de administrador",
+    p1: "Nunca hace click durante una partida",
+    p2: "No lee ni modifica el juego, solo toca Aceptar",
+    p3: "Sin cuentas, publicidad ni rastreo. Código abierto",
+    faq: "Preguntas", source: "Código fuente", privacy: "Privacidad"
   };
   document.documentElement.lang = "es";
   document.title = "AutoReady: aceptá tus partidas de Steam automáticamente";
@@ -241,6 +140,7 @@
   });
   var shot = document.getElementById("shot");
   shot.src = "assets/panel-es.png"; shot.alt = "El panel de AutoReady";
+  document.querySelector("footer nav a").href = "https://github.com/hercase/autoready/blob/main/README.es.md#preguntas-frecuentes";
 })();
 </script>
 </body>
