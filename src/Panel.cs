@@ -338,9 +338,10 @@ namespace AutoReady
             main.Children.Add(Row(Texts(S.Sound, null), sound));
             main.Children.Add(Divider());
 
-            // Celular: el QR se muestra hasta que la prueba llega una vez; despues queda a un click.
+            // Celular: el QR se muestra hasta que la prueba llega una vez; despues queda a un click (Mostrar/Ocultar codigo).
             phoneToggle = new Toggle(theme, host.Cfg.NotifyPhone, S.PhoneTitle);
-            phoneShowCode = ClickArea.Make(theme, S.PhoneShowCode, () => ShowPhoneDetails(true), ButtonKind.Link, 12);
+            phoneShowCode = ClickArea.Make(theme, S.PhoneShowCode, () => ShowPhoneDetails(phoneDetails.Visibility != Visibility.Visible), ButtonKind.Link, 12);
+            phoneShowCode.Expanded = () => phoneDetails.Visibility == Visibility.Visible;
             phoneShowCode.Padding = new Thickness(0, 4, 8, 4);   // area para tocar de al menos 24 px
             phoneShowCode.Margin = new Thickness(0, -2, 0, -4);
             StackPanel phoneLeft = Texts(S.PhoneTitle, null);
@@ -407,12 +408,18 @@ namespace AutoReady
             moreChevron.Text = open ? "" : "";   // chevron arriba / abajo
         }
 
-        // QR y codigo a la vista, o colapsados con un link "Mostrar codigo" (solo si el celular esta activado).
+        // QR y codigo a la vista o colapsados; el link de arriba alterna entre los dos (solo si el celular esta activado).
         void ShowPhoneDetails(bool open)
         {
             bool on = phoneToggle.IsOn;
-            phoneDetails.Visibility = on && open ? Visibility.Visible : Visibility.Collapsed;
-            phoneShowCode.Visibility = on && !open ? Visibility.Visible : Visibility.Collapsed;
+            bool was = phoneDetails.Visibility == Visibility.Visible;
+            open = on && open;
+            phoneDetails.Visibility = open ? Visibility.Visible : Visibility.Collapsed;
+            phoneShowCode.Visibility = on ? Visibility.Visible : Visibility.Collapsed;
+            string label = open ? S.PhoneHideCode : S.PhoneShowCode;
+            ((TextBlock)phoneShowCode.Child).Text = label;
+            AutomationProperties.SetName(phoneShowCode, label);
+            if (was != open) phoneShowCode.RaiseExpanded(was, open);
         }
 
         void SetUpProtection()
@@ -482,6 +489,10 @@ namespace AutoReady
 
             TextBlock testText = null;
             TextBlock result = Small("");
+            // Si la prueba llego, el QR ya no hace falta: se oculta en el momento (y en las proximas aperturas).
+            ClickArea done = ClickArea.Make(theme, S.PhoneDone, () => { ShowPhoneDetails(false); phoneShowCode.Focus(); }, ButtonKind.Link, 12);
+            done.Padding = new Thickness(0, 4, 8, 4);
+            done.Visibility = Visibility.Collapsed;
             result.Visibility = Visibility.Collapsed;
             result.Margin = new Thickness(0, 6, 0, 0);
             AutomationProperties.SetLiveSetting(result, AutomationLiveSetting.Polite);
@@ -491,6 +502,7 @@ namespace AutoReady
                 testText.Text = S.PhoneSending;
                 test.Enabled = false;
                 result.Visibility = Visibility.Collapsed;
+                done.Visibility = Visibility.Collapsed;
                 host.SendTestPush(ok => Dispatcher.BeginInvoke(new Action(() =>
                 {
                     testText.Text = S.PhoneTest;
@@ -498,6 +510,7 @@ namespace AutoReady
                     result.Text = ok ? S.PhoneSent : S.PhoneFailed;
                     result.Foreground = ok ? theme.TextSecondary : theme.Text;
                     result.Visibility = Visibility.Visible;
+                    done.Visibility = ok ? Visibility.Visible : Visibility.Collapsed;
                     Announce(result);
                     if (ok && !host.Cfg.PhoneTested) { host.Cfg.PhoneTested = true; host.Cfg.Save(); }
                 })));
@@ -507,6 +520,7 @@ namespace AutoReady
             test.HorizontalAlignment = HorizontalAlignment.Left;
             right.Children.Add(test);
             right.Children.Add(result);
+            right.Children.Add(done);
             Grid.SetColumn(right, 1);
             g.Children.Add(right);
             p.Children.Add(g);

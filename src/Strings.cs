@@ -40,6 +40,8 @@ namespace AutoReady
         public static string Sound { get { return T("Sonido", "Sound"); } }
         public static string PhoneTitle { get { return T("Avisos al celular", "Phone notifications"); } }
         public static string PhoneShowCode { get { return T("Mostrar código", "Show code"); } }
+        public static string PhoneHideCode { get { return T("Ocultar código", "Hide code"); } }
+        public static string PhoneDone { get { return T("Me llegó, ocultar código", "Got it, hide code"); } }
         public static string PhoneScan { get { return T("Escaneá con la cámara", "Scan with your camera"); } }
         public static string PhoneOrCode { get { return T("o sumá este código en ntfy:", "or add this code in ntfy:"); } }
         public static string CopyCode { get { return T("Copiar código", "Copy code"); } }
