@@ -11,5 +11,7 @@ if not exist obj mkdir obj
 >> obj\Version.cs echo [assembly: System.Reflection.AssemblyInformationalVersion("%VERSION%")]
 "%WINDIR%\Microsoft.NET\Framework64\v4.0.30319\csc.exe" /nologo /optimize /target:winexe /platform:x64 ^
   /r:System.Drawing.dll /r:System.Windows.Forms.dll ^
+  /win32icon:assets\readyup.ico ^
+  /resource:assets\tray-16.png,ReadyUp.tray-16.png /resource:assets\tray-32.png,ReadyUp.tray-32.png ^
   /out:dist\ReadyUp.exe src\*.cs obj\Version.cs
 if %errorlevel%==0 (echo Listo: dist\ReadyUp.exe v%VERSION%) else (echo Error al compilar & exit /b 1)

@@ -1,3 +1,5 @@
+<p align="center"><img src="assets/readyup-icon.png" width="128" alt="ReadyUp"></p>
+
 # ReadyUp
 
 **Queue up, step away. ReadyUp accepts the match for you.**

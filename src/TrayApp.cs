@@ -40,9 +40,9 @@ namespace ReadyUp
         public TrayApp()
         {
             cfg = Config.Load();
-            iconOn = MakeIcon(Color.FromArgb(60, 170, 70));
-            iconOff = MakeIcon(Color.FromArgb(130, 130, 130));
-            iconWait = MakeIcon(Color.FromArgb(215, 160, 40));
+            iconOn = MakeIcon(TrayTint.Normal);
+            iconOff = MakeIcon(TrayTint.Gray);
+            iconWait = MakeIcon(TrayTint.Amber);
 
             ui = new HiddenWindow();
             ui.WindowFlashed += h => { flashedWindow = h; };
@@ -422,21 +422,34 @@ namespace ReadyUp
             ExitThread();
         }
 
-        static Icon MakeIcon(Color color)
+        enum TrayTint { Normal, Gray, Amber }
+
+        // Icono de la bandeja a partir del logo embebido: verde = armado, gris = pausa, ambar = esperando el juego.
+        static Icon MakeIcon(TrayTint tint)
         {
-            using (Bitmap bmp = new Bitmap(32, 32))
+            int size = SystemInformation.SmallIconSize.Width;
+            string res = size > 16 ? "ReadyUp.tray-32.png" : "ReadyUp.tray-16.png";
+            using (Stream s = typeof(TrayApp).Assembly.GetManifestResourceStream(res))
+            using (Bitmap logo = new Bitmap(s))
+            using (Bitmap bmp = new Bitmap(size, size))
             {
                 using (Graphics g = Graphics.FromImage(bmp))
                 {
-                    g.SmoothingMode = SmoothingMode.AntiAlias;
-                    using (SolidBrush b = new SolidBrush(color)) g.FillEllipse(b, 1, 1, 30, 30);
-                    using (Pen p = new Pen(Color.FromArgb(25, 25, 25), 2)) g.DrawEllipse(p, 1, 1, 30, 30);
-                    using (Font f = new Font("Segoe UI", 15, FontStyle.Bold, GraphicsUnit.Pixel))
-                    {
-                        StringFormat sf = new StringFormat { Alignment = StringAlignment.Center, LineAlignment = StringAlignment.Center };
-                        g.DrawString("R", f, Brushes.White, new RectangleF(0, 1, 32, 32), sf);
-                    }
+                    g.InterpolationMode = InterpolationMode.HighQualityBicubic;
+                    g.DrawImage(logo, 0, 0, size, size);
                 }
+                if (tint != TrayTint.Normal)
+                    for (int y = 0; y < size; y++)
+                        for (int x = 0; x < size; x++)
+                        {
+                            Color c = bmp.GetPixel(x, y);
+                            if (c.A == 0 || c.G - c.R < 40) continue;   // solo la flecha verde
+                            int lum = (c.R + c.G + c.B) / 3;
+                            Color t = tint == TrayTint.Gray
+                                ? Color.FromArgb(c.A, lum, lum, lum)
+                                : Color.FromArgb(c.A, Math.Min(255, c.G + 40), Math.Min(255, c.G * 3 / 4), 40);
+                            bmp.SetPixel(x, y, t);
+                        }
                 return Icon.FromHandle(bmp.GetHicon());
             }
         }

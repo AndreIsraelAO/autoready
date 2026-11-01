@@ -1,3 +1,5 @@
+<p align="center"><img src="assets/readyup-icon.png" width="128" alt="ReadyUp"></p>
+
 # ReadyUp
 
 **Buscá partida, andá a hacer otra cosa. ReadyUp la acepta por vos.**
