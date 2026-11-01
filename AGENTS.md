@@ -60,6 +60,8 @@ Para sumar un juego: proceso, una captura del popup (sale de las capturas autom�
 | `src/Program.cs` | Entrada, instancia única (mutex), modo `--test`, espera tras actualizar |
 | `src/TrayApp.cs` | Ícono de la bandeja, menú chico, loop de escaneo, aceptar, avisos, atajo global; implementa `IPanelHost` |
 | `src/Panel.cs` | Panel WPF (click izquierdo en el ícono): interruptor principal, atajo, avisos, celular con QR, general |
+| `src/Controls.cs` | Tema (claro/oscuro, contraste ≥ 4,5:1) e interruptor/botón accesibles (Tab, Enter/Espacio, Narrador) |
+| `src/Strings.cs`, `src/Lang.cs` | Todos los textos en español (voseo) e inglés; idioma de Windows o `Language=es|en` en el ini |
 | `src/Games.cs` | Perfil por juego: proceso, carpeta de GSI, clave de estado, colores/forma del botón, textos |
 | `src/Detector.cs` | Detección del botón ACCEPT: por recorte (si hay) o por color y forma |
 | `src/Template.cs` | Detección por recorte del botón (NCC en color, multi-escala) |
@@ -114,7 +116,7 @@ instalar nada. Consecuencias:
   https://keis.studio/brand. En tamaños chicos los colores de la `k` solo se ven con el corrimiento exagerado
   (como `mark-*-small`). Los paths del SVG se rellenan con **nonzero** (en WPF prefijo `F1`); con el evenodd por defecto
   quedan huecos en la `t` y la `e`.
-- Textos en castellano rioplatense (voseo) por ahora; idiomas y copywriting pendientes (#7 y #3).
+- Todo texto visible va en `Strings.cs` (`S.*`), en español rioplatense (voseo) e inglés; nunca literales en la UI. Los logs quedan en un solo idioma. Textos genéricos: el nombre del juego entra como parámetro.
 
 ## Celular (ntfy)
 - Código aleatorio `ar-xxxxxxxx` (sin letras ambiguas). El QR del panel es `https://ntfy.sh/<código>`, que cualquier cámara
@@ -130,5 +132,5 @@ instalar nada. Consecuencias:
   son de Windows 11.
 
 ## Pendiente (issues)
-#1 celular sin códigos · #2 "Cuando arranca la partida" · #3 copywriting · #4 README · #5 instalador ·
-#6 confiabilidad (popups reales, dos monitores) · #7 idiomas.
+#1 celular sin códigos · #4 README · #5 instalador · #8 firma (SignPath) · #9 restos de accesibilidad y DPI ·
+#6 confiabilidad (popups reales, dos monitores).

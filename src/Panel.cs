@@ -2,26 +2,27 @@ using System;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Windows;
+using System.Windows.Automation;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Media;
-using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
-using Microsoft.Win32;
 
 namespace AutoReady
 {
+    enum StatusKind { Idle, Watching, Paused }
+
     // Lo que el panel muestra; lo arma TrayApp cada vez que algo cambia.
     class PanelStatus
     {
         public string Text;            // "Esperando partida en Dota 2"
-        public bool Good;              // punto verde (vigilando) o gris
+        public StatusKind Kind;        // color del punto de estado
         public bool Paused;
         public string UpdateTag;       // "v0.2.3" si hay version nueva, si no null
         public string UpdateMessage;   // resultado de "Buscar actualizaciones"
-        public string Protection;      // "Activa en Dota 2 y CS2" o "Falta un paso en Dota 2"
+        public string Protection;      // estado de la proteccion en partida
         public GameProfile ProtectionFix;   // juego al que le falta la opcion de lanzamiento (null = todo bien)
     }
 
@@ -34,7 +35,7 @@ namespace AutoReady
         void FixProtection(GameProfile game);
         // Opciones de lanzamiento actuales del juego + la que falta, listas para reemplazar sin perder nada.
         string LaunchOptionsWithProtection(GameProfile game);
-        void SendTestPush();
+        void SendTestPush(Action<bool> done);
         void SetAutostart(bool on);
         bool AutostartEnabled { get; }
         void SetAutoUpdate(bool on);
@@ -45,90 +46,6 @@ namespace AutoReady
         bool SetHotkey(int vk, int mods);
     }
 
-    // Colores de Windows 11 para tema claro y oscuro (sigue el tema de apps del sistema).
-    class Theme
-    {
-        public Brush Background, Card, CardStroke, Text, TextSecondary, ControlStroke, Accent, OnAccent, Good, Idle, Link;
-        public bool Dark;
-
-        public static Theme FromSystem()
-        {
-            bool light = true;
-            using (RegistryKey k = Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Themes\Personalize"))
-                if (k != null && k.GetValue("AppsUseLightTheme") is int) light = (int)k.GetValue("AppsUseLightTheme") != 0;
-
-            Theme t = new Theme { Dark = !light };
-            t.Accent = Rgb(0x3F, 0xB3, 0x7F);
-            t.OnAccent = Brushes.White;
-            t.Good = Rgb(0x3F, 0xB3, 0x7F);
-            t.Idle = Rgb(0x9A, 0x9A, 0x9A);
-            if (light)
-            {
-                t.Background = Rgb(0xF3, 0xF3, 0xF3); t.Card = Rgb(0xFF, 0xFF, 0xFF); t.CardStroke = Rgb(0xE5, 0xE5, 0xE5);
-                t.Text = Rgb(0x1B, 0x1B, 0x1B); t.TextSecondary = Rgb(0x5F, 0x5F, 0x5F); t.ControlStroke = Rgb(0x8A, 0x8A, 0x8A);
-                t.Link = Rgb(0x1F, 0x8A, 0x5E);
-            }
-            else
-            {
-                t.Background = Rgb(0x20, 0x20, 0x20); t.Card = Rgb(0x2B, 0x2B, 0x2B); t.CardStroke = Rgb(0x1C, 0x1C, 0x1C);
-                t.Text = Rgb(0xFF, 0xFF, 0xFF); t.TextSecondary = Rgb(0xC5, 0xC5, 0xC5); t.ControlStroke = Rgb(0x9A, 0x9A, 0x9A);
-                t.Link = Rgb(0x5F, 0xD4, 0x9E);
-            }
-            return t;
-        }
-
-        static Brush Rgb(byte r, byte g, byte b)
-        {
-            SolidColorBrush s = new SolidColorBrush(Color.FromRgb(r, g, b));
-            s.Freeze();
-            return s;
-        }
-    }
-
-    // Interruptor estilo Windows 11: pista redondeada y circulo que se desliza.
-    class Toggle : Border
-    {
-        readonly Theme theme;
-        readonly Ellipse thumb;
-        readonly TranslateTransform slide = new TranslateTransform();
-        bool on;
-        public event Action<bool> Changed;
-
-        public Toggle(Theme theme, bool initial)
-        {
-            this.theme = theme;
-            Width = 40; Height = 20; CornerRadius = new CornerRadius(10);
-            BorderThickness = new Thickness(1);
-            Cursor = Cursors.Hand;
-            VerticalAlignment = VerticalAlignment.Center;
-            thumb = new Ellipse { Width = 12, Height = 12, HorizontalAlignment = HorizontalAlignment.Left, Margin = new Thickness(3, 0, 0, 0), RenderTransform = slide };
-            Child = thumb;
-            MouseLeftButtonUp += (s, e) =>
-            {
-                Apply(!on, true);
-                Action<bool> h = Changed;
-                if (h != null) h(on);
-            };
-            Apply(initial, false);
-        }
-
-        public bool IsOn { get { return on; } set { if (value != on) Apply(value, true); } }
-
-        void Apply(bool value, bool animate)
-        {
-            on = value;
-            Background = on ? theme.Accent : Brushes.Transparent;
-            BorderBrush = on ? theme.Accent : theme.ControlStroke;
-            thumb.Fill = on ? theme.OnAccent : theme.ControlStroke;
-            double to = on ? 20 : 0;
-            if (animate)
-                slide.BeginAnimation(TranslateTransform.XProperty,
-                    new DoubleAnimation(to, TimeSpan.FromMilliseconds(140)) { EasingFunction = new QuadraticEase() });
-            else
-                slide.X = to;
-        }
-    }
-
     // Panel que se abre con click izquierdo en el icono de la bandeja y se cierra al hacer click afuera.
     class Panel : Window
     {
@@ -137,17 +54,21 @@ namespace AutoReady
 
         readonly IPanelHost host;
         readonly Theme theme;
-        TextBlock statusText, updateText;
+        TextBlock statusText, updateText, acceptHint;
         Ellipse statusDot;
         Toggle acceptToggle, phoneToggle;
-        Border updateButton;
+        ClickArea updateButton;
+        TextBlock updateButtonText;
         StackPanel phoneDetails;
+        Border welcomeCard;
         TextBlock hotkeyLabel, hotkeyHint, protectionText;
-        Border protectionButton;
+        ClickArea protectionButton;
         GameProfile protectionGame;
-        Border hotkeyButton;
+        bool awaitingUser;      // el usuario toco "Configurar" y esta haciendo el paso en Steam
         bool capturingHotkey;
         DateTime hiddenAt = DateTime.MinValue;
+
+        public event Action Hidden;
 
         public Panel(IPanelHost host)
         {
@@ -169,9 +90,8 @@ namespace AutoReady
             Foreground = theme.Text;
             UseLayoutRounding = true;
 
-            // Si la pantalla es baja (1080p con escala, por ejemplo), el contenido scrollea en vez de cortarse.
-            MaxHeight = SystemParameters.WorkArea.Height - 24;
-            Content = new ScrollViewer { Content = Build(), VerticalScrollBarVisibility = ScrollBarVisibility.Auto };
+            // Si la pantalla es baja, el contenido scrollea en vez de cortarse (MaxHeight se ajusta al abrir).
+            Content = new ScrollViewer { Content = Build(), VerticalScrollBarVisibility = ScrollBarVisibility.Auto, Focusable = false };
 
             SourceInitialized += (s, e) =>
             {
@@ -189,8 +109,8 @@ namespace AutoReady
         void StartHotkeyCapture()
         {
             capturingHotkey = true;
-            hotkeyLabel.Text = "Apretá una tecla…";
-            hotkeyHint.Text = "Esc cancela · Borrar lo quita";
+            hotkeyLabel.Text = S.HotkeyPress;
+            hotkeyHint.Text = S.HotkeyPressHint;
         }
 
         void StopHotkeyCapture()
@@ -198,7 +118,7 @@ namespace AutoReady
             if (!capturingHotkey) return;
             capturingHotkey = false;
             hotkeyLabel.Text = host.HotkeyText;
-            hotkeyHint.Text = "Pausa o reanuda desde cualquier lado";
+            hotkeyHint.Text = S.HotkeyHint;
         }
 
         void OnPreviewKeyDown(object sender, KeyEventArgs e)
@@ -220,22 +140,22 @@ namespace AutoReady
             if ((Keyboard.Modifiers & ModifierKeys.Alt) != 0) mods |= 0x1;
             if ((Keyboard.Modifiers & ModifierKeys.Control) != 0) mods |= 0x2;
             if ((Keyboard.Modifiers & ModifierKeys.Shift) != 0) mods |= 0x4;
+            capturingHotkey = false;
             // Una tecla comun sin Ctrl/Alt/Shift quedaria tomada en todo Windows (dejaria de escribirse). Solo F1-F24 y
             // Pausa pueden ir solas.
             bool special = (vk >= 0x70 && vk <= 0x87) || vk == 0x13;
             if (vk != 0 && mods == 0 && !special)
             {
-                capturingHotkey = false;
                 hotkeyLabel.Text = host.HotkeyText;
-                hotkeyHint.Text = "Usá una tecla F (F1–F12) o combiná con Ctrl, Alt o Shift.";
+                hotkeyHint.Text = S.HotkeyNeedsModifier;
                 return;
             }
             bool ok = host.SetHotkey(vk, mods);
-            capturingHotkey = false;
             hotkeyLabel.Text = host.HotkeyText;
-            hotkeyHint.Text = ok ? "Pausa o reanuda desde cualquier lado"
-                                 : "Esa tecla ya la usa otra app. Probá con otra.";
+            hotkeyHint.Text = ok ? S.HotkeyHint : S.HotkeyTaken;
         }
+
+        // ---------- mostrar / ocultar ----------
 
         // Click en el icono: abre o cierra. Si se acaba de cerrar por ese mismo click (perdio el foco), no lo reabre.
         public void TogglePanel()
@@ -245,14 +165,25 @@ namespace AutoReady
             ShowPanel();
         }
 
+        public void ShowWelcome() { welcomeCard.Visibility = Visibility.Visible; }
+
+        // Se abre junto al mouse (que acaba de tocar el icono de la bandeja), dentro del area de trabajo de ESE monitor.
         public void ShowPanel()
         {
+            System.Drawing.Point cursor = System.Windows.Forms.Cursor.Position;
+            System.Drawing.Rectangle wa = System.Windows.Forms.Screen.FromPoint(cursor).WorkingArea;
             Show();
+            PresentationSource src = PresentationSource.FromVisual(this);
+            Matrix toDip = src != null ? src.CompositionTarget.TransformFromDevice : Matrix.Identity;
+            Point tl = toDip.Transform(new Point(wa.Left, wa.Top)), br = toDip.Transform(new Point(wa.Right, wa.Bottom));
+            Point c = toDip.Transform(new Point(cursor.X, cursor.Y));
+            MaxHeight = Math.Max(300, br.Y - tl.Y - 24);
             UpdateLayout();
-            Rect wa = SystemParameters.WorkArea;
-            Left = wa.Right - ActualWidth - 12;
-            Top = wa.Bottom - ActualHeight - 12;
+            Left = Math.Max(tl.X + 12, Math.Min(br.X - ActualWidth - 12, c.X - ActualWidth / 2));
+            // Barra de tareas abajo (lo comun): el panel arriba de ella. Si el mouse esta en la mitad de arriba, abajo del mouse.
+            Top = c.Y > (tl.Y + br.Y) / 2 ? br.Y - ActualHeight - 12 : tl.Y + 12;
             Activate();
+            acceptToggle.Focus();
         }
 
         void HidePanel()
@@ -260,24 +191,31 @@ namespace AutoReady
             if (!IsVisible) return;
             hiddenAt = DateTime.Now;
             Hide();
+            Action h = Hidden;
+            if (h != null) h();
         }
 
         public void Refresh(PanelStatus st)
         {
             statusText.Text = st.Text;
-            statusDot.Fill = st.Good ? theme.Good : theme.Idle;
+            statusDot.Fill = st.Kind == StatusKind.Watching ? theme.Good : st.Kind == StatusKind.Paused ? theme.Paused : theme.Idle;
             acceptToggle.IsOn = !st.Paused;
+            acceptHint.Text = st.Paused ? S.AcceptOff : S.AcceptOn;
 
             bool hasUpdate = st.UpdateTag != null;
             updateButton.Visibility = hasUpdate ? Visibility.Visible : Visibility.Collapsed;
-            if (hasUpdate) ((TextBlock)updateButton.Child).Text = "Actualizar a " + st.UpdateTag;
-            updateText.Text = "Versión " + Updater.CurrentVersionText + (st.UpdateMessage != null ? " · " + st.UpdateMessage : "");
+            if (hasUpdate)
+            {
+                updateButtonText.Text = S.UpdateTo(st.UpdateTag);
+                AutomationProperties.SetName(updateButton, updateButtonText.Text);
+            }
+            updateText.Text = S.Version(Updater.CurrentVersionText, st.UpdateMessage);
 
-            // Si el usuario ya toco "Activar" y todavia no termino, no se pisa la instruccion.
-            bool waitingUser = protectionGame != null && st.ProtectionFix == protectionGame && (protectionText.Text.StartsWith("En Steam") || protectionText.Text.StartsWith("Copié"));
+            // Si el usuario ya toco "Configurar" y todavia no termino, no se pisa la instruccion.
+            if (st.ProtectionFix != protectionGame) awaitingUser = false;
             protectionGame = st.ProtectionFix;
             protectionButton.Visibility = st.ProtectionFix != null ? Visibility.Visible : Visibility.Collapsed;
-            if (!waitingUser) protectionText.Text = st.Protection;
+            if (!awaitingUser) protectionText.Text = st.Protection;
         }
 
         // ---------- construccion ----------
@@ -297,7 +235,8 @@ namespace AutoReady
             titles.Children.Add(new TextBlock { Text = "AutoReady", FontSize = 16, FontWeight = FontWeights.SemiBold });
             StackPanel statusLine = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 2, 0, 0) };
             statusDot = new Ellipse { Width = 8, Height = 8, Fill = theme.Idle, Margin = new Thickness(0, 0, 6, 0), VerticalAlignment = VerticalAlignment.Center };
-            statusText = new TextBlock { Text = "Iniciando…", FontSize = 12, Foreground = theme.TextSecondary };
+            statusText = new TextBlock { Text = S.Starting, FontSize = 12, Foreground = theme.TextSecondary, TextWrapping = TextWrapping.Wrap };
+            AutomationProperties.SetLiveSetting(statusText, AutomationLiveSetting.Polite);   // el lector anuncia los cambios de estado
             statusLine.Children.Add(statusDot);
             statusLine.Children.Add(statusText);
             titles.Children.Add(statusLine);
@@ -305,113 +244,117 @@ namespace AutoReady
             header.Children.Add(titles);
             root.Children.Add(header);
 
+            // Bienvenida: solo la primera vez.
+            StackPanel welcome = new StackPanel { Margin = new Thickness(14, 12, 14, 12) };
+            welcome.Children.Add(new TextBlock { Text = S.WelcomeTitle, FontWeight = FontWeights.SemiBold });
+            welcome.Children.Add(new TextBlock { Text = S.WelcomeText, FontSize = 12, Foreground = theme.TextSecondary, TextWrapping = TextWrapping.Wrap, Margin = new Thickness(0, 4, 0, 8) });
+            welcome.Children.Add(Link(S.WelcomeDismiss, () => welcomeCard.Visibility = Visibility.Collapsed, 13));
+            welcomeCard = Wrap(welcome, new Thickness(0, 14, 0, 0));
+            welcomeCard.Visibility = Visibility.Collapsed;
+            root.Children.Add(welcomeCard);
+
             // Boton de actualizacion: solo aparece si hay version nueva.
-            updateButton = new Border
+            updateButtonText = new TextBlock { Foreground = theme.OnFill, FontWeight = FontWeights.SemiBold, HorizontalAlignment = HorizontalAlignment.Center };
+            updateButton = new ClickArea(theme, updateButtonText, () => host.InstallUpdate(), S.UpdateTo(""))
             {
-                Background = theme.Accent, CornerRadius = new CornerRadius(4), Padding = new Thickness(12, 6, 12, 6),
-                Margin = new Thickness(0, 12, 0, 0), Cursor = Cursors.Hand, Visibility = Visibility.Collapsed,
-                Child = new TextBlock { Foreground = theme.OnAccent, FontWeight = FontWeights.SemiBold, HorizontalAlignment = HorizontalAlignment.Center },
+                Background = theme.Fill, CornerRadius = new CornerRadius(4), Padding = new Thickness(12, 6, 12, 6),
+                Margin = new Thickness(0, 12, 0, 0), Visibility = Visibility.Collapsed,
             };
-            updateButton.MouseLeftButtonUp += (s, e) => host.InstallUpdate();
             root.Children.Add(updateButton);
 
             // Interruptor principal.
-            acceptToggle = new Toggle(theme, true);
+            acceptToggle = new Toggle(theme, true, S.AcceptTitle);
             acceptToggle.Changed += on => host.SetPaused(!on);
             StackPanel main = new StackPanel();
-            main.Children.Add(Row("Aceptar partidas", "Apagalo para pausar", acceptToggle));
+            StackPanel acceptLeft = Texts(S.AcceptTitle, S.AcceptOn);
+            acceptHint = (TextBlock)acceptLeft.Children[1];
+            main.Children.Add(Row(acceptLeft, acceptToggle));
             main.Children.Add(Divider());
+
             hotkeyLabel = new TextBlock { Text = host.HotkeyText, FontSize = 13 };
-            hotkeyButton = new Border
+            ClickArea hotkeyButton = new ClickArea(theme, hotkeyLabel, StartHotkeyCapture, S.HotkeyTitle)
             {
                 BorderBrush = theme.ControlStroke, BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(4),
-                Padding = new Thickness(10, 3, 10, 3), Cursor = Cursors.Hand, VerticalAlignment = VerticalAlignment.Center, Child = hotkeyLabel,
+                Padding = new Thickness(10, 3, 10, 3), VerticalAlignment = VerticalAlignment.Center,
             };
-            hotkeyButton.MouseLeftButtonUp += (s, e) => StartHotkeyCapture();
-            StackPanel hotkeyLeft = new StackPanel { VerticalAlignment = VerticalAlignment.Center };
-            hotkeyLeft.Children.Add(new TextBlock { Text = "Atajo" });
-            hotkeyHint = new TextBlock { Text = "Pausa o reanuda desde cualquier lado", FontSize = 12, Foreground = theme.TextSecondary, TextWrapping = TextWrapping.Wrap };
-            hotkeyLeft.Children.Add(hotkeyHint);
+            StackPanel hotkeyLeft = Texts(S.HotkeyTitle, S.HotkeyHint);
+            hotkeyHint = (TextBlock)hotkeyLeft.Children[1];
             main.Children.Add(Row(hotkeyLeft, hotkeyButton));
             main.Children.Add(Divider());
 
-            // Proteccion en partida (GSI): si falta, AutoReady trabaja en modo seguro y se ofrece activarla.
-            StackPanel protLeft = new StackPanel { VerticalAlignment = VerticalAlignment.Center };
-            protLeft.Children.Add(new TextBlock { Text = "Protección en partida" });
-            protectionText = new TextBlock { Text = "Revisando…", FontSize = 12, Foreground = theme.TextSecondary, TextWrapping = TextWrapping.Wrap };
-            protLeft.Children.Add(protectionText);
-            protectionButton = new Border
+            // Proteccion en partida (GSI o estado de Steam): si falta un paso, AutoReady trabaja en modo seguro.
+            StackPanel protLeft = Texts(S.ProtectionTitle, S.ProtectionChecking);
+            protectionText = (TextBlock)protLeft.Children[1];
+            protectionButton = new ClickArea(theme,
+                new TextBlock { Text = S.ProtectionButton, Foreground = theme.OnFill, FontSize = 13, FontWeight = FontWeights.SemiBold },
+                SetUpProtection, S.ProtectionButton)
             {
-                Background = theme.Accent, CornerRadius = new CornerRadius(4), Padding = new Thickness(12, 4, 12, 4),
-                Cursor = Cursors.Hand, VerticalAlignment = VerticalAlignment.Center, Visibility = Visibility.Collapsed,
-                Child = new TextBlock { Text = "Activar", Foreground = theme.OnAccent, FontSize = 13, FontWeight = FontWeights.SemiBold },
-            };
-            protectionButton.MouseLeftButtonUp += (s, e) =>
-            {
-                if (protectionGame == null) return;
-                // Se copian las opciones que el jugador ya tenia + la nueva: reemplazando todo no pierde las suyas.
-                string options = host.LaunchOptionsWithProtection(protectionGame);
-                bool hadOwn = options != protectionGame.GsiLaunchOption;
-                try { Clipboard.SetText(options); }
-                catch { }   // portapapeles ocupado por otra app: igual se abre Steam
-                host.FixProtection(protectionGame);
-                protectionText.Text = hadOwn
-                    ? "Copié tus opciones de " + protectionGame.Name + " con lo que falta agregado. En Steam, en Opciones de lanzamiento, " +
-                      "seleccioná todo (Ctrl+A), pegá (Ctrl+V) y reiniciá el juego."
-                    : "En Steam, en Opciones de lanzamiento de " + protectionGame.Name + ", pegá (Ctrl+V) y reiniciá el juego.";
+                Background = theme.Fill, CornerRadius = new CornerRadius(4), Padding = new Thickness(12, 4, 12, 4),
+                VerticalAlignment = VerticalAlignment.Center, Visibility = Visibility.Collapsed,
             };
             main.Children.Add(Row(protLeft, protectionButton));
             root.Children.Add(Wrap(main, new Thickness(0, 14, 0, 0)));
 
             // Avisos.
-            root.Children.Add(SectionLabel("Avisos"));
+            root.Children.Add(SectionLabel(S.SectionAlerts));
             StackPanel alerts = new StackPanel();
-            Toggle sound = new Toggle(theme, host.Cfg.Sound);
+            Toggle sound = new Toggle(theme, host.Cfg.Sound, S.Sound);
             sound.Changed += on => { host.Cfg.Sound = on; host.Cfg.Save(); };
-            alerts.Children.Add(Row("Sonido", null, sound));
+            alerts.Children.Add(Row(Texts(S.Sound, S.SoundHint), sound));
             alerts.Children.Add(Divider());
-            Toggle match = new Toggle(theme, host.Cfg.NotifyMatchStarted);
+            Toggle match = new Toggle(theme, host.Cfg.NotifyMatchStarted, S.MatchStartTitle);
             match.Changed += on => { host.Cfg.NotifyMatchStarted = on; host.Cfg.Save(); };
-            alerts.Children.Add(Row("Cuando arranca la partida", "Para que vuelvas a tiempo", match));
+            alerts.Children.Add(Row(Texts(S.MatchStartTitle, S.MatchStartHint), match));
             alerts.Children.Add(Divider());
-            phoneToggle = new Toggle(theme, host.Cfg.NotifyPhone);
+            phoneToggle = new Toggle(theme, host.Cfg.NotifyPhone, S.PhoneTitle);
             phoneToggle.Changed += on => { host.SetPhone(on); phoneDetails.Visibility = on ? Visibility.Visible : Visibility.Collapsed; };
-            alerts.Children.Add(Row("Celular", "Avisos en el celular con la app gratis ntfy", phoneToggle));
+            alerts.Children.Add(Row(Texts(S.PhoneTitle, S.PhoneHint), phoneToggle));
             phoneDetails = BuildPhoneDetails();
             phoneDetails.Visibility = host.Cfg.NotifyPhone ? Visibility.Visible : Visibility.Collapsed;
             alerts.Children.Add(phoneDetails);
             root.Children.Add(Wrap(alerts, new Thickness(0)));
 
             // General.
-            root.Children.Add(SectionLabel("General"));
+            root.Children.Add(SectionLabel(S.SectionGeneral));
             StackPanel general = new StackPanel();
-            Toggle autostart = new Toggle(theme, host.AutostartEnabled);
+            Toggle autostart = new Toggle(theme, host.AutostartEnabled, S.StartWithWindows);
             autostart.Changed += on => host.SetAutostart(on);
-            general.Children.Add(Row("Iniciar con Windows", null, autostart));
+            general.Children.Add(Row(Texts(S.StartWithWindows, null), autostart));
             general.Children.Add(Divider());
-            Toggle autoUpdate = new Toggle(theme, host.Cfg.AutoUpdateCheck);
+            Toggle autoUpdate = new Toggle(theme, host.Cfg.AutoUpdateCheck, S.AutoUpdate);
             autoUpdate.Changed += on => host.SetAutoUpdate(on);
-            general.Children.Add(Row("Buscar actualizaciones automáticamente", null, autoUpdate));
+            general.Children.Add(Row(Texts(S.AutoUpdate, null), autoUpdate));
             general.Children.Add(Divider());
-            Toggle steamStatus = new Toggle(theme, host.Cfg.UseSteamStatus);
+            Toggle steamStatus = new Toggle(theme, host.Cfg.UseSteamStatus, S.SteamStatus);
             steamStatus.Changed += on => { host.Cfg.UseSteamStatus = on; host.Cfg.Save(); };
-            general.Children.Add(Row("Usar mi estado de Steam", "Para saber si estás buscando partida o jugando", steamStatus));
+            general.Children.Add(Row(Texts(S.SteamStatus, S.SteamStatusHint), steamStatus));
             general.Children.Add(Divider());
-            updateText = new TextBlock { FontSize = 12, Foreground = theme.TextSecondary, VerticalAlignment = VerticalAlignment.Center };
-            general.Children.Add(Row(updateText, Link("Buscar actualizaciones", () => host.CheckUpdatesNow())));
+            updateText = new TextBlock { FontSize = 12, Foreground = theme.TextSecondary, VerticalAlignment = VerticalAlignment.Center, TextWrapping = TextWrapping.Wrap };
+            general.Children.Add(Row(updateText, Link(S.CheckUpdates, () => host.CheckUpdatesNow(), 13)));
             root.Children.Add(Wrap(general, new Thickness(0)));
 
             // Pie: el wordmark de keis.studio con la k en tres colores; a este tamano el corrimiento va exagerado
             // (como mark-*-small de la guia) para que los colores se vean nitidos.
-            Image brand = new Image
+            Image brand = new Image { Source = KeisMark.BuildWordmark(theme.Dark, true, 2.2), Height = 20, ToolTip = "keis.studio" };
+            root.Children.Add(new ClickArea(theme, brand, () => System.Diagnostics.Process.Start("https://keis.studio"), "keis.studio")
             {
-                Source = KeisMark.BuildWordmark(theme.Dark, true, 2.2), Height = 20, HorizontalAlignment = HorizontalAlignment.Center,
-                Margin = new Thickness(0, 18, 0, 4), Cursor = Cursors.Hand, ToolTip = "keis.studio",
-            };
-            brand.MouseLeftButtonUp += (s, e) => System.Diagnostics.Process.Start("https://keis.studio");
-            root.Children.Add(brand);
+                HorizontalAlignment = HorizontalAlignment.Center, Margin = new Thickness(0, 18, 0, 4),
+            });
 
             return root;
+        }
+
+        void SetUpProtection()
+        {
+            if (protectionGame == null) return;
+            // Se copian las opciones que el jugador ya tenia + la nueva: reemplazando todo no pierde las suyas.
+            string options = host.LaunchOptionsWithProtection(protectionGame);
+            bool hadOwn = options != protectionGame.GsiLaunchOption;
+            try { Clipboard.SetText(options); }
+            catch { }   // portapapeles ocupado por otra app: igual se abre Steam
+            host.FixProtection(protectionGame);
+            awaitingUser = true;
+            protectionText.Text = hadOwn ? S.ProtectionCopiedOwn(protectionGame.Name) : S.ProtectionCopiedNew(protectionGame.Name);
         }
 
         StackPanel BuildPhoneDetails()
@@ -424,11 +367,12 @@ namespace AutoReady
             // Un solo QR para cualquier celular: la camara abre https://ntfy.sh/<codigo>, que ya queda suscripto.
             Border qrBox = new Border { Background = Brushes.White, CornerRadius = new CornerRadius(6), Padding = new Thickness(6), Margin = new Thickness(0, 0, 14, 0), VerticalAlignment = VerticalAlignment.Top };
             qrBox.Child = new Image { Source = QrImage("https://ntfy.sh/" + host.Cfg.NtfyTopic), Width = 108, Height = 108 };
+            AutomationProperties.SetName(qrBox, S.PhoneScan);
             g.Children.Add(qrBox);
 
             StackPanel right = new StackPanel { VerticalAlignment = VerticalAlignment.Center };
-            right.Children.Add(new TextBlock { Text = "Escaneá con la cámara", FontSize = 13, FontWeight = FontWeights.SemiBold });
-            right.Children.Add(Small("o agregá este código en ntfy:"));
+            right.Children.Add(new TextBlock { Text = S.PhoneScan, FontSize = 13, FontWeight = FontWeights.SemiBold });
+            right.Children.Add(Small(S.PhoneOrCode));
 
             // El codigo a la vista y seleccionable: se lee de una para escribirlo en el celular.
             TextBox code = new TextBox
@@ -437,19 +381,31 @@ namespace AutoReady
                 Foreground = theme.Text, FontFamily = new FontFamily("Cascadia Mono, Consolas"), FontSize = 17,
                 FontWeight = FontWeights.SemiBold, Padding = new Thickness(0), Margin = new Thickness(0, 4, 0, 0), CaretBrush = Brushes.Transparent,
             };
+            AutomationProperties.SetName(code, S.PhoneOrCode);
             right.Children.Add(code);
 
-            Border test = new Border
+            TextBlock testText = new TextBlock { Text = S.PhoneTest, FontSize = 12 };
+            ClickArea test = null;
+            test = new ClickArea(theme, testText, () =>
+            {
+                testText.Text = S.PhoneSending;
+                host.SendTestPush(ok => Dispatcher.BeginInvoke(new Action(() =>
+                {
+                    testText.Text = ok ? S.PhoneSent : S.PhoneFailed;
+                    System.Windows.Threading.DispatcherTimer back = new System.Windows.Threading.DispatcherTimer { Interval = TimeSpan.FromSeconds(4) };
+                    back.Tick += (s2, e2) => { back.Stop(); testText.Text = S.PhoneTest; };
+                    back.Start();
+                })));
+            }, S.PhoneTest)
             {
                 BorderBrush = theme.ControlStroke, BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(4),
-                Padding = new Thickness(10, 4, 10, 4), Margin = new Thickness(0, 10, 0, 0), HorizontalAlignment = HorizontalAlignment.Left, Cursor = Cursors.Hand,
-                Child = new TextBlock { Text = "Enviar prueba", FontSize = 12 },
+                Padding = new Thickness(10, 4, 10, 4), Margin = new Thickness(0, 10, 0, 0), HorizontalAlignment = HorizontalAlignment.Left,
             };
-            test.MouseLeftButtonUp += (s, e) => { host.SendTestPush(); ((TextBlock)test.Child).Text = "Enviada al celular"; };
             right.Children.Add(test);
             Grid.SetColumn(right, 1);
             g.Children.Add(right);
             p.Children.Add(g);
+            p.Children.Add(new TextBlock { Text = S.PhoneSecret, FontSize = 12, Foreground = theme.TextSecondary, TextWrapping = TextWrapping.Wrap, Margin = new Thickness(0, 10, 0, 0) });
             return p;
         }
 
@@ -470,12 +426,13 @@ namespace AutoReady
             return new Border { Height = 1, Background = theme.Dark ? new SolidColorBrush(Color.FromRgb(0x1C, 0x1C, 0x1C)) : new SolidColorBrush(Color.FromRgb(0xEA, 0xEA, 0xEA)) };
         }
 
-        Grid Row(string title, string subtitle, UIElement right)
+        // Titulo y subtitulo de un renglon (el subtitulo es el segundo hijo, para poder cambiarlo despues).
+        StackPanel Texts(string title, string subtitle)
         {
             StackPanel left = new StackPanel { VerticalAlignment = VerticalAlignment.Center };
-            left.Children.Add(new TextBlock { Text = title });
+            left.Children.Add(new TextBlock { Text = title, TextWrapping = TextWrapping.Wrap });
             if (subtitle != null) left.Children.Add(new TextBlock { Text = subtitle, FontSize = 12, Foreground = theme.TextSecondary, TextWrapping = TextWrapping.Wrap });
-            return Row(left, right);
+            return left;
         }
 
         Grid Row(UIElement left, UIElement right)
@@ -496,11 +453,10 @@ namespace AutoReady
             return new TextBlock { Text = text, FontSize = 12, Foreground = theme.TextSecondary, TextWrapping = TextWrapping.Wrap, Margin = new Thickness(0, 1, 0, 1) };
         }
 
-        TextBlock Link(string text, Action click, double size = 13)
+        ClickArea Link(string text, Action click, double size)
         {
-            TextBlock t = new TextBlock { Text = text, FontSize = size, Foreground = theme.Link, Cursor = Cursors.Hand, VerticalAlignment = VerticalAlignment.Center };
-            t.MouseLeftButtonUp += (s, e) => click();
-            return t;
+            return new ClickArea(theme, new TextBlock { Text = text, FontSize = size, Foreground = theme.Link, TextDecorations = TextDecorations.Underline },
+                                 click, text) { VerticalAlignment = VerticalAlignment.Center, HorizontalAlignment = HorizontalAlignment.Left };
         }
 
         static BitmapSource LoadPng(string resource)

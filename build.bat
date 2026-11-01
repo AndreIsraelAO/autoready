@@ -16,6 +16,7 @@ set WINMD=%WINDIR%\System32\WinMetadata
 "%NET%\csc.exe" /nologo /optimize /target:winexe /platform:x64 /codepage:65001 ^
   /r:System.Drawing.dll /r:System.Windows.Forms.dll /r:System.Xaml.dll ^
   /r:"%NET%\WPF\PresentationCore.dll" /r:"%NET%\WPF\PresentationFramework.dll" /r:"%NET%\WPF\WindowsBase.dll" ^
+  /r:"%NET%\WPF\UIAutomationProvider.dll" /r:"%NET%\WPF\UIAutomationTypes.dll" ^
   /r:"%NET%\System.Runtime.dll" /r:"%NET%\System.Runtime.WindowsRuntime.dll" /r:"%NET%\System.Runtime.InteropServices.WindowsRuntime.dll" ^
   /r:"%WINMD%\Windows.Foundation.winmd" /r:"%WINMD%\Windows.Data.winmd" /r:"%WINMD%\Windows.UI.winmd" ^
   /win32icon:assets\autoready.ico ^

@@ -32,6 +32,7 @@ namespace AutoReady
         public bool UseSteamStatus = true;   // leer el estado de Steam (ver Presence.cs y PRIVACY.md)
         public int HotkeyVk = 0;       // 0 = sin atajo
         public int HotkeyMods = 0;     // 1 Alt, 2 Ctrl, 4 Shift
+        public string Language = "auto";   // auto (idioma de Windows), es o en; lo lee Lang al arrancar
         public bool Welcomed = false;  // la primera vez se abre el panel solo
         public bool SaveSamples = true; // beta: guarda capturas reales para ajustar el detector (ver Samples.cs)
 
@@ -68,6 +69,7 @@ namespace AutoReady
                 c.UseSteamStatus = Bool(kv, "UseSteamStatus", c.UseSteamStatus);
                 c.HotkeyVk = Int(kv, "HotkeyVk", c.HotkeyVk);
                 c.HotkeyMods = Int(kv, "HotkeyMods", c.HotkeyMods);
+                c.Language = Str(kv, "Language", c.Language);
                 c.Welcomed = Bool(kv, "Welcomed", c.Welcomed);
                 c.SaveSamples = Bool(kv, "SaveSamples", c.SaveSamples);
 
@@ -125,6 +127,7 @@ namespace AutoReady
             lines.Add("UseSteamStatus=" + UseSteamStatus);
             lines.Add("HotkeyVk=" + HotkeyVk);
             lines.Add("HotkeyMods=" + HotkeyMods);
+            lines.Add("Language=" + Language);
             lines.Add("Welcomed=" + Welcomed);
             lines.Add("SaveSamples=" + SaveSamples);
             foreach (GameProfile g in GameProfile.All)

@@ -57,20 +57,20 @@ namespace AutoReady
             {
                 SetPaused(!paused);
                 Beep(!paused);
-                if (paused) Notify("En pausa", "No va a aceptar partidas. Reanudá con " + HotkeyText + ".", "Reanudar", () => SetPaused(false));
-                else Notify("Activo", "Va a aceptar tus partidas.");
+                // Al pausar se avisa (con boton para reanudar); al reanudar alcanza con el sonido.
+                if (paused) Notify(S.ToastPaused, S.ToastPausedText(HotkeyText), S.ToastResume, () => SetPaused(false));
             };
 
             panel = new Panel(this);
 
             // Menu chico: lo demas esta en el panel (click izquierdo).
-            pauseItem = new ToolStripMenuItem("Pausar", null, (s, e) => SetPaused(!paused));
+            pauseItem = new ToolStripMenuItem(S.MenuPause, null, (s, e) => SetPaused(!paused));
             ContextMenuStrip menu = new ContextMenuStrip();
-            menu.Items.Add(new ToolStripMenuItem("Abrir AutoReady", null, (s, e) => OpenPanel()) { Font = new Font(SystemFonts.MenuFont, FontStyle.Bold) });
+            menu.Items.Add(new ToolStripMenuItem(S.MenuOpen, null, (s, e) => OpenPanel()) { Font = new Font(SystemFonts.MenuFont, FontStyle.Bold) });
             menu.Items.Add(new ToolStripSeparator());
             menu.Items.Add(pauseItem);
             menu.Items.Add(new ToolStripSeparator());
-            menu.Items.Add(new ToolStripMenuItem("Salir", null, (s, e) => Quit()));
+            menu.Items.Add(new ToolStripMenuItem(S.MenuExit, null, (s, e) => Quit()));
 
             tray = new NotifyIcon { Icon = iconOn, Text = "AutoReady", ContextMenuStrip = menu, Visible = true };
             tray.MouseClick += (s, e) =>
@@ -103,8 +103,13 @@ namespace AutoReady
 
             if (!cfg.Welcomed)
             {
+                // Primer uso: el panel se abre con la explicacion, y al cerrarlo se avisa que sigue en la bandeja.
                 cfg.Welcomed = true;
                 cfg.Save();
+                panel.ShowWelcome();
+                Action once = null;
+                once = () => { panel.Hidden -= once; Notify(S.ToastStillRunning, S.ToastStillRunningText); };
+                panel.Hidden += once;
                 ui.Post(OpenPanel);
             }
         }
@@ -164,9 +169,9 @@ namespace AutoReady
             return null;
         }
 
-        public void SendTestPush()
+        public void SendTestPush(Action<bool> done)
         {
-            Notifier.Send(cfg, "AutoReady conectado", "Los avisos funcionan. ¡Buena suerte en la cola!", "white_check_mark");
+            Notifier.Send(cfg, S.PushTestTitle, S.PushTestText, "white_check_mark", done);
         }
 
         public bool AutostartEnabled
@@ -199,12 +204,12 @@ namespace AutoReady
         {
             get
             {
-                if (cfg.HotkeyVk == 0) return "Elegir tecla";
+                if (cfg.HotkeyVk == 0) return S.HotkeyNone;
                 string s = "";
                 if ((cfg.HotkeyMods & 0x2) != 0) s += "Ctrl+";
                 if ((cfg.HotkeyMods & 0x1) != 0) s += "Alt+";
                 if ((cfg.HotkeyMods & 0x4) != 0) s += "Shift+";
-                return s + ((Keys)cfg.HotkeyVk).ToString();
+                return s + Win32.KeyName(cfg.HotkeyVk);
             }
         }
 
@@ -234,17 +239,15 @@ namespace AutoReady
             GameProfile game = activeGame;
             AppState s = state;
             string text;
-            switch (s)
-            {
-                case AppState.Paused: text = "En pausa"; break;
-                case AppState.InMatch: text = game != null ? "En partida de " + game.Name : "En partida"; break;
-                case AppState.Searching: text = game != null ? "Esperando partida en " + game.Name : "Esperando partida"; break;
-                default: text = paused ? "En pausa" : "Listo: abrí tu juego y buscá partida"; break;
-            }
+            StatusKind kind;
+            if (paused || s == AppState.Paused) { text = S.StatusPaused; kind = StatusKind.Paused; }
+            else if (game != null && s == AppState.InMatch) { text = S.StatusInMatch(game.Name); kind = StatusKind.Watching; }
+            else if (game != null && s == AppState.Searching) { text = S.StatusSearching(game.Name); kind = StatusKind.Watching; }
+            else { text = S.StatusIdle; kind = StatusKind.Idle; }
             PanelStatus st = new PanelStatus
             {
                 Text = text,
-                Good = !paused,
+                Kind = kind,
                 Paused = paused,
                 UpdateTag = pendingUpdate != null ? pendingUpdate.Tag : null,
                 UpdateMessage = updateMessage,
@@ -252,13 +255,13 @@ namespace AutoReady
             GameProfile missing = MissingProtection();
             st.ProtectionFix = missing;
             st.Protection = missing != null
-                ? "Falta un paso en " + missing.Name + ". Mientras tanto acepta en modo seguro."
-                : (activeGame != null && activeGame.UsesPresence && !gsi.Connected(activeGame) && Presence.Working
-                    ? "Activa con tu estado de Steam: solo mira la pantalla mientras buscás partida."
-                    : "Activa: nunca toca nada durante una partida.");
+                ? S.ProtectionMissing(missing.Name)
+                : (game != null && game.UsesPresence && !gsi.Connected(game) && cfg.UseSteamStatus && Presence.Working
+                    ? S.ProtectionOnSteam
+                    : S.ProtectionOn);
             ui.Post(() =>
             {
-                pauseItem.Text = paused ? "Reanudar" : "Pausar";
+                pauseItem.Text = paused ? S.MenuResume : S.MenuPause;
                 panel.Refresh(st);
             });
         }
@@ -269,10 +272,10 @@ namespace AutoReady
         {
             if (Updater.IsDevBuild)
             {
-                if (manual) { updateMessage = "build de desarrollo"; PushStatus(); }
+                if (manual) { updateMessage = S.DevBuild; PushStatus(); }
                 return;
             }
-            if (manual) { updateMessage = "buscando…"; PushStatus(); }
+            if (manual) { updateMessage = S.Checking; PushStatus(); }
             ThreadPool.QueueUserWorkItem(_ =>
             {
                 Updater.Release r = null;
@@ -280,21 +283,21 @@ namespace AutoReady
                 catch (Exception e)
                 {
                     Log.Write("Updater: no pude consultar GitHub: " + e.Message);
-                    if (manual) { updateMessage = "no se pudo buscar"; PushStatus(); }
+                    if (manual) { updateMessage = S.CheckFailed; PushStatus(); }
                     return;
                 }
                 if (r == null)
                 {
-                    updateMessage = "al día";
+                    updateMessage = S.UpToDate;
                     PushStatus();
                     return;
                 }
                 bool isNew = pendingUpdate == null || pendingUpdate.Version != r.Version;
                 pendingUpdate = r;
-                updateMessage = r.Tag + " disponible";
+                updateMessage = S.Available(r.Tag);
                 Log.Write("Updater: hay una version nueva " + r.Tag);
                 PushStatus();
-                if (isNew) Notify("Versión " + r.Tag + " disponible", "Tocá Actualizar para instalarla.", "Actualizar", InstallUpdate);
+                if (isNew) Notify(S.ToastUpdate(r.Tag), S.ToastUpdateText, S.ToastUpdateButton, InstallUpdate);
             });
         }
 
@@ -305,12 +308,12 @@ namespace AutoReady
             if (Interlocked.CompareExchange(ref installing, 1, 0) != 0) return;   // ya se esta instalando
             if (gsi.InAnyMatch() || Presence.Current == PresenceState.InMatch)
             {
-                updateMessage = "se actualiza cuando termine la partida";
+                updateMessage = S.UpdateAfterMatch;
                 installing = 0;
                 PushStatus();
                 return;
             }
-            updateMessage = "actualizando…";
+            updateMessage = S.Updating;
             PushStatus();
             ThreadPool.QueueUserWorkItem(_ =>
             {
@@ -323,7 +326,7 @@ namespace AutoReady
                 catch (Exception e)
                 {
                     Log.Write("Updater: fallo la actualizacion: " + e.Message);
-                    updateMessage = "no se pudo actualizar";
+                    updateMessage = S.UpdateFailed;
                     installing = 0;
                     PushStatus();
                 }
@@ -390,7 +393,7 @@ namespace AutoReady
             {
                 lastAccept = DateTime.MinValue;
                 SetPaused(true);
-                Notify("En pausa", "No puedo saber si ya estás en partida, así que dejé de aceptar.", "Reanudar", () => SetPaused(false));
+                Notify(S.ToastPaused, S.ToastUnsure, S.ToastResume, () => SetPaused(false));
                 return 500;
             }
 
@@ -487,9 +490,10 @@ namespace AutoReady
             lastAccept = DateTime.Now;
             cooldownUntil = DateTime.Now.AddSeconds(cfg.CooldownAfterAcceptSec);
             Log.Write(game.Name + ": partida encontrada, aceptada " + how);
-            Notify("Partida aceptada", "Tu partida de " + game.Name + " está por empezar. Volvé a la PC.");
+            // Al tocar el aviso se trae el juego al frente (es lo que la persona quiere ver), no el panel.
+            Notify(S.ToastAccepted, S.ToastAcceptedText(game.Name), null, null, () => Win32.Focus(hwnd));
             if (cfg.Sound) Beep(true);
-            Notifier.Phone(cfg, "Partida aceptada", "AutoReady aceptó tu partida de " + game.Name + ". Volvé a la PC.", "video_game");
+            Notifier.Phone(cfg, S.ToastAccepted, S.ToastAcceptedText(game.Name), "video_game");
             return true;
         }
 
@@ -512,9 +516,9 @@ namespace AutoReady
             bool recentlyAccepted = lastAccept != DateTime.MinValue && (DateTime.Now - lastAccept).TotalMinutes < 5;
             if (oldState == null && newState != null && cfg.NotifyMatchStarted && recentlyAccepted)
             {
-                Notify("Tu partida arrancó", "Volvé a la PC.");
+                Notify(S.ToastStarted, S.ToastStartedText(game.Name));
                 if (cfg.Sound) Beep(true);
-                Notifier.Phone(cfg, "Tu partida arrancó", "Tu partida de " + game.Name + " arrancó. Volvé a la PC.", "crossed_swords");
+                Notifier.Phone(cfg, S.ToastStarted, S.ToastStartedText(game.Name), "crossed_swords");
             }
             // Arranco una partida que no aceptamos nosotros: o no vimos el popup, o el jugador fue mas rapido.
             // Las capturas de ese momento sirven para ajustar el detector.
@@ -539,10 +543,8 @@ namespace AutoReady
             if ((DateTime.Now - gameSeenSince).TotalSeconds < 90) return;
             gsiHintShown.Add(game.Id);
             Log.Write("GSI " + game.Name + ": abierto hace 90s y no llego nada");
-            Notify("Activá GSI para más seguridad",
-                   game.GsiLaunchOption != null
-                       ? "Abrí AutoReady y tocá Activar en Protección en partida."
-                       : "Reiniciá " + game.Name + " para que cargue la integración de AutoReady.");
+            if (game.GsiLaunchOption != null) Notify(S.ToastSetupTitle, S.ToastSetupText);
+            else Notify(S.ProtectionTitle, S.ToastRestartGame(game.Name));
         }
 
         // ---------- estado e interfaz ----------
@@ -556,11 +558,11 @@ namespace AutoReady
                 Icon icon = s == AppState.Paused ? iconOff : iconOn;
                 tray.Icon = icon;
                 string name = activeGame != null ? activeGame.Name : "";
-                string text = s == AppState.Paused ? "en pausa"
-                            : s == AppState.GameClosed ? "esperando un juego"
-                            : s == AppState.InMatch ? "en partida de " + name
-                            : "esperando partida en " + name;
-                tray.Text = Truncate("AutoReady: " + text, 63);
+                string text = s == AppState.Paused ? S.TooltipPaused(cfg.HotkeyVk != 0 ? HotkeyText : null)
+                            : s == AppState.GameClosed || activeGame == null ? S.TooltipIdle
+                            : s == AppState.InMatch ? S.TooltipInMatch(name)
+                            : S.TooltipSearching(name);
+                tray.Text = Truncate(text, 63);
             });
             PushStatus();
         }
@@ -568,11 +570,12 @@ namespace AutoReady
         static string Truncate(string s, int max) { return s.Length <= max ? s : s.Substring(0, max); }
 
         // Notificacion nativa de Windows (logo, texto y boton opcional); si no hay toasts, el aviso clasico de la bandeja.
-        // Al tocarla se abre el panel. Los clicks llegan en otro hilo, por eso pasan por ui.Post.
-        void Notify(string title, string text, string button = null, Action onButton = null)
+        // Al tocarla se abre el panel (o lo que diga onClick). Los clicks llegan en otro hilo, por eso pasan por ui.Post.
+        void Notify(string title, string text, string button = null, Action onButton = null, Action onClick = null)
         {
+            Action click = onClick ?? OpenPanel;
             if (useToasts && Toast.Show(title, text, button,
-                    onButton == null ? (Action)null : () => ui.Post(onButton), () => ui.Post(OpenPanel)))
+                    onButton == null ? (Action)null : () => ui.Post(onButton), () => ui.Post(click)))
                 return;
             ui.Post(() => tray.ShowBalloonTip(4000, title, string.IsNullOrEmpty(text) ? " " : text, ToolTipIcon.None));
         }

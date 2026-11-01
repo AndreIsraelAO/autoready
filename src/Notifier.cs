@@ -17,11 +17,12 @@ namespace AutoReady
         public static void Phone(Config cfg, string title, string message, string tags)
         {
             if (!cfg.NotifyPhone) return;
-            Send(cfg, title, message, tags);
+            Send(cfg, title, message, tags, null);
         }
 
-        // Manda en segundo plano para no trabar el escaneo si la red esta lenta.
-        public static void Send(Config cfg, string title, string message, string tags)
+        // Manda en segundo plano para no trabar el escaneo si la red esta lenta. done (opcional) recibe si se pudo
+        // enviar; se llama desde otro hilo.
+        public static void Send(Config cfg, string title, string message, string tags, Action<bool> done)
         {
             // Titulo y tags van en la URL: los headers HTTP no aceptan tildes ni emojis.
             string url = cfg.NtfyServer.TrimEnd('/') + "/" + Uri.EscapeDataString(cfg.NtfyTopic) +
@@ -35,8 +36,13 @@ namespace AutoReady
                         wc.Encoding = Encoding.UTF8;
                         wc.UploadString(url, message);
                     }
+                    if (done != null) done(true);
                 }
-                catch (Exception e) { Log.Write("ntfy: no se pudo enviar: " + e.Message); }
+                catch (Exception e)
+                {
+                    Log.Write("ntfy: no se pudo enviar: " + e.Message);
+                    if (done != null) done(false);
+                }
             });
         }
     }

@@ -173,7 +173,8 @@ namespace AutoReady
                 Foreground = theme.TextSecondary, TextWrapping = TextWrapping.Wrap, Margin = new Thickness(0, 4, 0, 18),
             });
 
-            Toggle desktop = new Toggle(theme, true), autostart = new Toggle(theme, true);
+            Toggle desktop = new Toggle(theme, true, Lang.T("Acceso directo en el escritorio", "Desktop shortcut")),
+                   autostart = new Toggle(theme, true, Lang.T("Iniciar con Windows", "Start with Windows"));
             StackPanel card = new StackPanel();
             card.Children.Add(Row(Lang.T("Acceso directo en el escritorio", "Desktop shortcut"), desktop));
             card.Children.Add(new Border { Height = 1, Background = theme.CardStroke });
@@ -182,7 +183,8 @@ namespace AutoReady
 
             // Privacidad (PRIVACY.md): cada conexion automatica se puede apagar desde aca o despues en el panel.
             root.Children.Add(new TextBlock { Text = Lang.T("Conexiones", "Connections"), FontSize = 13, FontWeight = FontWeights.SemiBold, Margin = new Thickness(2, 16, 0, 8) });
-            Toggle updates = new Toggle(theme, true), steam = new Toggle(theme, true);
+            Toggle updates = new Toggle(theme, true, Lang.T("Buscar actualizaciones", "Check for updates")),
+                   steam = new Toggle(theme, true, Lang.T("Usar mi estado de Steam", "Use my Steam status"));
             StackPanel net = new StackPanel();
             net.Children.Add(Row(Lang.T("Buscar actualizaciones", "Check for updates"), updates,
                 Lang.T("Consulta GitHub al iniciar y una vez por día", "Asks GitHub at startup and once a day")));
@@ -191,13 +193,11 @@ namespace AutoReady
                 Lang.T("Lee tu perfil público de Steam mientras un juego compatible está abierto",
                        "Reads your public Steam profile while a supported game is open")));
             root.Children.Add(Card(net));
-            TextBlock privacy = new TextBlock
-            {
-                Text = Lang.T("Política de privacidad", "Privacy policy"), Foreground = theme.Link, Cursor = Cursors.Hand,
-                FontSize = 12, Margin = new Thickness(2, 8, 0, 0), HorizontalAlignment = HorizontalAlignment.Left,
-            };
-            privacy.MouseLeftButtonUp += (s, e) => Process.Start("https://github.com/hercase/autoready/blob/main/PRIVACY.md");
-            root.Children.Add(privacy);
+            string privacyText = Lang.T("Política de privacidad", "Privacy policy");
+            root.Children.Add(new ClickArea(theme,
+                new TextBlock { Text = privacyText, Foreground = theme.Link, FontSize = 12, TextDecorations = TextDecorations.Underline },
+                () => Process.Start("https://github.com/hercase/autoready/blob/main/PRIVACY.md"), privacyText)
+                { Margin = new Thickness(2, 8, 0, 0), HorizontalAlignment = HorizontalAlignment.Left });
 
             // Cambios al sistema, avisados antes de instalar.
             root.Children.Add(new TextBlock
@@ -214,12 +214,9 @@ namespace AutoReady
             Grid buttons = new Grid();
             buttons.ColumnDefinitions.Add(new ColumnDefinition());
             buttons.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
-            Border install = new Border
-            {
-                Background = theme.Accent, CornerRadius = new CornerRadius(4), Padding = new Thickness(22, 8, 22, 8), Cursor = Cursors.Hand,
-                Child = new TextBlock { Text = Lang.T("Instalar", "Install"), Foreground = theme.OnAccent, FontWeight = FontWeights.SemiBold },
-            };
-            install.MouseLeftButtonUp += (s, e) =>
+            string installText = Lang.T("Instalar", "Install");
+            ClickArea install = new ClickArea(theme,
+                new TextBlock { Text = installText, Foreground = theme.OnFill, FontWeight = FontWeights.SemiBold }, () =>
             {
                 try
                 {
@@ -232,11 +229,12 @@ namespace AutoReady
                     Log.Write("Instalador: fallo: " + ex);
                     MessageBox.Show(Lang.T("No se pudo instalar: ", "Couldn't install: ") + ex.Message, "AutoReady");
                 }
-            };
+            }, installText) { Background = theme.Fill, CornerRadius = new CornerRadius(4), Padding = new Thickness(22, 8, 22, 8) };
             Grid.SetColumn(install, 1);
             buttons.Children.Add(install);
             root.Children.Add(buttons);
             Content = root;
+            Loaded += (s, e) => install.Focus();   // Enter instala de una
             KeyDown += (s, e) => { if (e.Key == Key.Escape) Close(); };
         }
 

@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.Runtime.InteropServices;
+using System.Text;
 using System.Threading;
 
 namespace AutoReady
@@ -125,6 +126,23 @@ namespace AutoReady
             li.cbSize = (uint)Marshal.SizeOf(li);
             if (!GetLastInputInfo(ref li)) return TimeSpan.MaxValue;
             return TimeSpan.FromMilliseconds(unchecked((uint)Environment.TickCount - li.dwTime));
+        }
+
+        [DllImport("user32.dll")] static extern uint MapVirtualKey(uint code, uint mapType);
+        [DllImport("user32.dll", CharSet = CharSet.Unicode)] static extern int GetKeyNameText(int lParam, StringBuilder name, int size);
+
+        // Nombre de la tecla como lo muestra Windows en el idioma del teclado ("F8", "Ñ", "Bloq Despl"), no el del enum ("Oemtilde").
+        public static string KeyName(int vk)
+        {
+            if (vk >= 0x70 && vk <= 0x87) return "F" + (vk - 0x6F);
+            uint scan = MapVirtualKey((uint)vk, 0);
+            if (scan != 0)
+            {
+                bool extended = (vk >= 0x21 && vk <= 0x2E) || vk == 0x6F || vk == 0x90;   // flechas, Inicio/Fin, Insert/Supr, / del teclado numerico
+                StringBuilder sb = new StringBuilder(64);
+                if (GetKeyNameText((int)(scan << 16) | (extended ? 1 << 24 : 0), sb, sb.Capacity) > 0) return sb.ToString();
+            }
+            return ((System.Windows.Forms.Keys)vk).ToString();
         }
 
         [DllImport("user32.dll")] static extern IntPtr WindowFromPoint(POINT p);

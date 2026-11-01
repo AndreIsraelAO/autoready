@@ -55,8 +55,7 @@ namespace AutoReady
             {
                 if (!created)
                 {
-                    MessageBox.Show(Lang.T("AutoReady ya está abierto: buscá su ícono al lado del reloj.",
-                                           "AutoReady is already running: look for its icon next to the clock."), "AutoReady");
+                    MessageBox.Show(S.AlreadyRunning, "AutoReady");
                     return 0;
                 }
                 if (Installer.IsInstalledCopy) Installer.Register();   // la version mostrada en Aplicaciones se actualiza
