@@ -1,0 +1,4 @@
+dist/
+*.result.png
+*.result.txt
+captura-*.png
