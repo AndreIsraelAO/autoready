@@ -139,7 +139,14 @@
       <p>Yes, that's the idea: you never know when the match will pop. Pause it with your hotkey or the switch at the top of the panel if you don't want a match; the pause lasts until you resume it or close the game.</p>
     </div></details>
     <details id="phone"><summary>How do phone notifications work?</summary><div>
-      <p>Turn on <b>Phone notifications</b> in the panel and scan the QR code with your phone camera. It opens <a href="../phone/">a short page</a> that connects the free ntfy app: one tap on Android, copy and paste on iPhone. Keep your code private: anyone with it can read your notifications.</p>
+      <p>Turn on <b>Phone notifications</b> in the AutoReady panel, click <b>Show code</b> and scan the QR with your phone camera. It opens a short setup page that connects the free ntfy app: one tap on Android, copy and paste on iPhone. Always start from that QR: the page only works with your code in the link.</p>
+      <p>Your code looks like <code>ar-k7m2q</code>. Keep it private: anyone with it can read your notifications.</p>
+      <p><b>Doing it by hand on iPhone:</b></p>
+      <ul>
+        <li>Install the free <b>ntfy</b> app from the App Store, open it and tap <b>Allow</b> when it asks about notifications.</li>
+        <li>Tap <b>+</b> at the top right, paste your code in <b>Topic name</b> and tap <b>Subscribe</b>.</li>
+        <li>In AutoReady, click <b>Send test</b>. If nothing arrives, check that notifications for ntfy are on in the iPhone Settings and that a Focus mode isn't silencing them.</li>
+      </ul>
     </div></details>
     <details id="afk"><summary>Can I use it to stay AFK?</summary><div>
       <p>No. It's there so you don't miss a match while you grab something. Accept, then come back: leaving hurts the other nine players.</p>
@@ -199,7 +206,14 @@
       <p>Sí, esa es la idea: nunca sabés cuándo va a aparecer la partida. Si no querés una partida, pausalo con tu tecla o con el interruptor de arriba del panel; la pausa dura hasta que la quites o cierres el juego.</p>
     </div></details>
     <details id="phone-es"><summary>¿Cómo funcionan los avisos al celular?</summary><div>
-      <p>Activá <b>Avisos al celular</b> en el panel y escaneá el QR con la cámara del celular. Se abre <a href="../phone/">una página corta</a> que conecta la app gratis ntfy: un toque en Android, copiar y pegar en iPhone. No compartas tu código: con él se pueden leer tus avisos.</p>
+      <p>Activá <b>Avisos al celular</b> en el panel de AutoReady, tocá <b>Mostrar código</b> y escaneá el QR con la cámara del celular. Se abre una página corta de configuración que conecta la app gratis ntfy: un toque en Android, copiar y pegar en iPhone. Empezá siempre desde ese QR: la página solo funciona con tu código en el link.</p>
+      <p>Tu código se ve así: <code>ar-k7m2q</code>. No lo compartas: con él se pueden leer tus avisos.</p>
+      <p><b>A mano en iPhone:</b></p>
+      <ul>
+        <li>Instalá la app gratis <b>ntfy</b> desde App Store, abrila y tocá <b>Permitir</b> cuando pregunte por las notificaciones.</li>
+        <li>Tocá <b>+</b> arriba a la derecha, pegá tu código en <b>Topic name</b> y tocá <b>Subscribe</b>.</li>
+        <li>En AutoReady, tocá <b>Enviar prueba</b>. Si no llega nada, fijate que las notificaciones de ntfy estén activadas en la Configuración del iPhone y que ningún modo de concentración las esté silenciando.</li>
+      </ul>
     </div></details>
     <details id="afk-es"><summary>¿Lo puedo usar para quedarme AFK?</summary><div>
       <p>No. Está para que no pierdas una partida mientras buscás algo. Aceptá y volvé: irte perjudica a los otros nueve jugadores.</p>
@@ -223,12 +237,22 @@
       <a href="../"><span data-lang="en">Download</span><span data-lang="es">Descargar</span></a>
       <a href="https://github.com/hercase/autoready"><span data-lang="en">Source code</span><span data-lang="es">Código fuente</span></a>
       <a href="https://github.com/hercase/autoready/blob/main/PRIVACY.md"><span data-lang="en">Privacy</span><span data-lang="es">Privacidad</span></a>
+      <a id="lang-link" href="?lang=es" hreflang="es" lang="es">Español</a>
     </nav>
   </div>
 </footer>
 <script>
   // Un link con #install, #smartscreen, etc. abre esa pregunta en el idioma que se muestre.
   (function () {
+    // El link de idioma apunta al que no se esta mostrando (resuelto en el <head>), y la descarga sigue en el mismo.
+    var es = document.documentElement.lang === "es", other = es ? "en" : "es";
+    var langLink = document.getElementById("lang-link");
+    langLink.href = "?lang=" + other; langLink.hreflang = other; langLink.lang = other;
+    langLink.textContent = es ? "English" : "Español";
+    if (es || /[?&]lang=en\b/.test(location.search)) {
+      [].forEach.call(document.querySelectorAll('a[href="../"]'), function (a) { a.href = "../?lang=" + (es ? "es" : "en"); });
+    }
+
     var map = { install: "instalar", uninstall: "desinstalar", privacy: "privacidad" };
     var id = location.hash.slice(1);
     if (id && document.documentElement.lang === "es") {

@@ -73,7 +73,7 @@
           background: var(--code-bg); border: 1px solid var(--stroke); border-radius: var(--r-ctl); padding: 4px 4px 4px 14px; }
   .code span { font: 600 20px/1 ui-monospace, "Cascadia Mono", "SF Mono", Menlo, Consolas, monospace; letter-spacing: .02em;
                overflow-wrap: anywhere; user-select: all; -webkit-user-select: all; }
-  .code .btn { min-height: 44px; padding: 0 16px; border-radius: var(--r-in); font-size: 15px; background: var(--fill); color: var(--on-fill); }
+  .code .btn { min-height: 44px; padding: 0 16px; border-radius: var(--r-in); font-size: 15px; background: var(--card); color: var(--text); border: 1px solid var(--stroke); }
   .code .btn.done { background: var(--soft); color: var(--accent); }
 
   /* Capturas reales de ntfy en iPhone (recortadas; el aro verde marca donde tocar). */
@@ -85,8 +85,8 @@
   details.manual > div { padding: 0 0 18px; color: var(--muted); font-size: 15px; }
   details.manual p { margin: 0 0 8px; }
 
-  .note { margin: 20px 4px 0; font-size: 14px; color: var(--muted); text-align: center; }
-  .note b { color: var(--text); font-weight: 600; }
+  .help { margin: 12px 0 0; text-align: center; font-size: 15px; }
+  .help a { display: inline-flex; align-items: center; min-height: 44px; padding: 0 8px; color: var(--accent); font-weight: 600; }
   .error { background: var(--card); border: 1px solid var(--stroke); border-radius: var(--r-card); padding: 22px; text-align: center;
            box-shadow: var(--shadow); }
   .error h2 { margin: 0 0 6px; font-size: 18px; }
@@ -94,8 +94,13 @@
   [hidden] { display: none !important; }
   :where(a, button, summary):focus-visible { outline: 2px solid var(--text); outline-offset: 2px; }
 
-  footer { border-top: 1px solid var(--stroke); padding: 12px 16px calc(12px + env(safe-area-inset-bottom)); display: flex; justify-content: center; }
-  footer .mark { display: inline-flex; align-items: center; min-height: 44px; }
+  footer { border-top: 1px solid var(--stroke); padding: 12px 16px calc(12px + env(safe-area-inset-bottom)); font-size: 14px; color: var(--muted); }
+  footer .wrap { max-width: 408px; margin: 0 auto; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0 20px; }
+  footer nav { display: flex; flex-wrap: wrap; gap: 0 18px; }
+  footer a { color: var(--muted); }
+  footer nav a, footer .mark { display: inline-flex; align-items: center; min-height: 44px; }
+  footer nav a { text-decoration: none; }
+  footer nav a:hover { color: var(--text); }
   footer .mark img { height: 20px; width: auto; display: block; }
   @media (prefers-reduced-motion: reduce) {
     .tap::after { animation: none; opacity: 0; }
@@ -138,14 +143,19 @@
       <li class="step"><div>
         <h2 data-t="plusTitle">Tap + at the top right</h2>
         <p data-t="plusText">On the Subscribed topics screen.</p>
-        <img class="shot-ios" src="../assets/ntfy-ios-plus.jpg" width="600" height="245" alt="" data-alt="altPlus">
+        <img class="shot-ios" src="../assets/ntfy-ios-plus.jpg" width="600" height="245" loading="lazy" decoding="async" alt="" data-alt="altPlus">
       </div></li>
       <li class="step"><div>
         <h2 data-t="pasteTitle">Paste the code and tap Subscribe</h2>
         <p data-t="pasteText">Touch and hold the <b>Topic name</b> box, tap <b>Paste</b>, then <b>Subscribe</b> at the top right.</p>
-        <img class="shot-ios" src="../assets/ntfy-ios-add.jpg" width="600" height="535" alt="" data-alt="altAdd">
+        <img class="shot-ios" src="../assets/ntfy-ios-add.jpg" width="600" height="535" loading="lazy" decoding="async" alt="" data-alt="altAdd">
+      </div></li>
+      <li class="step"><div>
+        <h2 data-t="testTitle">Send a test from your PC</h2>
+        <p data-t="testText">In AutoReady, click <b>Send test</b>. When it arrives here, you're done.</p>
       </div></li>
     </ol>
+    <p class="help" id="ios-help"><a class="faq-link" href="../faq/#phone" data-t="iosHelp">Still stuck? See the step-by-step help</a></p>
 
     <ol class="steps" id="android" aria-label="Android" hidden>
       <li class="step"><div>
@@ -159,13 +169,15 @@
         <h2 data-t="allowTitle">Allow notifications</h2>
         <p data-t="allowText">If ntfy asks, tap <b>Allow</b>. That's it.</p>
       </div></li>
+      <li class="step"><div>
+        <h2 data-t="testTitle">Send a test from your PC</h2>
+        <p data-t="testText">In AutoReady, click <b>Send test</b>. When it arrives here, you're done.</p>
+      </div></li>
     </ol>
     <details class="manual" id="android-manual" hidden><summary data-t="manualTitle">Didn't work? Do it by hand</summary><div>
       <p data-t="manualText">Copy the code, open ntfy, tap <b>+</b>, paste it in <b>Topic name</b> and tap <b>Subscribe</b>.</p>
       <div class="code"><span class="topic"></span><button class="btn copy" type="button" data-t="copy">Copy</button></div>
     </div></details>
-
-    <p class="note" data-t="done">Back on your PC, click <b>Send test</b> in AutoReady to check it works.</p>
   </section>
 
   <section id="invalid" class="error" hidden>
@@ -175,16 +187,23 @@
 </main>
 
 <footer>
-  <a class="mark" href="https://keis.studio" target="_blank" rel="noopener"><picture>
-    <source srcset="../assets/keis-wordmark-dark-tight.svg" media="(prefers-color-scheme: dark)">
-    <img src="../assets/keis-wordmark-light-tight.svg" width="105" height="20" alt="keis.studio">
-  </picture></a>
+  <div class="wrap">
+    <a class="mark" href="https://keis.studio" target="_blank" rel="noopener"><picture>
+      <source srcset="../assets/keis-wordmark-dark-tight.svg" media="(prefers-color-scheme: dark)">
+      <img src="../assets/keis-wordmark-light-tight.svg" width="105" height="20" alt="keis.studio">
+    </picture></a>
+    <nav>
+      <a class="faq-link" href="../faq/#phone" data-t="help">Help</a>
+      <a id="lang-link" href="?lang=es" hreflang="es" lang="es">Español</a>
+    </nav>
+  </div>
 </footer>
 
 <script>
 (function () {
-  // Textos en espanol si el celular esta en espanol; ingles para todo lo demas (igual que la app).
-  var es = /^es\b/i.test(navigator.language || "");
+  // Idioma: ?lang=es|en si viene en el link; si no, el del celular (igual que la app y las preguntas).
+  var q = /[?&]lang=(es|en)\b/.exec(location.search);
+  var es = q ? q[1] === "es" : /^es\b/i.test(navigator.language || "");
   var ES = {
     title: "Recibí los avisos en el celular",
     lead: "AutoReady te avisa en el celular cuando acepta una partida, para que vuelvas a tiempo.",
@@ -209,7 +228,10 @@
     open: "Conectar con ntfy",
     allowTitle: "Permití las notificaciones",
     allowText: "Si ntfy pregunta, tocá <b>Permitir</b>. Listo.",
-    done: "En la PC, tocá <b>Enviar prueba</b> en AutoReady para comprobar que funciona.",
+    testTitle: "Mandá una prueba desde la PC",
+    testText: "En AutoReady, tocá <b>Enviar prueba</b>. Cuando te llegue acá, listo.",
+    iosHelp: "¿Seguís trabado? Mirá la ayuda paso a paso",
+    help: "Ayuda",
     errTitle: "A este link le falta tu código",
     errText: "Abrí AutoReady en la PC, activá Avisos al celular, tocá Mostrar código y escaneá el QR con la cámara del celular."
   };
@@ -224,6 +246,15 @@
       if (v) el.innerHTML = v;   // textos propios y fijos, sin datos del usuario
     });
   }
+
+  // Ayuda en el idioma que se muestra; el link al otro idioma conserva el codigo (#ar-xxxxx).
+  [].forEach.call(document.querySelectorAll(".faq-link"), function (a) {
+    a.href = "../faq/" + (es ? "?lang=es" : (q ? "?lang=en" : "")) + "#phone";
+  });
+  var other = es ? "en" : "es", langLink = document.getElementById("lang-link");
+  langLink.href = "?lang=" + other + location.hash;
+  langLink.hreflang = other; langLink.lang = other;
+  langLink.textContent = es ? "English" : "Español";
 
   // El codigo viene despues del # (no se manda a ningun servidor). Formato de AutoReady: ar- y 5 letras o numeros.
   var topic = decodeURIComponent(location.hash.slice(1)).trim();
@@ -260,6 +291,7 @@
     ["ios", "android"].forEach(function (o) {
       document.getElementById(o).hidden = o !== os;
       if (o === "android") document.getElementById("android-manual").hidden = o !== os;
+      else document.getElementById("ios-help").hidden = o !== os;
       document.getElementById("tab-" + o).setAttribute("aria-pressed", String(o === os));
     });
   }
