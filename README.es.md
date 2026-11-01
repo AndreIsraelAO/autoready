@@ -63,7 +63,7 @@ Tocá el ícono para abrir el panel:
 - **El interruptor de arriba** activa o pausa AutoReady. El estado de al lado dice qué está haciendo.
 - **Tecla de pausa:** elegí una tecla (F1–F12 o una combinación) para pausar y reanudar desde cualquier lado, también jugando.
 - **Avisos al celular:** escaneá el QR con la cámara del celular. Una [página corta](https://hercase.github.io/autoready/phone/) te guía para conectar la app gratis [ntfy](https://ntfy.sh) (un toque en Android, copiar y pegar en iPhone).
-- **Más opciones:** iniciar con Windows, actualizaciones automáticas y la versión instalada.
+- **Más opciones:** iniciar con Windows, actualizaciones automáticas (se instalan cuando no hay un juego abierto) y la versión instalada.
 
 Con click derecho en el ícono tenés **Pausar/Reanudar** y **Salir**. El ícono se pone gris cuando está en pausa.
 AutoReady está pensado para quedar activo: la pausa dura hasta que la quites o cierres el juego.

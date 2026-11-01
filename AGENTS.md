@@ -59,9 +59,9 @@ Para sumar un juego: proceso, una captura del popup (sale de las capturas autom�
 |---|---|
 | `src/Program.cs` | Entrada, instancia única (mutex), modo `--test`, espera tras actualizar |
 | `src/TrayApp.cs` | Ícono de la bandeja, menú chico, loop de escaneo, aceptar, avisos, atajo global; implementa `IPanelHost` |
-| `src/Panel.cs` | Panel WPF (click izquierdo en el ícono): interruptor en el encabezado, aviso de protección (solo si falta), atajo, sonido, celular (QR colapsable), "Más opciones" cerrado. Menos filas y menos texto a propósito |
+| `src/Panel.cs` | Panel WPF (click izquierdo en el ícono): interruptor en el encabezado, avisos tipo InfoBar (bienvenida, paso faltante, versión nueva solo si la actualización automática está apagada), atajo, sonido, celular (QR colapsable), "Más opciones" desplegable. Menos filas y menos texto a propósito |
 | `docs/` | Sitio en GitHub Pages (hercase.github.io/autoready): `index.html` una sola pantalla con la descarga directa; `faq/` preguntas frecuentes (qué instala, privacidad; el instalador linkea acá); `phone/` guía para conectar ntfy (el QR del panel abre `phone/#<código>`). Estático, EN/ES, sin scripts de terceros |
-| `src/Controls.cs` | Tema (claro/oscuro, contraste ≥ 4,5:1) e interruptor/botón accesibles (Tab, Enter/Espacio, Narrador) |
+| `src/Controls.cs` | Tema Fluent claro/oscuro (acento verde claro con texto negro en oscuro; `AUTOREADY_THEME=light|dark` lo fuerza para capturas), interruptor, botones (acento/común/sutil/link con estados) e InfoBar, accesibles (Tab, Enter/Espacio, Narrador) |
 | `src/Strings.cs`, `src/Lang.cs` | Todos los textos en español (voseo) e inglés; idioma de Windows o `Language=es|en` en el ini |
 | `src/Games.cs` | Perfil por juego: proceso, carpeta de GSI, clave de estado, colores/forma del botón, textos |
 | `src/Detector.cs` | Detección del botón ACCEPT: por recorte (si hay) o por color y forma |

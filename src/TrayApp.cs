@@ -29,6 +29,7 @@ namespace AutoReady
         string updateMessage;
 
         volatile bool paused;
+        volatile bool installWhenGameCloses;   // actualizacion automatica esperando que se cierre el juego
         volatile bool running = true;
         volatile IntPtr flashedWindow = IntPtr.Zero;   // ultima ventana que titilo en la barra de tareas
         AppState state = AppState.Starting;
@@ -249,7 +250,7 @@ namespace AutoReady
                 Text = text,
                 Kind = kind,
                 Paused = paused,
-                UpdateTag = pendingUpdate != null ? pendingUpdate.Tag : null,
+                UpdateTag = pendingUpdate != null && !cfg.AutoUpdateCheck ? pendingUpdate.Tag : null,
                 UpdateMessage = updateMessage,
             };
             GameProfile missing = MissingProtection();
@@ -294,8 +295,18 @@ namespace AutoReady
                 }
                 bool isNew = pendingUpdate == null || pendingUpdate.Version != r.Version;
                 pendingUpdate = r;
-                updateMessage = S.Available(r.Tag);
                 Log.Write("Updater: hay una version nueva " + r.Tag);
+                if (cfg.AutoUpdateCheck)
+                {
+                    // "Actualizar automaticamente": se instala sola, pero nunca con un juego abierto (podria estar
+                    // buscando partida); en ese caso, al cerrarlo (ver Tick).
+                    if (activeGame == null) { ui.Post(InstallUpdate); return; }
+                    installWhenGameCloses = true;
+                    updateMessage = S.UpdateWhenGameCloses(r.Tag);
+                    PushStatus();
+                    return;
+                }
+                updateMessage = S.Available(r.Tag);
                 PushStatus();
                 if (isNew) Notify(S.ToastUpdate(r.Tag), S.ToastUpdateText, S.ToastUpdateButton, InstallUpdate);
             });
@@ -372,6 +383,11 @@ namespace AutoReady
                     Log.Write(activeGame.Name + " cerrado: se reanuda solo");
                     SetPaused(false);
                 }
+                if (game == null && installWhenGameCloses)
+                {
+                    installWhenGameCloses = false;
+                    ui.Post(InstallUpdate);
+                }
                 activeGame = game;
                 consecutiveHits = 0;
                 gameSeenSince = game == null ? DateTime.MinValue : DateTime.Now;
@@ -399,7 +415,7 @@ namespace AutoReady
             {
                 lastAccept = DateTime.MinValue;
                 SetPaused(true);
-                Notify(S.ToastPaused, S.ToastUnsure, S.ToastResume, () => SetPaused(false));
+                Notify(S.ToastUnsureTitle, S.ToastUnsure(game.Name), S.ToastResume, () => SetPaused(false));
                 return 500;
             }
 
@@ -522,9 +538,9 @@ namespace AutoReady
             bool recentlyAccepted = lastAccept != DateTime.MinValue && (DateTime.Now - lastAccept).TotalMinutes < 5;
             if (oldState == null && newState != null && cfg.NotifyMatchStarted && recentlyAccepted)
             {
-                Notify(S.ToastStarted, S.ToastStartedText(game.Name));
+                Notify(S.ToastStarted(game.Name), S.ToastStartedText);
                 if (cfg.Sound) Beep(true);
-                Notifier.Phone(cfg, S.ToastStarted, S.ToastStartedText(game.Name), "crossed_swords");
+                Notifier.Phone(cfg, S.ToastStarted(game.Name), S.ToastStartedText, "crossed_swords");
             }
             // Arranco una partida que no aceptamos nosotros: o no vimos el popup, o el jugador fue mas rapido.
             // Las capturas de ese momento sirven para ajustar el detector.
@@ -549,8 +565,8 @@ namespace AutoReady
             if ((DateTime.Now - gameSeenSince).TotalSeconds < 90) return;
             gsiHintShown.Add(game.Id);
             Log.Write("GSI " + game.Name + ": abierto hace 90s y no llego nada");
-            if (game.GsiLaunchOption != null) Notify(S.ToastSetupTitle, S.ToastSetupText);
-            else Notify(S.ProtectionTitle, S.ToastRestartGame(game.Name));
+            if (game.GsiLaunchOption != null) Notify(S.ToastSetupTitle(game.Name), S.ToastSetupText);
+            else Notify(S.ToastRestartTitle(game.Name), S.ToastRestartText);
         }
 
         // ---------- estado e interfaz ----------
