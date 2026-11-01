@@ -27,6 +27,7 @@ namespace AutoReady.Tests
 
             Group("Detector", DetectorTests);
             Group("Perfiles de juegos", ProfileTests);
+            Group("Que hacer en cada vuelta", ScanPlanTests);
             Group("Estado de Steam", PresenceTests);
             Group("Opciones de lanzamiento de Steam", SteamConfigTests);
             Group("Codigo del celular", TopicTests);
@@ -127,6 +128,39 @@ namespace AutoReady.Tests
             Check(!GameProfile.Cs2.NewStrategy(GameProfile.Cs2, new FakeHost()).IdleForUpdate, "CS2: no hay reposo confirmado");
             Check(GameProfile.League.NewStrategy(GameProfile.League, new FakeHost()) is ClientApiStrategy, "LoL usa la API del cliente");
             Check(GameProfile.ByAppId(570) == GameProfile.Dota2 && GameProfile.ByAppId(730) == GameProfile.Cs2, "ByAppId");
+        }
+
+        // ---------- que hacer en cada vuelta: GSI manda, el estado de Steam solo aconseja ----------
+
+        // Las secuencias reales que hicieron perder partidas: Steam pegado en "en partida" despues de terminar una
+        // partida o al reabrir el juego. Nunca puede frenar el escaneo por si solo.
+        static void ScanPlanTests()
+        {
+            PresenceState inMatch = PresenceState.InMatch, finding = PresenceState.Finding;
+            ScreenStrategy.ScanPlan p;
+
+            p = ScreenStrategy.Plan(true, true, false, true, finding, 700);
+            Check(p.Stop, "GSI confirma una partida: no se mira la pantalla");
+
+            // Termino la partida (GSI avisa "menu", despues de 30 s ya no hay datos) y Steam sigue en "en partida".
+            p = ScreenStrategy.Plan(false, false, true, true, inMatch, 700);
+            Check(!p.Stop && p.Safe && p.Needed == 3 && p.IntervalMs == 700, "GSI sabe que es el menu: el estado pegado de Steam se ignora");
+
+            // Sin GSI en toda la sesion y Steam en "en partida": se sigue mirando, con mas evidencia y mas calma.
+            p = ScreenStrategy.Plan(false, false, false, true, inMatch, 700);
+            Check(!p.Stop && p.Safe && p.Needed == 4 && p.IntervalMs >= 1000, "solo Steam dice 'en partida': no frena, pide mas evidencia");
+
+            // Buscando: se mira mas seguido (la ventana para aceptar es corta).
+            p = ScreenStrategy.Plan(false, false, false, true, finding, 700);
+            Check(!p.Stop && p.IntervalMs == 300 && p.Needed == 3, "Steam dice 'buscando': escaneo rapido");
+
+            // Con GSI conectado, Steam no entra en la decision.
+            p = ScreenStrategy.Plan(false, true, false, true, inMatch, 700);
+            Check(!p.Stop && !p.Safe && p.Needed == 2 && p.IntervalMs == 700, "con GSI conectado, el estado de Steam no cuenta");
+
+            // Sin usar el estado de Steam (apagado o juego sin estado): modo seguro normal.
+            p = ScreenStrategy.Plan(false, false, false, false, inMatch, 700);
+            Check(!p.Stop && p.Safe && p.Needed == 3 && p.IntervalMs == 700, "sin estado de Steam: modo seguro normal");
         }
 
         // ---------- estado de Steam ----------
@@ -361,9 +395,13 @@ namespace AutoReady.Tests
             string match = "{\"provider\":{\"appid\":570},\"map\":{\"game_state\":\"DOTA_GAMERULES_STATE_GAME_IN_PROGRESS\"},\"auth\":{\"token\":\"secreto\"}}";
             string wrongToken = match.Replace("secreto", "otro");
 
+            DateTime since = DateTime.Now.AddSeconds(-5);
+            Check(!gsi.KnowsMenu(GameProfile.Dota2, since), "sin ningun aviso de GSI: no sabe que esta en el menu");
             Post(port, menu, null);
             Thread.Sleep(200);
             Check(gsi.Connected(GameProfile.Dota2) && !gsi.InMatch(GameProfile.Dota2), "en el menu: conectado y fuera de partida");
+            Check(gsi.KnowsMenu(GameProfile.Dota2, since) && !gsi.KnowsMenu(GameProfile.Dota2, DateTime.Now.AddMinutes(1)),
+                "GSI aviso el menu en esta sesion (y no cuenta un aviso de antes de abrir el juego)");
 
             Post(port, wrongToken, null);
             Thread.Sleep(200);
@@ -376,6 +414,7 @@ namespace AutoReady.Tests
             Post(port, match, null);
             Thread.Sleep(200);
             Check(gsi.InMatch(GameProfile.Dota2), "en partida con el token correcto");
+            Check(!gsi.KnowsMenu(GameProfile.Dota2, since), "en partida: no es el menu");
             Check(!gsi.InMatch(GameProfile.Cs2), "solo el juego que mando el estado");
 
             Post(port, menu, null);

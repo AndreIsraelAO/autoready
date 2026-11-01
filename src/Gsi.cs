@@ -53,6 +53,18 @@ namespace AutoReady
             }
         }
 
+        // GSI hablo desde que se abrio el juego y lo ultimo que dijo es "menu" (el fin de una partida llega como aviso;
+        // en el menu no manda mas nada, asi que Connected se apaga a los 30 s). Mientras no avise una partida nueva,
+        // eso sigue siendo cierto: es mas confiable que cualquier otra fuente.
+        public bool KnowsMenu(GameProfile g, DateTime since)
+        {
+            lock (gate)
+            {
+                GameState s;
+                return states.TryGetValue(g.AppId, out s) && s.Phase == null && s.LastUpdate >= since;
+            }
+        }
+
         public bool InAnyMatch()
         {
             foreach (GameProfile g in GameProfile.All)

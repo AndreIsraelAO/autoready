@@ -63,6 +63,14 @@ Un juego nuevo que entre en uno de esos dos casos es solo un perfil en `Games.cs
 una estrategia nueva sin tocar las existentes. Reglas que toda estrategia respeta: nada si `Host.Paused`, nada en
 partida, revisar las dos cosas justo antes de cada acción, y `StartCooldown()` después de aceptar.
 
+**Quién decide si estás en partida (`ScreenStrategy.Plan`):** GSI manda y el estado de Steam solo aconseja. El estado de
+Steam es una página web cacheada que llega tarde o queda pegada (pasó dos veces: al reabrir el juego y al terminar una
+partida), y equivocarse para el lado de "en partida" es perder el popup sin avisar. Reglas: con GSI conectado o con GSI
+diciendo "menú" en esta sesión (`Gsi.KnowsMenu`), Steam no cuenta; si solo Steam dice "en partida", no frena el escaneo,
+pide 4 detecciones y mira cada 1 s; si dice "buscando", mira cada 300 ms. Solo GSI frena la acción (`MustStop`).
+`StalePresence` descarta además el estado que quedó de la partida anterior. Cualquier cambio acá necesita su caso en
+`ScanPlanTests`.
+
 **Deadlock** (`GameProfile.Deadlock`, proceso `project8`) es un perfil por pantalla **sin GSI**: corre siempre en modo
 seguro. Su detector por color no está medido; falta una captura real del popup y el recorte `templates\deadlock@<alto>.png`.
 Mientras tanto arranca **apagado** (`EnabledByDefault = false`; se prende con `deadlock.Enabled=True` en el ini) y no se

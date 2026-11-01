@@ -53,6 +53,31 @@ namespace AutoReady
             return TimeSpan.MaxValue;
         }
 
+        // Que hacer en esta vuelta segun lo que se sabe. GSI manda; el estado de Steam (una pagina web que Steam cachea
+        // y llega tarde o pegado) solo aconseja: nunca frena el escaneo por si solo, porque equivocarse para ese lado
+        // es perder el popup sin avisar.
+        public class ScanPlan
+        {
+            public bool Stop;        // GSI confirma una partida: no se mira la pantalla
+            public bool Safe;        // sin GSI: mas detecciones, nada de Enter, nunca si estas usando el juego
+            public int Needed;       // detecciones seguidas antes de actuar
+            public int IntervalMs;   // espera hasta la proxima vuelta
+        }
+
+        public static ScanPlan Plan(bool gsiInMatch, bool gsiConnected, bool knowsMenu, bool usesSteam, PresenceState steam, int baseIntervalMs)
+        {
+            ScanPlan p = new ScanPlan { Safe = !gsiConnected, IntervalMs = baseIntervalMs };
+            p.Needed = p.Safe ? 3 : 2;
+            if (gsiInMatch) { p.Stop = true; p.IntervalMs = 1000; return p; }
+            // Con GSI conocido (o conectado) el estado de Steam no entra en la decision.
+            if (!usesSteam || gsiConnected || knowsMenu) return p;
+            // Steam dice "en partida" sin que GSI lo confirme: se sigue mirando, pero se pide mas evidencia y mas calma.
+            if (steam == PresenceState.InMatch) { p.Needed = 4; p.IntervalMs = Math.Max(baseIntervalMs, 1000); }
+            // Buscando: es el unico momento en que aparece el popup, y la ventana para aceptar es corta.
+            else if (steam == PresenceState.Finding) p.IntervalMs = Math.Min(baseIntervalMs, 300);
+            return p;
+        }
+
         // Estado de Steam sin el que quedo de la partida anterior (ver StalePresence).
         PresenceState SteamState
         {
@@ -61,9 +86,14 @@ namespace AutoReady
 
         public override void ResetDetection() { resetRequested = true; }
 
+        // Para quien no debe molestar en partida (actualizador, panel): GSI, y si no lo sabe, el estado de Steam.
         public override bool InMatch
         {
-            get { return Gsi.InMatch(Game) || (Game.UsesPresence && SteamState == PresenceState.InMatch); }
+            get
+            {
+                return Gsi.InMatch(Game) ||
+                       (Game.UsesPresence && !Gsi.KnowsMenu(Game, openedAt) && SteamState == PresenceState.InMatch);
+            }
         }
 
         // En el menu segun el estado de Steam (el unico que distingue "menu" de "buscando"). Sin eso no se sabe: false.
@@ -103,20 +133,22 @@ namespace AutoReady
             if (wasGsiInMatch && !gsiInMatch) stalePresence.MatchEnded();
             if (gsiInMatch) stalePresence.MatchStarted();
             wasGsiInMatch = gsiInMatch;
-            if (gsiInMatch) { Host.SetState(AppState.InMatch); return 1000; }
 
-            // Estado de Steam (Dota sin GSI): en partida no se mira la pantalla. El estado llega con algunos segundos de
-            // demora, asi que solo se usa para frenar, nunca para relajar las reglas del modo seguro.
+            // GSI manda; el estado de Steam solo aconseja (ver Plan).
             stalePresence.Observe(Presence.Current, Presence.Text, freshSession);
-            PresenceState ps = Cfg.UseSteamStatus && Game.UsesPresence && !Gsi.Connected(Game) ? SteamState : PresenceState.Unknown;
-            if (ps == PresenceState.InMatch) { Host.SetState(AppState.InMatch); consecutiveHits = 0; return 1000; }
+            bool knowsMenu = Gsi.KnowsMenu(Game, openedAt);
+            bool usesSteam = Cfg.UseSteamStatus && Game.UsesPresence;
+            PresenceState ps = usesSteam ? SteamState : PresenceState.Unknown;
+            ScanPlan plan = Plan(gsiInMatch, Gsi.Connected(Game), knowsMenu, usesSteam, ps, interval);
+            interval = plan.IntervalMs;
+            if (plan.Stop) { Host.SetState(AppState.InMatch); consecutiveHits = 0; return interval; }
             Host.SetState(AppState.Searching);
-            if (ps == PresenceState.Unknown) MaybeShowGsiHint();
+            if (ps == PresenceState.Unknown && !knowsMenu) MaybeShowGsiHint();
             if (InCooldown) return 500;
 
             // Sin GSI ni estado de Steam no sabemos si ya estas en partida: despues de aceptar seguimos un rato
             // (por si alguien no acepto y volves a la cola) y despues pausamos para no hacer clicks dentro del juego.
-            if (!Gsi.Connected(Game) && ps == PresenceState.Unknown && Host.LastAccept != DateTime.MinValue &&
+            if (!Gsi.Connected(Game) && !knowsMenu && ps == PresenceState.Unknown && Host.LastAccept != DateTime.MinValue &&
                 (DateTime.Now - Host.LastAccept).TotalSeconds > Cfg.FallbackScanSecAfterAccept)
             {
                 Host.ForgetLastAccept();
@@ -138,8 +170,8 @@ namespace AutoReady
             }
 
             // Modo seguro: sin GSI no sabemos si ya hay una partida en curso, asi que se exige mas antes de tocar nada.
-            bool safe = !Gsi.Connected(Game);
-            int needed = safe ? 3 : 2;   // detecciones seguidas
+            bool safe = plan.Safe;
+            int needed = plan.Needed;   // detecciones seguidas
 
             Detector.Hit hit;
             Bitmap decisive = null;   // la captura con la que se decide; se guarda solo si de verdad se acepta
@@ -198,13 +230,18 @@ namespace AutoReady
 
         // Pausado o en partida: se revisa otra vez justo antes de cada accion, porque el usuario puede pausar (atajo,
         // panel) o la partida empezar en el segundo que tarda aceptar.
-        bool MustStop() { return Host.Paused || InMatch; }
+        // Solo GSI frena la accion: el estado de Steam llega tarde y puede estar pegado, y frenar de mas es perder el popup.
+        bool MustStop() { return Host.Paused || Gsi.InMatch(Game); }
 
         bool Accept(Detector.Hit hit, bool safe)
         {
             if (MustStop()) return false;
-            Win32.Focus(hwnd);
-            Thread.Sleep(250);
+            // Ya al frente (lo normal si estas jugando): no hace falta esperar.
+            if (Win32.GetForegroundWindow() != hwnd)
+            {
+                Win32.Focus(hwnd);
+                Thread.Sleep(250);
+            }
             // Si Windows no dejo traer el juego al frente, no se manda nada: la tecla o el click irian a otra ventana.
             if (Win32.GetForegroundWindow() != hwnd)
             {
