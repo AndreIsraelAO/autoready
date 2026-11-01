@@ -28,6 +28,9 @@ namespace ReadyUp
         public bool NotifyMatchStarted = true;
         public bool Sound = true;
         public bool AutoUpdateCheck = true;
+        public int HotkeyVk = 0;       // 0 = sin atajo
+        public int HotkeyMods = 0;     // 1 Alt, 2 Ctrl, 4 Shift
+        public bool Welcomed = false;  // la primera vez se abre el panel solo
 
         public readonly Dictionary<string, GameSettings> Games = new Dictionary<string, GameSettings>();
 
@@ -58,6 +61,9 @@ namespace ReadyUp
                 c.NotifyMatchStarted = Bool(kv, "NotifyMatchStarted", c.NotifyMatchStarted);
                 c.Sound = Bool(kv, "Sound", c.Sound);
                 c.AutoUpdateCheck = Bool(kv, "AutoUpdateCheck", c.AutoUpdateCheck);
+                c.HotkeyVk = Int(kv, "HotkeyVk", c.HotkeyVk);
+                c.HotkeyMods = Int(kv, "HotkeyMods", c.HotkeyMods);
+                c.Welcomed = Bool(kv, "Welcomed", c.Welcomed);
 
                 foreach (GameProfile g in GameProfile.All)
                 {
@@ -98,6 +104,9 @@ namespace ReadyUp
             lines.Add("NotifyMatchStarted=" + NotifyMatchStarted);
             lines.Add("Sound=" + Sound);
             lines.Add("AutoUpdateCheck=" + AutoUpdateCheck);
+            lines.Add("HotkeyVk=" + HotkeyVk);
+            lines.Add("HotkeyMods=" + HotkeyMods);
+            lines.Add("Welcomed=" + Welcomed);
             foreach (GameProfile g in GameProfile.All)
             {
                 string p = g.Id + ".";

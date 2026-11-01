@@ -29,6 +29,10 @@ namespace ReadyUp
         [DllImport("user32.dll")] public static extern bool RegisterShellHookWindow(IntPtr hWnd);
         [DllImport("user32.dll", CharSet = CharSet.Unicode)] public static extern uint RegisterWindowMessage(string msg);
         [DllImport("user32.dll")] public static extern bool DestroyIcon(IntPtr hIcon);
+        [DllImport("user32.dll")] public static extern bool RegisterHotKey(IntPtr hWnd, int id, uint mods, uint vk);
+        [DllImport("user32.dll")] public static extern bool UnregisterHotKey(IntPtr hWnd, int id);
+        public const int WM_HOTKEY = 0x0312;
+        public const uint MOD_NOREPEAT = 0x4000;
 
         const uint PW_CLIENTONLY = 0x1, PW_RENDERFULLCONTENT = 0x2;
         const uint MOUSE_DOWN = 0x02, MOUSE_UP = 0x04, KEY_UP = 0x02;

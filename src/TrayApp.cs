@@ -12,19 +12,21 @@ namespace ReadyUp
 {
     enum AppState { Starting, GameClosed, Paused, Searching, InMatch }
 
-    class TrayApp : ApplicationContext
+    class TrayApp : ApplicationContext, IPanelHost
     {
         const string RunKey = @"Software\Microsoft\Windows\CurrentVersion\Run";
+        const int HotkeyId = 1;
 
         readonly Config cfg;
         readonly Gsi gsi;
         readonly HiddenWindow ui;
         readonly NotifyIcon tray;
-        readonly ToolStripMenuItem statusItem, gsiItem, pauseItem, phoneItem, soundItem, matchItem, autostartItem;
-        readonly ToolStripMenuItem updateItem, autoUpdateItem;
+        readonly Panel panel;
+        readonly ToolStripMenuItem pauseItem;
+        readonly Icon iconOn, iconOff, iconWait;
         System.Threading.Timer updateTimer;
         Updater.Release pendingUpdate;
-        readonly Icon iconOn, iconOff, iconWait;
+        string updateMessage;
 
         volatile bool paused;
         volatile bool running = true;
@@ -46,69 +48,36 @@ namespace ReadyUp
 
             ui = new HiddenWindow();
             ui.WindowFlashed += h => { flashedWindow = h; };
+            ui.HotkeyPressed += () => { SetPaused(!paused); Notify(paused ? "ReadyUp en pausa" : "ReadyUp activo", null); Beep(!paused); };
 
-            statusItem = new ToolStripMenuItem("Iniciando...") { Enabled = false };
-            gsiItem = new ToolStripMenuItem("GSI: esperando al juego") { Enabled = false };
-            pauseItem = new ToolStripMenuItem("Pausar", null, (s, e) => TogglePause());
-            phoneItem = new ToolStripMenuItem("Al celular", null, (s, e) => TogglePhone()) { Checked = cfg.NotifyPhone };
-            soundItem = new ToolStripMenuItem("Sonido", null, (s, e) => { cfg.Sound = !cfg.Sound; soundItem.Checked = cfg.Sound; cfg.Save(); }) { Checked = cfg.Sound };
-            matchItem = new ToolStripMenuItem("Cuando arranca la partida", null, (s, e) => { cfg.NotifyMatchStarted = !cfg.NotifyMatchStarted; matchItem.Checked = cfg.NotifyMatchStarted; cfg.Save(); }) { Checked = cfg.NotifyMatchStarted };
-            autostartItem = new ToolStripMenuItem("Iniciar con Windows", null, (s, e) => ToggleAutostart()) { Checked = AutostartEnabled() };
-            updateItem = new ToolStripMenuItem("Actualizar", null, (s, e) => InstallUpdate()) { Visible = false, Font = new Font(SystemFonts.MenuFont, FontStyle.Bold) };
-            autoUpdateItem = new ToolStripMenuItem("Actualizar automaticamente", null, (s, e) => ToggleAutoUpdate()) { Checked = cfg.AutoUpdateCheck };
+            panel = new Panel(this);
 
-            ToolStripMenuItem gamesItem = new ToolStripMenuItem("Juegos");
-            foreach (GameProfile g in GameProfile.All)
-            {
-                GameProfile game = g;
-                ToolStripMenuItem item = new ToolStripMenuItem(g.Name) { Checked = cfg.For(g).Enabled };
-                item.Click += (s, e) =>
-                {
-                    cfg.For(game).Enabled = !cfg.For(game).Enabled;
-                    item.Checked = cfg.For(game).Enabled;
-                    cfg.Save();
-                };
-                gamesItem.DropDownItems.Add(item);
-            }
-
-            ToolStripMenuItem alertsItem = new ToolStripMenuItem("Avisos");
-            alertsItem.DropDownItems.Add(soundItem);
-            alertsItem.DropDownItems.Add(phoneItem);
-            alertsItem.DropDownItems.Add(matchItem);
-
-            ToolStripMenuItem optionsItem = new ToolStripMenuItem("Opciones");
-            optionsItem.DropDownItems.Add(autostartItem);
-            optionsItem.DropDownItems.Add(autoUpdateItem);
-            optionsItem.DropDownItems.Add(new ToolStripMenuItem("Buscar actualizaciones ahora", null, (s, e) => CheckUpdates(true)));
-
-            // Herramientas para cuando algo no anda: solo aparecen abriendo el menu con Shift + click derecho.
-            ToolStripMenuItem diagItem = new ToolStripMenuItem("Diagnostico");
-            diagItem.DropDownItems.Add(gsiItem);
-            diagItem.DropDownItems.Add(new ToolStripMenuItem("Guardar captura (con el popup en pantalla)", null, (s, e) => SaveDebugCapture()));
-            diagItem.DropDownItems.Add(new ToolStripMenuItem("Abrir carpeta de configuracion y logs", null, (s, e) => OpenDataFolder()));
-
+            // Menu chico: lo demas esta en el panel (click izquierdo).
+            pauseItem = new ToolStripMenuItem("Pausar", null, (s, e) => SetPaused(!paused));
             ContextMenuStrip menu = new ContextMenuStrip();
-            menu.Items.Add(new ToolStripMenuItem("ReadyUp v" + Updater.CurrentVersionText) { Enabled = false });
-            menu.Items.Add(statusItem);
-            menu.Items.Add(updateItem);
+            menu.Items.Add(new ToolStripMenuItem("Abrir ReadyUp", null, (s, e) => OpenPanel()) { Font = new Font(SystemFonts.MenuFont, FontStyle.Bold) });
             menu.Items.Add(new ToolStripSeparator());
             menu.Items.Add(pauseItem);
-            menu.Items.Add(gamesItem);
-            menu.Items.Add(alertsItem);
-            menu.Items.Add(optionsItem);
-            menu.Items.Add(diagItem);
             menu.Items.Add(new ToolStripSeparator());
-            menu.Items.Add(new ToolStripMenuItem("Hecho por keis.studio", null, (s, e) => Process.Start("https://keis.studio")));
             menu.Items.Add(new ToolStripMenuItem("Salir", null, (s, e) => Quit()));
-            menu.Opening += (s, e) => { diagItem.Visible = (Control.ModifierKeys & Keys.Shift) != 0; };
 
             tray = new NotifyIcon { Icon = iconWait, Text = "ReadyUp", ContextMenuStrip = menu, Visible = true };
-            tray.DoubleClick += (s, e) => TogglePause();
+            tray.MouseClick += (s, e) =>
+            {
+                if (e.Button != MouseButtons.Left) return;
+                PushStatus();
+                panel.TogglePanel();
+            };
+            tray.BalloonTipClicked += (s, e) => OpenPanel();
 
             gsi = new Gsi(cfg.GsiPort);
             foreach (GameProfile g in GameProfile.All) gsi.InstallConfig(g);
             gsi.Start();
             gsi.StateChanged += OnGameStateChanged;
+
+            if (cfg.HotkeyVk != 0 && !RegisterHotkey(cfg.HotkeyVk, cfg.HotkeyMods))
+                Log.Write("Atajo: no se pudo registrar (otra app lo usa)");
+            Shortcut.EnsureStartMenu();
 
             Log.Write("ReadyUp v" + Updater.CurrentVersionText + " iniciado");
             Thread scanner = new Thread(ScanLoop) { IsBackground = true, Name = "scanner" };
@@ -117,6 +86,144 @@ namespace ReadyUp
             // Primer chequeo a los 30 s de arrancar y despues una vez por dia.
             updateTimer = new System.Threading.Timer(_ => { if (cfg.AutoUpdateCheck) CheckUpdates(false); },
                                                      null, TimeSpan.FromSeconds(30), TimeSpan.FromHours(24));
+
+            if (!cfg.Welcomed)
+            {
+                cfg.Welcomed = true;
+                cfg.Save();
+                ui.Post(OpenPanel);
+            }
+        }
+
+        void OpenPanel()
+        {
+            PushStatus();
+            panel.ShowPanel();
+        }
+
+        // ---------- IPanelHost: lo que se cambia desde el panel ----------
+
+        public Config Cfg { get { return cfg; } }
+
+        public void SetPaused(bool value)
+        {
+            paused = value;
+            consecutiveHits = 0;
+            if (!paused) lastAccept = DateTime.MinValue;
+            state = AppState.Starting;   // fuerza a refrescar icono y panel en el proximo tick
+            Log.Write(paused ? "Pausado" : "Reanudado");
+            PushStatus();
+        }
+
+        public void SetPhone(bool on)
+        {
+            cfg.NotifyPhone = on;
+            cfg.Save();
+        }
+
+        public void SendTestPush()
+        {
+            Notifier.Send(cfg, "ReadyUp conectado", "Los avisos funcionan. ¡Buena suerte en la cola!", "white_check_mark");
+        }
+
+        public bool AutostartEnabled
+        {
+            get
+            {
+                using (RegistryKey k = Registry.CurrentUser.OpenSubKey(RunKey))
+                    return k != null && k.GetValue("ReadyUp") != null;
+            }
+        }
+
+        public void SetAutostart(bool on)
+        {
+            using (RegistryKey k = Registry.CurrentUser.CreateSubKey(RunKey))
+            {
+                if (on) k.SetValue("ReadyUp", "\"" + Application.ExecutablePath + "\"");
+                else k.DeleteValue("ReadyUp", false);
+            }
+        }
+
+        public void SetAutoUpdate(bool on)
+        {
+            cfg.AutoUpdateCheck = on;
+            cfg.Save();
+        }
+
+        public void CheckUpdatesNow() { CheckUpdates(true); }
+
+        public void OpenDataFolder()
+        {
+            Directory.CreateDirectory(Config.Dir);
+            Process.Start("explorer.exe", "\"" + Config.Dir + "\"");
+        }
+
+        public string HotkeyText
+        {
+            get
+            {
+                if (cfg.HotkeyVk == 0) return "Elegir tecla";
+                string s = "";
+                if ((cfg.HotkeyMods & 0x2) != 0) s += "Ctrl+";
+                if ((cfg.HotkeyMods & 0x1) != 0) s += "Alt+";
+                if ((cfg.HotkeyMods & 0x4) != 0) s += "Shift+";
+                return s + ((Keys)cfg.HotkeyVk).ToString();
+            }
+        }
+
+        public bool SetHotkey(int vk, int mods)
+        {
+            Win32.UnregisterHotKey(ui.Handle, HotkeyId);
+            if (vk != 0 && !RegisterHotkey(vk, mods))
+            {
+                if (cfg.HotkeyVk != 0) RegisterHotkey(cfg.HotkeyVk, cfg.HotkeyMods);   // vuelve al anterior
+                return false;
+            }
+            cfg.HotkeyVk = vk;
+            cfg.HotkeyMods = mods;
+            cfg.Save();
+            Log.Write("Atajo: " + HotkeyText);
+            return true;
+        }
+
+        bool RegisterHotkey(int vk, int mods)
+        {
+            return Win32.RegisterHotKey(ui.Handle, HotkeyId, (uint)mods | Win32.MOD_NOREPEAT, (uint)vk);
+        }
+
+        // Estado para el panel y el menu; se llama cuando algo cambia.
+        void PushStatus()
+        {
+            GameProfile game = activeGame;
+            AppState s = state;
+            string text;
+            switch (s)
+            {
+                case AppState.Paused: text = "En pausa"; break;
+                case AppState.InMatch: text = "En partida de " + game.Name; break;
+                case AppState.Searching: text = "Esperando partida en " + game.Name; break;
+                default: text = paused ? "En pausa" : "Esperando que abras Dota 2 o CS2"; break;
+            }
+            List<string> games = new List<string>();
+            foreach (GameProfile g in GameProfile.All)
+            {
+                bool open = Win32.FindGameWindow(g.Process) != IntPtr.Zero;
+                games.Add(g.Name + ": " + (open ? "abierto" : "cerrado") + " · GSI " + (gsi.Connected(g) ? "conectado" : "sin datos"));
+            }
+            PanelStatus st = new PanelStatus
+            {
+                Text = text,
+                Good = !paused && (s == AppState.Searching || s == AppState.InMatch),
+                Paused = paused,
+                UpdateTag = pendingUpdate != null ? pendingUpdate.Tag : null,
+                UpdateMessage = updateMessage,
+                Games = string.Join("\n", games.ToArray()),
+            };
+            ui.Post(() =>
+            {
+                pauseItem.Text = paused ? "Reanudar" : "Pausar";
+                panel.Refresh(st);
+            });
         }
 
         // ---------- actualizaciones ----------
@@ -125,9 +232,10 @@ namespace ReadyUp
         {
             if (Updater.IsDevBuild)
             {
-                if (manual) ui.Post(() => MessageBox.Show("Esta es una build de desarrollo (v0.0.0): no se actualiza sola.", "ReadyUp"));
+                if (manual) { updateMessage = "build de desarrollo"; PushStatus(); }
                 return;
             }
+            if (manual) { updateMessage = "buscando…"; PushStatus(); }
             ThreadPool.QueueUserWorkItem(_ =>
             {
                 Updater.Release r = null;
@@ -135,38 +243,36 @@ namespace ReadyUp
                 catch (Exception e)
                 {
                     Log.Write("Updater: no pude consultar GitHub: " + e.Message);
-                    if (manual) ui.Post(() => MessageBox.Show("No pude buscar actualizaciones:\n" + e.Message, "ReadyUp"));
+                    if (manual) { updateMessage = "no se pudo buscar"; PushStatus(); }
                     return;
                 }
                 if (r == null)
                 {
-                    if (manual) ui.Post(() => MessageBox.Show("Ya tenes la ultima version (v" + Updater.CurrentVersionText + ").", "ReadyUp"));
+                    updateMessage = "al día";
+                    PushStatus();
                     return;
                 }
                 bool isNew = pendingUpdate == null || pendingUpdate.Version != r.Version;
                 pendingUpdate = r;
+                updateMessage = r.Tag + " disponible";
                 Log.Write("Updater: hay una version nueva " + r.Tag);
-                ui.Post(() =>
-                {
-                    updateItem.Text = "Actualizar a " + r.Tag;
-                    updateItem.Visible = true;
-                    if (isNew || manual)
-                        tray.ShowBalloonTip(8000, "ReadyUp " + r.Tag + " disponible", "Click derecho en el icono > Actualizar.", ToolTipIcon.Info);
-                });
+                PushStatus();
+                if (isNew) Notify("ReadyUp " + r.Tag + " disponible", "Abrí ReadyUp para actualizar.");
             });
         }
 
-        void InstallUpdate()
+        public void InstallUpdate()
         {
             Updater.Release r = pendingUpdate;
             if (r == null) return;
             if (gsi.InAnyMatch())
             {
-                MessageBox.Show("Estas en partida: actualiza cuando termine.", "ReadyUp");
+                updateMessage = "se actualiza cuando termine la partida";
+                PushStatus();
                 return;
             }
-            updateItem.Enabled = false;
-            updateItem.Text = "Actualizando a " + r.Tag + "...";
+            updateMessage = "actualizando…";
+            PushStatus();
             ThreadPool.QueueUserWorkItem(_ =>
             {
                 try
@@ -178,21 +284,10 @@ namespace ReadyUp
                 catch (Exception e)
                 {
                     Log.Write("Updater: fallo la actualizacion: " + e.Message);
-                    ui.Post(() =>
-                    {
-                        updateItem.Enabled = true;
-                        updateItem.Text = "Actualizar a " + r.Tag;
-                        MessageBox.Show("No se pudo actualizar:\n" + e.Message, "ReadyUp");
-                    });
+                    updateMessage = "no se pudo actualizar";
+                    PushStatus();
                 }
             });
-        }
-
-        void ToggleAutoUpdate()
-        {
-            cfg.AutoUpdateCheck = !cfg.AutoUpdateCheck;
-            autoUpdateItem.Checked = cfg.AutoUpdateCheck;
-            cfg.Save();
         }
 
         // ---------- loop de escaneo ----------
@@ -234,10 +329,10 @@ namespace ReadyUp
                 if (game != null) Log.Write(game.Name + " abierto");
                 state = AppState.Starting;
             }
+            if (paused) { SetState(AppState.Paused); return 500; }
             if (game == null) { SetState(AppState.GameClosed); return 2000; }
             MaybeShowGsiHint(game);
 
-            if (paused) { SetState(AppState.Paused); return 500; }
             if (gsi.InMatch(game)) { SetState(AppState.InMatch); return 1000; }
             SetState(AppState.Searching);
             if (DateTime.Now < cooldownUntil) return 500;
@@ -248,9 +343,8 @@ namespace ReadyUp
                 (DateTime.Now - lastAccept).TotalSeconds > cfg.FallbackScanSecAfterAccept)
             {
                 lastAccept = DateTime.MinValue;
-                paused = true;
-                SetState(AppState.Paused);
-                Notify("ReadyUp en pausa", "Sin GSI no se si estas en partida, asi que me pause. Doble click en el icono para rearmar.", false);
+                SetPaused(true);
+                Notify("ReadyUp en pausa", "Sin GSI no sé si estás en partida, así que me pausé. Reanudalo desde el panel.");
                 return 500;
             }
 
@@ -291,8 +385,9 @@ namespace ReadyUp
             lastAccept = DateTime.Now;
             cooldownUntil = DateTime.Now.AddSeconds(cfg.CooldownAfterAcceptSec);
             Log.Write(game.Name + ": partida encontrada, click en ACCEPT (" + (rc.X + p.X) + "," + (rc.Y + p.Y) + ")");
-            Notify("¡Partida aceptada!", "ReadyUp acepto tu partida de " + game.Name + ".", true);
-            Notifier.Phone(cfg, "¡Partida aceptada!", "ReadyUp acepto tu partida de " + game.Name + ". ¡Volve a la PC!", "video_game");
+            Notify("Partida aceptada", "ReadyUp aceptó tu partida de " + game.Name + ".");
+            if (cfg.Sound) Beep(true);
+            Notifier.Phone(cfg, "Partida aceptada", "ReadyUp aceptó tu partida de " + game.Name + ". Volvé a la PC.", "video_game");
         }
 
         void OnGameStateChanged(GameProfile game, string oldState, string newState)
@@ -300,7 +395,8 @@ namespace ReadyUp
             bool recentlyAccepted = lastAccept != DateTime.MinValue && (DateTime.Now - lastAccept).TotalMinutes < 5;
             if (oldState == null && newState != null && cfg.NotifyMatchStarted && recentlyAccepted)
             {
-                Notify(game.MatchStartedTitle, game.MatchStartedText, true);
+                Notify(game.MatchStartedTitle, game.MatchStartedText);
+                if (cfg.Sound) Beep(true);
                 Notifier.Phone(cfg, game.MatchStartedTitle, game.MatchStartedText, "crossed_swords");
             }
             if (newState != null) lastAccept = DateTime.MinValue;   // ya estamos en partida
@@ -312,8 +408,8 @@ namespace ReadyUp
             if ((DateTime.Now - gameSeenSince).TotalSeconds < 90) return;
             gsiHintShown.Add(game.Id);
             Log.Write("GSI " + game.Name + ": abierto hace 90s y no llego nada");
-            Notify("Activa GSI para mas seguridad",
-                   game.LaunchOptionHint ?? ("Reinicia " + game.Name + " para que cargue la integracion de ReadyUp."), false);
+            Notify("Activá GSI para más seguridad",
+                   game.LaunchOptionHint ?? ("Reiniciá " + game.Name + " para que cargue la integración de ReadyUp."));
         }
 
         // ---------- estado e interfaz ----------
@@ -322,80 +418,37 @@ namespace ReadyUp
         {
             if (s == state) return;
             state = s;
-            GameProfile game = activeGame;
             ui.Post(() =>
             {
-                string name = game != null ? game.Name : "";
-                string text;
-                Icon icon;
-                switch (s)
-                {
-                    case AppState.GameClosed: text = "Esperando a que abras un juego"; icon = iconWait; break;
-                    case AppState.Paused: text = "En pausa"; icon = iconOff; break;
-                    case AppState.InMatch: text = name + ": en partida (no escanea)"; icon = iconOn; break;
-                    default: text = name + ": esperando partida"; icon = iconOn; break;
-                }
-                statusItem.Text = text;
-                pauseItem.Text = paused ? "Armar" : "Pausar";
-                gsiItem.Text = game == null ? "GSI: esperando al juego" : (gsi.Connected(game) ? "GSI: conectado" : "GSI: no conectado");
+                Icon icon = s == AppState.Paused ? iconOff : (s == AppState.GameClosed ? iconWait : iconOn);
                 tray.Icon = icon;
-                tray.Text = Truncate("ReadyUp - " + text, 63);
+                string name = activeGame != null ? activeGame.Name : "";
+                string text = s == AppState.Paused ? "en pausa"
+                            : s == AppState.GameClosed ? "esperando un juego"
+                            : s == AppState.InMatch ? "en partida de " + name
+                            : "esperando partida en " + name;
+                tray.Text = Truncate("ReadyUp: " + text, 63);
             });
+            PushStatus();
         }
 
         static string Truncate(string s, int max) { return s.Length <= max ? s : s.Substring(0, max); }
 
-        void TogglePause()
-        {
-            paused = !paused;
-            consecutiveHits = 0;
-            if (!paused) lastAccept = DateTime.MinValue;
-            pauseItem.Text = paused ? "Armar" : "Pausar";
-            state = AppState.Starting;   // fuerza a refrescar icono en el proximo tick
-            Log.Write(paused ? "Pausado por el usuario" : "Armado por el usuario");
-        }
-
-        void TogglePhone()
-        {
-            if (!cfg.NotifyPhone) { ShowPhoneSetup(); return; }
-            cfg.NotifyPhone = false;
-            phoneItem.Checked = false;
-            cfg.Save();
-        }
-
-        void ShowPhoneSetup()
-        {
-            Clipboard.SetText(cfg.NtfyTopic);
-            DialogResult r = MessageBox.Show(
-                "Para recibir avisos en el celular:\n\n" +
-                "1. Instala la app gratuita \"ntfy\" (Android / iPhone).\n" +
-                "2. Toca \"+\" y pega este topic (ya esta copiado):\n\n" +
-                "        " + cfg.NtfyTopic + "\n\n" +
-                "3. Servidor: dejalo en ntfy.sh y toca Subscribe.\n\n" +
-                "No compartas el topic: quien lo sepa puede leer tus avisos.\n\n" +
-                "¿Activo los avisos y te mando uno de prueba?",
-                "ReadyUp - Conectar celular", MessageBoxButtons.YesNo, MessageBoxIcon.Information);
-            if (r != DialogResult.Yes) return;
-            cfg.NotifyPhone = true;
-            phoneItem.Checked = true;
-            cfg.Save();
-            Notifier.Send(cfg, "ReadyUp conectado", "Los avisos funcionan. ¡Buena suerte en la cola!", "white_check_mark");
-        }
-
-        void SaveDebugCapture()
+        public void SaveDebugCapture()
         {
             IntPtr hwnd;
             GameProfile game = FindRunningGame(out hwnd);
             if (game == null)
             {
-                MessageBox.Show("Sirve para revisar la deteccion: abri Dota 2 o CS2, busca partida y usalo cuando aparezca el popup de ACCEPT.", "ReadyUp");
+                MessageBox.Show("Sirve para revisar la detección: abrí Dota 2 o CS2, buscá partida y usalo cuando aparezca el popup de ACCEPT.", "ReadyUp");
                 return;
             }
             using (Bitmap shot = Win32.Capture(hwnd))
             {
-                if (shot == null) { MessageBox.Show("No pude capturar " + game.Name + " (¿esta minimizado?).", "ReadyUp"); return; }
+                if (shot == null) { MessageBox.Show("No pude capturar " + game.Name + " (¿está minimizado?).", "ReadyUp"); return; }
                 Detector.Settings ds = cfg.For(game).Detector;
                 Detector.Hit hit = Detector.Find(shot, ds);
+                Directory.CreateDirectory(Config.Dir);
                 string file = Path.Combine(Config.Dir, "captura-" + game.Id + "-" + DateTime.Now.ToString("yyyyMMdd-HHmmss") + ".png");
                 using (Bitmap annotated = Detector.Annotate(shot, hit, ds))
                     annotated.Save(file);
@@ -404,46 +457,34 @@ namespace ReadyUp
             }
         }
 
-        static void OpenDataFolder()
+        void Notify(string title, string text)
         {
-            Directory.CreateDirectory(Config.Dir);
-            Process.Start("explorer.exe", "\"" + Config.Dir + "\"");
+            ui.Post(() => tray.ShowBalloonTip(4000, title, string.IsNullOrEmpty(text) ? " " : text, ToolTipIcon.None));
         }
 
-        static bool AutostartEnabled()
+        // Dos tonos subiendo = activo / partida; uno bajo = pausa.
+        static void Beep(bool up)
         {
-            using (RegistryKey k = Registry.CurrentUser.OpenSubKey(RunKey))
-                return k != null && k.GetValue("ReadyUp") != null;
-        }
-
-        void ToggleAutostart()
-        {
-            using (RegistryKey k = Registry.CurrentUser.CreateSubKey(RunKey))
+            ThreadPool.QueueUserWorkItem(_ =>
             {
-                if (AutostartEnabled()) k.DeleteValue("ReadyUp", false);
-                else k.SetValue("ReadyUp", "\"" + Application.ExecutablePath + "\"");
-            }
-            autostartItem.Checked = AutostartEnabled();
-        }
-
-        void Notify(string title, string text, bool sound)
-        {
-            ui.Post(() => tray.ShowBalloonTip(5000, title, text, ToolTipIcon.Info));
-            if (sound && cfg.Sound)
-                ThreadPool.QueueUserWorkItem(_ => { Console.Beep(1500, 150); Console.Beep(1900, 200); });
+                if (up) { Console.Beep(1500, 120); Console.Beep(1900, 160); }
+                else Console.Beep(700, 200);
+            });
         }
 
         void Quit()
         {
             running = false;
+            Win32.UnregisterHotKey(ui.Handle, HotkeyId);
             tray.Visible = false;
+            panel.Close();
             Log.Write("ReadyUp cerrado");
             ExitThread();
         }
 
         enum TrayTint { Normal, Gray, Amber }
 
-        // Icono de la bandeja a partir del logo embebido: verde = armado, gris = pausa, ambar = esperando el juego.
+        // Icono de la bandeja a partir del logo embebido: verde = activo, gris = pausa, ambar = esperando el juego.
         static Icon MakeIcon(TrayTint tint)
         {
             int size = SystemInformation.SmallIconSize.Width;
@@ -475,11 +516,13 @@ namespace ReadyUp
         }
     }
 
-    // Ventana invisible: recibe los avisos de "ventana titilando" del shell y sirve para volver al hilo de la UI.
+    // Ventana invisible: recibe los avisos de "ventana titilando" del shell y el atajo global,
+    // y sirve para volver al hilo de la UI.
     class HiddenWindow : Form
     {
         readonly uint shellHookMsg;
         public event Action<IntPtr> WindowFlashed;
+        public event Action HotkeyPressed;
 
         public HiddenWindow()
         {
@@ -501,6 +544,11 @@ namespace ReadyUp
             {
                 Action<IntPtr> h = WindowFlashed;
                 if (h != null) h(m.LParam);
+            }
+            else if (m.Msg == Win32.WM_HOTKEY)
+            {
+                Action h = HotkeyPressed;
+                if (h != null) h();
             }
             base.WndProc(ref m);
         }
