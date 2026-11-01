@@ -43,6 +43,7 @@ namespace AutoReady
         public TrayApp()
         {
             cfg = Config.Load();
+            Samples.Enabled = cfg.SaveSamples;
             iconOn = MakeIcon(false);
             iconOff = MakeIcon(true);
 
@@ -359,6 +360,8 @@ namespace AutoReady
             {
                 if (shot == null) return cfg.ScanIntervalMs;
                 hit = Detector.Find(shot, cfg.For(game).Detector);
+                Samples.Remember(shot);
+                if (hit != null && consecutiveHits + 1 >= 2) Samples.Accepted(shot, game);   // la que dispara el click
             }
             if (hit == null) { consecutiveHits = 0; return cfg.ScanIntervalMs; }
 
@@ -394,7 +397,10 @@ namespace AutoReady
                 if (cfg.Sound) Beep(true);
                 Notifier.Phone(cfg, game.MatchStartedTitle, game.MatchStartedText, "crossed_swords");
             }
-            if (newState != null) lastAccept = DateTime.MinValue;   // ya estamos en partida
+            // Arranco una partida que no aceptamos nosotros: o no vimos el popup, o el jugador fue mas rapido.
+            // Las capturas de ese momento sirven para ajustar el detector.
+            if (oldState == null && newState != null && !paused && !recentlyAccepted) Samples.Missed(game);
+            if (newState != null) { lastAccept = DateTime.MinValue; Samples.Forget(); }   // ya estamos en partida
         }
 
         void MaybeShowGsiHint(GameProfile game)

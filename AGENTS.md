@@ -73,6 +73,10 @@ instalar nada. Consecuencias:
 - Hasta ahora se probó con imágenes sintéticas, con un "Dota falso" (un exe llamado `dota2.exe` que muestra el popup y
   registra clicks) y con requests falsos de GSI. **Falta probar con popups reales** (issue #6). El color del botón de CS2
   es una suposición.
+- **Capturas reales (beta, `src/Samples.cs`):** en `%APPDATA%\AutoReady\samples` se guardan `accepted-<juego>-<fecha>.png`
+  (la imagen con la que se decidió el click) y carpetas `missed-<juego>-<fecha>\` con las imágenes reducidas del último
+  minuto y medio cuando GSI ve que arrancó una partida que AutoReady no aceptó. Sirven de fixtures para #6. Se conservan
+  40 entradas; se apaga con `SaveSamples=False` en el ini.
 - Para revisar el panel sin mostrar ventanas: compilar un programa aparte que cree `Panel` con un `IPanelHost` falso, lo
   muestre fuera de la pantalla y lo guarde con `RenderTargetBitmap`.
 

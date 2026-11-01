@@ -31,6 +31,7 @@ namespace AutoReady
         public int HotkeyVk = 0;       // 0 = sin atajo
         public int HotkeyMods = 0;     // 1 Alt, 2 Ctrl, 4 Shift
         public bool Welcomed = false;  // la primera vez se abre el panel solo
+        public bool SaveSamples = true; // beta: guarda capturas reales para ajustar el detector (ver Samples.cs)
 
         public readonly Dictionary<string, GameSettings> Games = new Dictionary<string, GameSettings>();
 
@@ -64,6 +65,7 @@ namespace AutoReady
                 c.HotkeyVk = Int(kv, "HotkeyVk", c.HotkeyVk);
                 c.HotkeyMods = Int(kv, "HotkeyMods", c.HotkeyMods);
                 c.Welcomed = Bool(kv, "Welcomed", c.Welcomed);
+                c.SaveSamples = Bool(kv, "SaveSamples", c.SaveSamples);
 
                 foreach (GameProfile g in GameProfile.All)
                 {
@@ -117,6 +119,7 @@ namespace AutoReady
             lines.Add("HotkeyVk=" + HotkeyVk);
             lines.Add("HotkeyMods=" + HotkeyMods);
             lines.Add("Welcomed=" + Welcomed);
+            lines.Add("SaveSamples=" + SaveSamples);
             foreach (GameProfile g in GameProfile.All)
             {
                 string p = g.Id + ".";

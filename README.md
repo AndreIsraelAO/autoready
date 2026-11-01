@@ -96,6 +96,14 @@ the other nine players.
 </details>
 
 <details>
+<summary><b>Does it save screenshots?</b></summary>
+<br>
+During the beta, yes, to make detection better: when it accepts a match, and when a match starts that it didn't accept.
+Only the game window, only on your PC (<code>%APPDATA%\AutoReady\samples</code>), and it keeps the latest 40. Nothing is
+uploaded. You can turn it off with <code>SaveSamples=False</code> in <code>%APPDATA%\AutoReady\autoready.ini</code>.
+</details>
+
+<details>
 <summary><b>Does it work with two monitors?</b></summary>
 <br>
 It should, wherever the game is. Multi-monitor setups are still being tested, so if something's off,

@@ -96,6 +96,14 @@ perjudica a los otros nueve jugadores.
 </details>
 
 <details>
+<summary><b>¿Guarda capturas de pantalla?</b></summary>
+<br>
+Durante la beta sí, para mejorar la detección: cuando acepta una partida y cuando arranca una que no aceptó. Solo de la
+ventana del juego, solo en tu PC (<code>%APPDATA%\AutoReady\samples</code>), y guarda las últimas 40. No se sube nada. Se
+puede apagar con <code>SaveSamples=False</code> en <code>%APPDATA%\AutoReady\autoready.ini</code>.
+</details>
+
+<details>
 <summary><b>¿Funciona con dos monitores?</b></summary>
 <br>
 Debería, esté donde esté el juego. Todavía lo estamos probando con varios monitores; si algo falla,
