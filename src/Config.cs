@@ -92,8 +92,12 @@ namespace AutoReady
                 }
             }
             if (string.IsNullOrEmpty(c.GsiToken)) c.GsiToken = Guid.NewGuid().ToString("N");   // 128 bits aleatorios
-            if (string.IsNullOrEmpty(c.NtfyTopic) || !c.NtfyTopic.StartsWith("ar-"))
+            // Un codigo con otro formato (vacio o de una version vieja) se reemplaza; hay que volver a suscribirse en ntfy.
+            if (c.NtfyTopic == null || !System.Text.RegularExpressions.Regex.IsMatch(c.NtfyTopic, "^ar-[a-z0-9]{5}$"))
+            {
                 c.NtfyTopic = NewTopic();
+                c.PhoneTested = false;
+            }
             c.Save();
             return c;
         }
@@ -102,7 +106,6 @@ namespace AutoReady
         // posible para escribirlo o pegarlo facil (ar-k7m2q) y sin letras que se confunden (0/o, 1/l/i).
         // 5 caracteres de 31 = ~28 millones: con 100 mil usuarios, la chance de que a alguien le toque el canal de otro es de
         // ~0,35 % (los avisos son solo "partida aceptada"). Solo numeros necesitaria 9 digitos para lo mismo.
-        // Los codigos viejos (ar- y 8 caracteres) siguen valiendo.
         static string NewTopic()
         {
             const string alphabet = "abcdefghjkmnpqrstuvwxyz23456789";
