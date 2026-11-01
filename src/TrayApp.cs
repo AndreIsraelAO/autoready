@@ -445,7 +445,7 @@ namespace AutoReady
             ExitThread();
         }
 
-        // Icono de la bandeja a partir del logo embebido: verde = activo, gris = en pausa.
+        // Icono de la bandeja a partir del logo embebido: a color = activo, gris apagado = en pausa.
         // (Windows usa este mismo icono en las notificaciones.)
         static Icon MakeIcon(bool gray)
         {
@@ -465,9 +465,9 @@ namespace AutoReady
                         for (int x = 0; x < size; x++)
                         {
                             Color c = bmp.GetPixel(x, y);
-                            if (c.A == 0 || c.G - c.R < 40) continue;   // solo la flecha verde
-                            // Gris claro: tiene que leerse sobre la barra de tareas oscura.
-                            int v = Math.Min(255, (c.R + c.G + c.B) / 3 + 75);
+                            if (c.A == 0 || Math.Max(c.R, Math.Max(c.G, c.B)) < 40) continue;   // el fondo ink queda igual
+                            // El check (blanco y planchas de color) pasa a gris medio: se lee pero se nota apagado.
+                            int v = (c.R + c.G + c.B) / 3 * 55 / 100 + 30;
                             bmp.SetPixel(x, y, Color.FromArgb(c.A, v, v, v));
                         }
                 return Icon.FromHandle(bmp.GetHicon());
