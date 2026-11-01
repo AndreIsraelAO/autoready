@@ -3,24 +3,108 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>AutoReady: questions</title>
-<meta name="description" content="What AutoReady installs, what it sends, and answers to common questions.">
+<title>AutoReady FAQ: install, privacy and how it works</title>
+<meta name="description" content="How the free AutoReady Windows app auto-accepts matches: what it installs, what it sends, phone notifications, ban risk and how to uninstall.">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<meta name="author" content="keis.studio">
+<meta name="application-name" content="AutoReady">
+<meta name="color-scheme" content="light dark">
 <meta name="theme-color" content="#F3F3F3" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#161616" media="(prefers-color-scheme: dark)">
 <link rel="canonical" href="https://hercase.github.io/autoready/faq/">
+<link rel="alternate" hreflang="en" href="https://hercase.github.io/autoready/faq/">
+<link rel="alternate" hreflang="es" href="https://hercase.github.io/autoready/faq/?lang=es">
+<link rel="alternate" hreflang="x-default" href="https://hercase.github.io/autoready/faq/">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://hercase.github.io/autoready/faq/">
 <meta property="og:site_name" content="AutoReady">
-<meta property="og:title" content="AutoReady: questions">
-<meta property="og:description" content="What AutoReady installs, what it sends, and answers to common questions.">
+<meta property="og:locale" content="en_US">
+<meta property="og:locale:alternate" content="es_AR">
+<meta property="og:title" content="AutoReady FAQ: install, privacy and how it works">
+<meta property="og:description" content="What the free AutoReady Windows app installs, what it sends, how phone notifications work, and answers to common questions.">
 <meta property="og:image" content="https://hercase.github.io/autoready/assets/og-image.png">
+<meta property="og:image:secure_url" content="https://hercase.github.io/autoready/assets/og-image.png">
+<meta property="og:image:type" content="image/png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="AutoReady: Queue up. Step away. AutoReady accepts it. Next to the AutoReady panel.">
 <meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="AutoReady FAQ: install, privacy and how it works">
+<meta name="twitter:description" content="What the free AutoReady Windows app installs, what it sends, how phone notifications work, and answers to common questions.">
+<meta name="twitter:image" content="https://hercase.github.io/autoready/assets/og-image.png">
+<meta name="twitter:image:alt" content="AutoReady: Queue up. Step away. AutoReady accepts it. Next to the AutoReady panel.">
 <link rel="icon" type="image/png" sizes="32x32" href="../assets/favicon-32.png">
 <link rel="icon" type="image/png" sizes="192x192" href="../assets/autoready-icon-192.png">
 <link rel="apple-touch-icon" sizes="180x180" href="../assets/apple-touch-icon.png">
+<link rel="manifest" href="../manifest.webmanifest">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "@id": "https://hercase.github.io/autoready/faq/#faq",
+  "url": "https://hercase.github.io/autoready/faq/",
+  "name": "AutoReady FAQ: install, privacy and how it works",
+  "inLanguage": "en",
+  "about": { "@id": "https://hercase.github.io/autoready/#app" },
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "What gets installed?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Everything is for your user only and needs no admin rights: the app in %LOCALAPPDATA%\\Programs\\AutoReady; shortcuts in the Start menu and, if you choose, on the desktop; an entry in Settings → Apps, to uninstall it like any other app; a startup entry for your user if you leave Start with Windows on; a Game State Integration file in the folders of supported games (Dota 2 and CS2 today), which is Valve's official way for tools to know when you're in a match, and the game only talks to AutoReady on your own PC (127.0.0.1); and settings and logs in %APPDATA%\\AutoReady. It never touches game memory or game files. It only changes your Steam launch options if you click Set up, and it keeps the ones you already had." }
+    },
+    {
+      "@type": "Question",
+      "name": "How do I uninstall it?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Settings → Apps → Installed apps → AutoReady → Uninstall. It removes the app, its shortcuts, the startup entry and the Game State Integration files, and asks whether to delete your settings too." }
+    },
+    {
+      "@type": "Question",
+      "name": "Windows shows a SmartScreen warning",
+      "acceptedAnswer": { "@type": "Answer", "text": "Windows warns about apps it hasn't seen much yet, and AutoReady is new. Code signing through the SignPath Foundation is in progress. Until then, click More info → Run anyway. Every release is built from the public source code and scanned with Microsoft Defender." }
+    },
+    {
+      "@type": "Question",
+      "name": "What does AutoReady send, and to whom?",
+      "acceptedAnswer": { "@type": "Answer", "text": "No accounts, analytics or telemetry. It only goes online for these, and each one can be turned off: updates (GitHub), checking for a new version at startup and once a day; your Steam status (Steam Community), reading the public status of the Steam account on this PC (for example \"Finding a match\") while your game is open, to know when you're playing, which you choose in the installer and can turn off later with UseSteamStatus=False in %APPDATA%\\AutoReady\\autoready.ini; and phone notifications (ntfy), only if you turn them on, and only the notification text. During the beta it keeps a few screenshots of the game window on your PC to improve detection; they're never uploaded. Full details are in the privacy policy." }
+    },
+    {
+      "@type": "Question",
+      "name": "Can I get banned for this?",
+      "acceptedAnswer": { "@type": "Answer", "text": "AutoReady only looks at the game window and presses Accept, like you would. It doesn't read or change game memory and doesn't inject anything. Steam's terms do mention automation software, so the risk isn't zero, but nothing here touches the match itself." }
+    },
+    {
+      "@type": "Question",
+      "name": "Does it click anything during a match?",
+      "acceptedAnswer": { "@type": "Answer", "text": "No. Once a match starts it stops looking until you're back in the menu. If it can't tell whether a match started, it pauses itself after accepting and lets you know." }
+    },
+    {
+      "@type": "Question",
+      "name": "Should I leave it on all the time?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Yes, that's the idea: you never know when the match will pop. Pause it with your hotkey or the switch at the top of the panel if you don't want a match; the pause lasts until you resume it or close the game." }
+    },
+    {
+      "@type": "Question",
+      "name": "How do phone notifications work?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Turn on Phone notifications in the AutoReady panel, click Show code and scan the QR with your phone camera. It opens a short setup page that connects the free ntfy app: one tap on Android, copy and paste on iPhone. Always start from that QR: the page only works with your code in the link. Your code looks like ar-k7m2q. Keep it private: anyone with it can read your notifications. To do it by hand on iPhone, install the free ntfy app from the App Store, open it and tap Allow when it asks about notifications; tap + at the top right, paste your code in Topic name and tap Subscribe; then in AutoReady click Send test. If nothing arrives, check that notifications for ntfy are on in the iPhone Settings and that a Focus mode isn't silencing them." }
+    },
+    {
+      "@type": "Question",
+      "name": "Can I use it to stay AFK?",
+      "acceptedAnswer": { "@type": "Answer", "text": "No. It's there so you don't miss a match while you grab something. Accept, then come back: leaving hurts the other nine players." }
+    },
+    {
+      "@type": "Question",
+      "name": "Will you add my game?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Probably, if it shows an Accept button when a match is found. Ask for it on GitHub at https://github.com/hercase/autoready/issues/new?template=game-request.yml; a screenshot of the popup helps a lot." }
+    },
+    {
+      "@type": "Question",
+      "name": "It didn't accept my match",
+      "acceptedAnswer": { "@type": "Answer", "text": "Check that the switch at the top of the panel is on and that there's no Set up button. If it still fails, open an issue at https://github.com/hercase/autoready/issues/new with your game, screen resolution and Windows display scale." }
+    }
+  ]
+}
+</script>
 <style>
   /* Preguntas frecuentes: aca va el detalle que no entra en el instalador ni en el panel. Sin scripts de terceros. */
   :root {
@@ -84,7 +168,21 @@
     var q = /[?&]lang=(es|en)\b/.exec(location.search);
     var es = q ? q[1] === "es" : /^es\b/i.test(navigator.language || "");
     document.documentElement.lang = es ? "es" : "en";
-    if (es) document.title = "AutoReady: preguntas frecuentes";
+    if (es) {
+      // Titulo y descripcion en castellano (pestaña, y quien lea la pagina ya traducida).
+      var title = "Preguntas frecuentes de AutoReady: instalación y privacidad";
+      var desc = "Cómo la app gratis AutoReady acepta tus partidas en Windows: qué instala, qué manda, avisos al celular, riesgo de ban y cómo desinstalarla.";
+      var ogDesc = "Qué instala la app gratis AutoReady para Windows, qué manda, cómo funcionan los avisos al celular y respuestas a preguntas comunes.";
+      var set = function (sel, v) { var m = document.querySelector(sel); if (m) m.setAttribute("content", v); };
+      document.title = title;
+      set('meta[name="description"]', desc);
+      set('meta[property="og:title"]', title);
+      set('meta[name="twitter:title"]', title);
+      set('meta[property="og:description"]', ogDesc);
+      set('meta[name="twitter:description"]', ogDesc);
+      set('meta[property="og:locale"]', "es_AR");
+      set('meta[property="og:locale:alternate"]', "en_US");
+    }
   })();
 </script>
 </head>

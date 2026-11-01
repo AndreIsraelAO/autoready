@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>Page not found · AutoReady</title>
+<meta name="description" content="This page doesn't exist. Download AutoReady, the free Windows app that accepts your matches while you're away.">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#F3F3F3" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#161616" media="(prefers-color-scheme: dark)">
+<link rel="icon" type="image/png" sizes="32x32" href="/autoready/assets/favicon-32.png">
+<link rel="icon" type="image/png" sizes="192x192" href="/autoready/assets/autoready-icon-192.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/autoready/assets/apple-touch-icon.png">
+<style>
+  /* 404: GitHub Pages la sirve en cualquier ruta, por eso todo va con rutas absolutas /autoready/. */
+  :root {
+    color-scheme: light dark;
+    --bg: #F3F3F3; --stroke: #E5E5E5; --text: #1B1B1B; --muted: #5F5F5F;
+    --fill: #1E7A52; --on-fill: #FFFFFF; --accent: #176B47;
+    --glow: rgba(30,122,82,.16);
+    --r-ctl: 8px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #161616; --stroke: #2E2E2E; --text: #FFFFFF; --muted: #B5B5B5;
+      --fill: #1E7A52; --on-fill: #FFFFFF; --accent: #5FD49E;
+      --glow: rgba(63,179,127,.14);
+    }
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0; min-height: 100vh; min-height: 100dvh; display: flex; flex-direction: column; background: var(--bg); color: var(--text);
+    font: 16px/1.5 "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", Arial, sans-serif;
+  }
+  :where(a, button, summary):focus-visible { outline: 2px solid var(--text); outline-offset: 2px; }
+
+  main { flex: 1; display: grid; place-items: center; position: relative; overflow: hidden; padding: 56px 20px; }
+  main::before { content: ""; position: absolute; inset: -30% -10% auto; height: 560px; pointer-events: none;
+                 background: radial-gradient(closest-side, var(--glow), transparent); }
+  .box { position: relative; width: 100%; max-width: 560px; }
+  .brand { display: inline-flex; align-items: center; gap: 12px; font-weight: 600; font-size: 18px; margin-bottom: 28px;
+           color: var(--text); text-decoration: none; }
+  .brand img { width: 36px; height: 36px; border-radius: 8px; }
+  h1 { font-family: "Segoe UI Variable Display", "Segoe UI", system-ui, -apple-system, Roboto, sans-serif;
+       font-size: clamp(30px, 6vw, 44px); line-height: 1.1; letter-spacing: -.02em; margin: 0 0 16px; font-weight: 600; text-wrap: balance; }
+  .lead { font-size: 18px; color: var(--muted); margin: 0 0 28px; text-wrap: pretty; }
+  .btn { display: inline-flex; align-items: center; gap: 10px; min-height: 54px; padding: 0 26px; border-radius: var(--r-ctl);
+         background: var(--fill); color: var(--on-fill); font-weight: 600; font-size: 18px; text-decoration: none;
+         box-shadow: 0 8px 22px rgba(30,122,82,.32); transition: transform .08s ease, filter .15s ease; }
+  .btn:hover { filter: brightness(1.08); }
+  .btn:active { transform: scale(.98); }
+
+  footer { border-top: 1px solid var(--stroke); padding: 12px 20px calc(12px + env(safe-area-inset-bottom)); font-size: 14px; color: var(--muted); }
+  main, footer { padding-left: max(20px, env(safe-area-inset-left)); padding-right: max(20px, env(safe-area-inset-right)); }
+  footer .wrap { max-width: 980px; margin: 0 auto; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0 20px; }
+  footer nav { display: flex; flex-wrap: wrap; gap: 0 18px; }
+  footer a { color: var(--muted); }
+  footer nav a, footer .mark { display: inline-flex; align-items: center; min-height: 44px; }
+  footer nav a { text-decoration: none; }
+  footer nav a:hover { color: var(--text); }
+  footer .mark img { height: 20px; width: auto; display: block; }
+
+  @media (max-width: 820px) {
+    main { padding-top: 40px; padding-bottom: 24px; place-items: start center; }
+    .btn { width: 100%; justify-content: center; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { transition: none !important; animation: none !important; }
+    .btn:active { transform: none; }
+  }
+</style>
+</head>
+<body>
+<main>
+  <div class="box">
+    <a class="brand" href="/autoready/"><img src="/autoready/assets/autoready-icon-192.png" width="36" height="36" alt="">AutoReady</a>
+    <h1 data-t="h1">This page doesn't exist.</h1>
+    <p class="lead" data-t="lead">The link may be old or mistyped. The download is still right here.</p>
+    <a class="btn" id="home" href="/autoready/" data-t="home">Go to the download page</a>
+  </div>
+</main>
+
+<footer>
+  <div class="wrap">
+    <a class="mark" href="https://keis.studio"><picture>
+      <source srcset="/autoready/assets/keis-wordmark-dark-tight.svg" media="(prefers-color-scheme: dark)">
+      <img src="/autoready/assets/keis-wordmark-light-tight.svg" width="105" height="20" alt="keis.studio">
+    </picture></a>
+    <nav>
+      <a id="faq" href="/autoready/faq/" data-t="faq">FAQ</a>
+      <a href="https://github.com/hercase/autoready" data-t="source">Source code</a>
+      <a href="https://github.com/hercase/autoready/blob/main/PRIVACY.md" data-t="privacy">Privacy</a>
+    </nav>
+  </div>
+</footer>
+
+<script>
+(function () {
+  // Idioma: ?lang=es|en; si no, el del navegador (igual que el resto del sitio).
+  var q = /[?&]lang=(es|en)\b/.exec(location.search);
+  var es = q ? q[1] === "es" : /^es\b/i.test(navigator.language || "");
+  if (!es) return;
+  var ES = {
+    h1: "Esta página no existe.",
+    lead: "Puede que el link sea viejo o esté mal escrito. La descarga sigue acá.",
+    home: "Ir a la página de descarga",
+    faq: "Preguntas", source: "Código fuente", privacy: "Privacidad"
+  };
+  document.documentElement.lang = "es";
+  document.title = "Página no encontrada · AutoReady";
+  [].forEach.call(document.querySelectorAll("[data-t]"), function (el) {
+    var v = ES[el.getAttribute("data-t")];
+    if (v) el.textContent = v;
+  });
+  document.getElementById("home").href = "/autoready/?lang=es";
+  document.querySelector(".brand").href = "/autoready/?lang=es";
+  document.getElementById("faq").href = "/autoready/faq/?lang=es";
+})();
+</script>
+</body>
+</html>

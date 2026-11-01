@@ -1,0 +1,7 @@
+# AutoReady (GitHub Pages project site). Crawlers only read robots.txt at the host root,
+# so this file is informational; the pages also carry their own meta robots tags.
+User-agent: *
+Allow: /
+Disallow: /autoready/phone/
+
+Sitemap: https://hercase.github.io/autoready/sitemap.xml

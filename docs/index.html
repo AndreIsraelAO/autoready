@@ -3,26 +3,92 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Queue up. Step away. AutoReady accepts it.</title>
-<meta name="description" content="Free Windows app that accepts your matches while you're away and tells you when to come back.">
+<title>AutoReady: auto-accept your matches on Windows (free)</title>
+<meta name="description" content="Free Windows app that auto-accepts your match while you're away and notifies you on your PC or phone. Works with Dota 2 and CS2. Open source.">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<meta name="author" content="keis.studio">
+<meta name="application-name" content="AutoReady">
+<meta name="color-scheme" content="light dark">
 <meta name="theme-color" content="#F3F3F3" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#161616" media="(prefers-color-scheme: dark)">
 <link rel="canonical" href="https://hercase.github.io/autoready/">
+<link rel="alternate" hreflang="en" href="https://hercase.github.io/autoready/">
+<link rel="alternate" hreflang="es" href="https://hercase.github.io/autoready/?lang=es">
+<link rel="alternate" hreflang="x-default" href="https://hercase.github.io/autoready/">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://hercase.github.io/autoready/">
 <meta property="og:site_name" content="AutoReady">
 <meta property="og:locale" content="en_US">
 <meta property="og:locale:alternate" content="es_AR">
-<meta property="og:title" content="AutoReady">
-<meta property="og:description" content="Queue up. Step away. AutoReady accepts it.">
+<meta property="og:title" content="AutoReady: auto-accept your matches on Windows">
+<meta property="og:description" content="Queue up. Step away. AutoReady accepts it. A free Windows app that accepts your matches while you're away, and tells you when to come back.">
 <meta property="og:image" content="https://hercase.github.io/autoready/assets/og-image.png">
+<meta property="og:image:secure_url" content="https://hercase.github.io/autoready/assets/og-image.png">
+<meta property="og:image:type" content="image/png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="AutoReady: Queue up. Step away. AutoReady accepts it. Next to the AutoReady panel.">
 <meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="AutoReady: auto-accept your matches on Windows">
+<meta name="twitter:description" content="Queue up. Step away. AutoReady accepts it. A free Windows app that accepts your matches while you're away, and tells you when to come back.">
+<meta name="twitter:image" content="https://hercase.github.io/autoready/assets/og-image.png">
+<meta name="twitter:image:alt" content="AutoReady: Queue up. Step away. AutoReady accepts it. Next to the AutoReady panel.">
 <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png">
 <link rel="icon" type="image/png" sizes="192x192" href="assets/autoready-icon-192.png">
 <link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png">
+<link rel="manifest" href="manifest.webmanifest">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "@id": "https://hercase.github.io/autoready/#app",
+  "name": "AutoReady",
+  "description": "A free, open-source Windows tray app that auto-accepts your game's match-found popup while you're away and notifies you with a sound, a Windows notification or on your phone through the free ntfy app.",
+  "url": "https://hercase.github.io/autoready/",
+  "applicationCategory": "UtilitiesApplication",
+  "applicationSubCategory": "Game utility",
+  "operatingSystem": "Windows 10, Windows 11",
+  "downloadUrl": "https://github.com/hercase/autoready/releases/latest/download/AutoReady.exe",
+  "installUrl": "https://github.com/hercase/autoready/releases/latest/download/AutoReady.exe",
+  "softwareHelp": "https://hercase.github.io/autoready/faq/",
+  "license": "https://opensource.org/licenses/MIT",
+  "isAccessibleForFree": true,
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "USD"
+  },
+  "image": "https://hercase.github.io/autoready/assets/autoready-icon-512.png",
+  "screenshot": [
+    "https://hercase.github.io/autoready/assets/panel-en.png",
+    "https://hercase.github.io/autoready/assets/og-image.png"
+  ],
+  "inLanguage": ["en", "es"],
+  "featureList": [
+    "Auto-accepts the match-found popup while you're away",
+    "Supports Dota 2 and Counter-Strike 2, with more games planned",
+    "Never clicks during a match",
+    "Never reads or changes game memory",
+    "Sound, Windows notification and phone notifications through the free ntfy app",
+    "Pause hotkey",
+    "No accounts, ads or tracking",
+    "No admin rights needed"
+  ],
+  "author": {
+    "@type": "Organization",
+    "@id": "https://keis.studio/#org",
+    "name": "keis.studio",
+    "url": "https://keis.studio"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "@id": "https://keis.studio/#org",
+    "name": "keis.studio",
+    "url": "https://keis.studio"
+  },
+  "sameAs": ["https://github.com/hercase/autoready"]
+}
+</script>
 <style>
   /* Pagina de descarga: una sola pantalla. Sin scripts de terceros, sin fuentes externas ni cookies. */
   :root {
@@ -136,7 +202,7 @@
     </div>
     <picture class="shot-wrap">
       <source id="shot-light" media="(prefers-color-scheme: light)" srcset="assets/panel-en-light.png">
-      <img class="shot" id="shot" src="assets/panel-en.png" width="540" height="670" alt="AutoReady panel: waiting for a match in Dota 2, with pause hotkey, sound and phone notification settings">
+      <img class="shot" id="shot" src="assets/panel-en.png" width="540" height="670" decoding="async" fetchpriority="high" alt="AutoReady panel: waiting for a match in Dota 2, with pause hotkey, sound and phone notification settings">
     </picture>
   </div>
 </main>
@@ -182,7 +248,22 @@
     faq: "Preguntas", source: "Código fuente", privacy: "Privacidad"
   };
   document.documentElement.lang = "es";
-  document.title = "Buscá partida. Alejate. AutoReady la acepta.";
+  // Titulo y descripcion en castellano (pestaña, y quien lea la pagina ya traducida).
+  var META = {
+    title: "AutoReady: acepta tus partidas por vos en Windows (gratis)",
+    desc: "App gratis para Windows que acepta tus partidas mientras no estás y te avisa en la PC o el celular. Funciona con Dota 2 y CS2. Código abierto.",
+    ogTitle: "AutoReady: acepta tus partidas automáticamente en Windows",
+    ogDesc: "Buscá partida. Alejate. AutoReady la acepta. Una app gratis para Windows que acepta tus partidas mientras no estás, y te avisa cuándo volver."
+  };
+  document.title = META.title;
+  var setMeta = function (sel, v) { var m = document.querySelector(sel); if (m) m.setAttribute("content", v); };
+  setMeta('meta[name="description"]', META.desc);
+  setMeta('meta[property="og:title"]', META.ogTitle);
+  setMeta('meta[name="twitter:title"]', META.ogTitle);
+  setMeta('meta[property="og:description"]', META.ogDesc);
+  setMeta('meta[name="twitter:description"]', META.ogDesc);
+  setMeta('meta[property="og:locale"]', "es_AR");
+  setMeta('meta[property="og:locale:alternate"]', "en_US");
   [].forEach.call(document.querySelectorAll("[data-t]"), function (el) {
     var v = ES[el.getAttribute("data-t")];
     if (v) el.innerHTML = v;   // textos fijos de esta pagina
