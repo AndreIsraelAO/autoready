@@ -59,3 +59,16 @@ Genera `dist\ReadyUp.exe`. Solo necesitás Windows 10/11 (usa el `csc.exe` de .N
 ## Licencia
 
 MIT
+
+---
+
+<p align="center">
+  <a href="https://keis.studio">
+    <picture>
+      <source media="(prefers-color-scheme: dark)" srcset="assets/keis-wordmark-dark.svg">
+      <img src="assets/keis-wordmark-light.svg" height="36" alt="keis.studio">
+    </picture>
+  </a>
+  <br>
+  <sub>Hecho por <a href="https://keis.studio">keis.studio</a></sub>
+</p>

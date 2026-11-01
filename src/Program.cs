@@ -7,6 +7,8 @@ using System.Windows.Forms;
 
 [assembly: System.Reflection.AssemblyTitle("ReadyUp")]
 [assembly: System.Reflection.AssemblyProduct("ReadyUp - auto-accept for Dota 2 and CS2")]
+[assembly: System.Reflection.AssemblyCompany("keis.studio")]
+[assembly: System.Reflection.AssemblyCopyright("© 2026 keis.studio")]
 // La version la genera build.bat en obj\Version.cs (en los releases sale del tag de git).
 
 namespace ReadyUp

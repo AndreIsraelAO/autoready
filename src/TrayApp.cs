@@ -91,6 +91,7 @@ namespace ReadyUp
             menu.Items.Add(autoUpdateItem);
             menu.Items.Add(new ToolStripMenuItem("Buscar actualizaciones ahora", null, (s, e) => CheckUpdates(true)));
             menu.Items.Add(new ToolStripSeparator());
+            menu.Items.Add(new ToolStripMenuItem("Hecho por keis.studio", null, (s, e) => Process.Start("https://keis.studio")));
             menu.Items.Add(new ToolStripMenuItem("Salir", null, (s, e) => Quit()));
 
             tray = new NotifyIcon { Icon = iconWait, Text = "ReadyUp", ContextMenuStrip = menu, Visible = true };
