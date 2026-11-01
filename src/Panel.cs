@@ -430,11 +430,28 @@ namespace AutoReady
             TextBox code = new TextBox
             {
                 Text = host.Cfg.NtfyTopic, IsReadOnly = true, BorderThickness = new Thickness(0), Background = Brushes.Transparent,
-                Foreground = theme.Text, FontFamily = new FontFamily("Cascadia Mono, Consolas"), FontSize = 14,
-                Padding = new Thickness(0), Margin = new Thickness(0, 4, 0, 0), CaretBrush = Brushes.Transparent,
+                Foreground = theme.Text, FontFamily = new FontFamily("Cascadia Mono, Consolas"), FontSize = 13,
+                Padding = new Thickness(-2, 0, 0, 0), Margin = new Thickness(0, 4, 0, 0), CaretBrush = Brushes.Transparent,
             };
             AutomationProperties.SetName(code, S.PhoneOrCode);
-            right.Children.Add(code);
+            // Boton de copiar al lado (por si se lo manda al celular por chat): el icono pasa a un tilde un momento.
+            TextBlock copyIcon = new TextBlock { Text = "", FontFamily = new FontFamily("Segoe Fluent Icons, Segoe MDL2 Assets"), FontSize = 14, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center };
+            ClickArea copy = null;
+            copy = new ClickArea(theme, copyIcon, () =>
+            {
+                try { Clipboard.SetText(host.Cfg.NtfyTopic); } catch { return; }
+                copyIcon.Text = "";
+                System.Windows.Threading.DispatcherTimer back = new System.Windows.Threading.DispatcherTimer { Interval = TimeSpan.FromSeconds(2) };
+                back.Tick += (s2, e2) => { back.Stop(); copyIcon.Text = ""; };
+                back.Start();
+            }, S.CopyCode) { Width = 26, Height = 26, CornerRadius = new CornerRadius(4), Margin = new Thickness(2, 2, 0, 0), ToolTip = S.CopyCode };
+            copy.SetBackgrounds(Brushes.Transparent, theme.SubtleHover, theme.SubtlePressed);
+            copy.SetLabelColors(copyIcon, theme.TextSecondary, theme.Text, theme.TextSecondary);
+            StackPanel codeRow = new StackPanel { Orientation = Orientation.Horizontal };
+            code.VerticalAlignment = VerticalAlignment.Center;
+            codeRow.Children.Add(code);
+            codeRow.Children.Add(copy);
+            right.Children.Add(codeRow);
 
             TextBlock testText = null;
             ClickArea test = ClickArea.Make(theme, S.PhoneTest, () =>

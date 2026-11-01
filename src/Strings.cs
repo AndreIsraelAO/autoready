@@ -44,6 +44,7 @@ namespace AutoReady
         public static string PhoneShowCode { get { return T("Mostrar código", "Show code"); } }
         public static string PhoneScan { get { return T("Escaneá con la cámara", "Scan with your camera"); } }
         public static string PhoneOrCode { get { return T("o sumá este código en ntfy:", "or add this code in ntfy:"); } }
+        public static string CopyCode { get { return T("Copiar código", "Copy code"); } }
         public static string PhoneSecret { get { return T("No muestres este código en stream.", "Don't show this code on stream."); } }
         public static string PhoneTest { get { return T("Enviar prueba", "Send test"); } }
         public static string PhoneSending { get { return T("Enviando…", "Sending…"); } }

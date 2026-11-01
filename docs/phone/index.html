@@ -19,13 +19,13 @@
     --r-ctl: 8px; --r-in: 6px; --r-card: 12px;
     --bg: #F3F3F3; --card: #FFFFFF; --stroke: #E5E5E5; --text: #1B1B1B; --muted: #5F5F5F;
     --fill: #1E7A52; --on-fill: #FFFFFF; --accent: #176B47; --soft: #E7F3EC; --code-bg: #F3F3F3;
-    --shadow: 0 1px 2px rgba(0,0,0,.04);
+    --shadow: 0 1px 2px rgba(0,0,0,.04); --mock-bg: #F7F7F7; --ring: rgba(30,122,82,.45); --ios-blue: #007AFF;
   }
   @media (prefers-color-scheme: dark) {
     :root {
       --bg: #161616; --card: #222222; --stroke: #2E2E2E; --text: #FFFFFF; --muted: #B5B5B5;
       --fill: #1E7A52; --on-fill: #FFFFFF; --accent: #5FD49E; --soft: #17301F; --code-bg: #2E2E2E;
-      --shadow: none;
+      --shadow: none; --mock-bg: #1B1B1B; --ring: rgba(95,212,158,.55); --ios-blue: #0A84FF;
     }
   }
   * { box-sizing: border-box; }
@@ -71,10 +71,33 @@
 
   .code { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 14px;
           background: var(--code-bg); border: 1px solid var(--stroke); border-radius: var(--r-ctl); padding: 4px 4px 4px 14px; }
-  .code span { font: 600 18px/1 ui-monospace, "Cascadia Mono", "SF Mono", Menlo, Consolas, monospace; letter-spacing: .02em;
+  .code span { font: 600 20px/1 ui-monospace, "Cascadia Mono", "SF Mono", Menlo, Consolas, monospace; letter-spacing: .02em;
                overflow-wrap: anywhere; user-select: all; -webkit-user-select: all; }
   .code .btn { min-height: 44px; padding: 0 16px; border-radius: var(--r-in); font-size: 15px; background: var(--fill); color: var(--on-fill); }
   .code .btn.done { background: var(--soft); color: var(--accent); }
+
+  /* Dibujos de lo que se ve en el celular (no son capturas: maquetas simples y traducibles). */
+  .mock { margin-top: 14px; border: 1px solid var(--stroke); border-radius: 14px; background: var(--mock-bg); overflow: hidden;
+          font: 14px/1.3 -apple-system, system-ui, "Segoe UI", Roboto, sans-serif; color: var(--text); }
+  .mock .bar { display: flex; align-items: center; justify-content: space-between; padding: 12px 14px; border-bottom: 1px solid var(--stroke); font-weight: 600; }
+  .mock .plus { width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; font-size: 22px; font-weight: 400;
+                color: var(--accent); box-shadow: 0 0 0 3px var(--ring); }
+  .mock .empty { padding: 18px 14px; color: var(--muted); font-size: 13px; }
+  .mock .sheet { padding: 14px; display: grid; gap: 10px; }
+  .mock .label { font-size: 12px; color: var(--muted); }
+  .mock .field { border: 1px solid var(--stroke); border-radius: 8px; padding: 9px 10px; background: var(--card);
+                 font: 600 15px ui-monospace, "SF Mono", Menlo, Consolas, monospace; }
+  .mock .go { justify-self: end; padding: 7px 14px; border-radius: 8px; font-weight: 600; color: var(--accent); box-shadow: 0 0 0 3px var(--ring); }
+  .mock.alert { text-align: center; max-width: 270px; margin-left: auto; margin-right: auto; }
+  .mock.alert .q { padding: 16px 16px 12px; font-weight: 600; }
+  .mock.alert .q small { display: block; font-weight: 400; color: var(--muted); font-size: 12px; margin-top: 4px; }
+  .mock.alert .opts { display: grid; grid-template-columns: 1fr 1fr; border-top: 1px solid var(--stroke); }
+  .mock.alert .opts span { padding: 11px 0; color: var(--ios-blue); }
+  .mock.alert .opts span + span { border-left: 1px solid var(--stroke); font-weight: 600; box-shadow: inset 0 0 0 3px var(--ring); border-bottom-right-radius: 13px; }
+  details.manual { margin-top: 16px; background: var(--card); border: 1px solid var(--stroke); border-radius: var(--r-card); padding: 0 18px; }
+  details.manual summary { cursor: pointer; padding: 14px 0; font-weight: 600; min-height: 44px; }
+  details.manual > div { padding: 0 0 18px; color: var(--muted); font-size: 15px; }
+  details.manual p { margin: 0 0 8px; }
 
   .note { margin: 20px 4px 0; font-size: 14px; color: var(--muted); text-align: center; }
   .note b { color: var(--text); font-weight: 600; }
@@ -122,8 +145,19 @@
         <div class="code"><span class="topic"></span><button class="btn copy" type="button" data-t="copy">Copy</button></div>
       </div></li>
       <li class="step"><div>
-        <h2 data-t="pasteTitle">Paste it in ntfy</h2>
-        <p data-t="pasteText">Open ntfy, tap <b>+</b>, paste the code and tap <b>Subscribe</b>. Allow notifications when it asks.</p>
+        <h2 data-t="plusTitle">Open ntfy and tap +</h2>
+        <p data-t="plusText">It's at the top right of the main screen.</p>
+        <div class="mock" aria-hidden="true"><div class="bar"><span>Subscribed topics</span><span class="plus">+</span></div><div class="empty" data-t="mockEmpty">No topics yet</div></div>
+      </div></li>
+      <li class="step"><div>
+        <h2 data-t="pasteTitle">Paste the code and tap Subscribe</h2>
+        <p data-t="pasteText">Touch and hold the <b>Topic name</b> box, tap <b>Paste</b>, then <b>Subscribe</b>. Leave the server as it is.</p>
+        <div class="mock" aria-hidden="true"><div class="sheet"><span class="label">Topic name</span><span class="field topic"></span><span class="go">Subscribe</span></div></div>
+      </div></li>
+      <li class="step"><div>
+        <h2 data-t="allowTitle2">Allow notifications</h2>
+        <p data-t="allowText2">When ntfy asks, tap <b>Allow</b>. Without this, nothing arrives.</p>
+        <div class="mock alert" aria-hidden="true"><div class="q" data-t="mockAsk">“ntfy” Would Like to Send You Notifications<small>Notifications may include alerts, sounds and icon badges.</small></div><div class="opts"><span data-t="mockNo">Don’t Allow</span><span data-t="mockYes">Allow</span></div></div>
       </div></li>
     </ol>
 
@@ -140,6 +174,10 @@
         <p data-t="allowText">If ntfy asks, tap <b>Allow</b>. That's it.</p>
       </div></li>
     </ol>
+    <details class="manual" id="android-manual" hidden><summary data-t="manualTitle">Didn't work? Do it by hand</summary><div>
+      <p data-t="manualText">Copy the code, open ntfy, tap <b>+</b>, paste it in <b>Topic name</b> and tap <b>Subscribe</b>.</p>
+      <div class="code"><span class="topic"></span><button class="btn copy" type="button" data-t="copy">Copy</button></div>
+    </div></details>
 
     <p class="note" data-t="done">Back on your PC, click <b>Send test</b> in AutoReady to check it works.</p>
   </section>
@@ -170,8 +208,17 @@
     copyTitle: "Copiá tu código",
     copyText: "Es tu canal privado. No lo compartas ni lo muestres en streams.",
     copy: "Copiar", copied: "Copiado",
-    pasteTitle: "Pegalo en ntfy",
-    pasteText: "Abrí ntfy, tocá <b>+</b>, pegá el código y tocá <b>Subscribe</b>. Cuando pregunte, permití las notificaciones.",
+    plusTitle: "Abrí ntfy y tocá +",
+    plusText: "Está arriba a la derecha de la pantalla principal.",
+    mockEmpty: "Todavía no hay temas",
+    pasteTitle: "Pegá el código y tocá Subscribe",
+    pasteText: "Mantené apretado el campo <b>Topic name</b>, tocá <b>Pegar</b> y después <b>Subscribe</b>. El servidor dejalo como está.",
+    allowTitle2: "Permití las notificaciones",
+    allowText2: "Cuando ntfy pregunte, tocá <b>Permitir</b>. Sin esto no llega nada.",
+    mockAsk: "“ntfy” quiere enviarte notificaciones<small>Las notificaciones pueden incluir alertas, sonidos y globos en el ícono.</small>",
+    mockNo: "No permitir", mockYes: "Permitir",
+    manualTitle: "¿No funcionó? Hacelo a mano",
+    manualText: "Copiá el código, abrí ntfy, tocá <b>+</b>, pegalo en <b>Topic name</b> y tocá <b>Subscribe</b>.",
     openTitle: "Conectá ntfy",
     openText: "Abre la app gratis ntfy y te suscribe. ¿No la tenés? Primero se abre Google Play: instalala y volvé a tocar.",
     open: "Conectar con ntfy",
@@ -193,29 +240,31 @@
     });
   }
 
-  // El codigo viene despues del # (no se manda a ningun servidor). Formato de AutoReady: ar- y 8 letras o numeros.
+  // El codigo viene despues del # (no se manda a ningun servidor). Formato de AutoReady: autoready-xxxx-xxxx (o ar-xxxxxxxx en los codigos viejos).
   var topic = decodeURIComponent(location.hash.slice(1)).trim();
-  if (!/^ar-[a-z0-9]{8}$/.test(topic)) { document.getElementById("invalid").hidden = false; return; }
+  if (!/^(ar-[a-z0-9]{8}|autoready-[a-z0-9]{4}-[a-z0-9]{4})$/.test(topic)) { document.getElementById("invalid").hidden = false; return; }
   document.getElementById("setup").hidden = false;
-  document.querySelector(".topic").textContent = topic;
+  [].forEach.call(document.querySelectorAll(".topic"), function (el) { el.textContent = topic; });
 
   // Android: un intent abre ntfy y suscribe (ntfy://), o Google Play si no esta instalada.
   document.getElementById("android-open").href =
     "intent://ntfy.sh/" + topic + "#Intent;scheme=ntfy;package=io.heckel.ntfy;end";
 
-  var copyBtn = document.querySelector(".copy");
-  copyBtn.addEventListener("click", function () {
-    function ok() {
-      copyBtn.textContent = T.copied; copyBtn.classList.add("done");
-      setTimeout(function () { copyBtn.textContent = T.copy; copyBtn.classList.remove("done"); }, 2500);
-    }
-    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(topic).then(ok, fallback);
-    else fallback();
-    function fallback() {
-      var r = document.createRange(); r.selectNodeContents(document.querySelector(".topic"));
-      var s = getSelection(); s.removeAllRanges(); s.addRange(r);
-      try { if (document.execCommand("copy")) ok(); } catch (e) {}
-    }
+  [].forEach.call(document.querySelectorAll(".copy"), function (copyBtn) {
+    var span = copyBtn.parentNode.querySelector(".topic");
+    copyBtn.addEventListener("click", function () {
+      function ok() {
+        copyBtn.textContent = T.copied; copyBtn.classList.add("done");
+        setTimeout(function () { copyBtn.textContent = T.copy; copyBtn.classList.remove("done"); }, 2500);
+      }
+      function fallback() {
+        var r = document.createRange(); r.selectNodeContents(span);
+        var sel = getSelection(); sel.removeAllRanges(); sel.addRange(r);
+        try { if (document.execCommand("copy")) ok(); } catch (e) {}
+      }
+      if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(topic).then(ok, fallback);
+      else fallback();
+    });
   });
 
   // Pestaña segun el celular; se puede cambiar a mano si la deteccion falla.
@@ -224,6 +273,7 @@
   function show(os) {
     ["ios", "android"].forEach(function (o) {
       document.getElementById(o).hidden = o !== os;
+      if (o === "android") document.getElementById("android-manual").hidden = o !== os;
       document.getElementById("tab-" + o).setAttribute("aria-pressed", String(o === os));
     });
   }

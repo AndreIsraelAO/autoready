@@ -99,7 +99,10 @@ namespace AutoReady
         }
 
         // Los topics de ntfy.sh son publicos: quien sabe el nombre lo lee. Por eso uno aleatorio por usuario,
-        // corto para poder escribirlo en el celular y sin letras que se confunden (0/o, 1/l/i).
+        // con el nombre de la app adelante (asi se reconoce en la lista de ntfy) y dos grupos de 4 para leerlo de un vistazo
+        // (autoready-k7m2-q9xp), sin letras que se confunden (0/o, 1/l/i). Un numero corto no sirve: dos usuarios caerian en
+        // el mismo canal y cualquiera podria adivinarlo. Los codigos viejos (ar-xxxxxxxx) siguen valiendo: cambiarlos
+        // cortaria los avisos de quien ya se suscribio.
         static string NewTopic()
         {
             const string alphabet = "abcdefghjkmnpqrstuvwxyz23456789";
@@ -108,7 +111,7 @@ namespace AutoReady
                 rng.GetBytes(rnd);
             char[] chars = new char[8];
             for (int i = 0; i < 8; i++) chars[i] = alphabet[rnd[i] % alphabet.Length];
-            return "ar-" + new string(chars);   // 31^8: unos 850 mil millones de combinaciones
+            return "autoready-" + new string(chars, 0, 4) + "-" + new string(chars, 4, 4);   // 31^8: unos 850 mil millones de combinaciones
         }
 
         public void Save()

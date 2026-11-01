@@ -120,8 +120,8 @@ instalar nada. Consecuencias:
 - Todo texto visible va en `Strings.cs` (`S.*`), en español rioplatense (voseo) e inglés; nunca literales en la UI. Los logs quedan en un solo idioma. Textos genéricos: el nombre del juego entra como parámetro.
 
 ## Celular (ntfy)
-- Código aleatorio `ar-xxxxxxxx` (sin letras ambiguas). El QR del panel es `https://ntfy.sh/<código>`, que cualquier cámara
-  abre y que ya suscribe en la versión web.
+- Código aleatorio `autoready-xxxx-xxxx` (los viejos `ar-xxxxxxxx` siguen valiendo; sin letras ambiguas). El QR del panel abre `docs/phone/#<código>`: en Android
+  conecta ntfy de un toque y en iPhone es un tutorial con dibujos (instalar, copiar, +, pegar, Subscribe, permitir).
 - La app de ntfy para **iPhone no soporta links ni QR**; en Android funciona `ntfy://ntfy.sh/<código>`. Mejorar esto es #1.
 
 ## Trampas conocidas
