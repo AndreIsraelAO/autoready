@@ -3,22 +3,35 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>AutoReady: auto-accept your Steam matches</title>
+<title>Queue up. Step away. AutoReady accepts it.</title>
 <meta name="description" content="Free Windows app that accepts your Dota 2 and CS2 matches while you're away and tells you when to come back.">
 <meta name="theme-color" content="#F3F3F3" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#161616" media="(prefers-color-scheme: dark)">
+<link rel="canonical" href="https://hercase.github.io/autoready/">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://hercase.github.io/autoready/">
+<meta property="og:site_name" content="AutoReady">
+<meta property="og:locale" content="en_US">
+<meta property="og:locale:alternate" content="es_AR">
 <meta property="og:title" content="AutoReady">
-<meta property="og:description" content="Queue up. Step away. AutoReady accepts the match for you.">
-<meta property="og:image" content="https://hercase.github.io/autoready/assets/autoready-icon-512.png">
-<link rel="icon" href="assets/autoready-icon-192.png">
-<link rel="apple-touch-icon" href="assets/autoready-icon-192.png">
+<meta property="og:description" content="Queue up. Step away. AutoReady accepts it.">
+<meta property="og:image" content="https://hercase.github.io/autoready/assets/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="AutoReady: Queue up. Step away. AutoReady accepts it. Next to the AutoReady panel.">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png">
+<link rel="icon" type="image/png" sizes="192x192" href="assets/autoready-icon-192.png">
+<link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png">
 <style>
   /* Pagina de descarga: una sola pantalla. Sin scripts de terceros, sin fuentes externas ni cookies. */
   :root {
+    color-scheme: light dark;
     --bg: #F3F3F3; --stroke: #E5E5E5; --text: #1B1B1B; --muted: #5F5F5F;
     --fill: #1E7A52; --on-fill: #FFFFFF; --accent: #176B47;
     --shadow: 0 1px 2px rgba(0,0,0,.04), 0 16px 40px rgba(0,0,0,.10);
     --glow: rgba(30,122,82,.16);
+    --r-ctl: 8px; --r-in: 6px; --r-card: 12px;
   }
   @media (prefers-color-scheme: dark) {
     :root {
@@ -31,10 +44,10 @@
   * { box-sizing: border-box; }
   html { -webkit-text-size-adjust: 100%; }
   body {
-    margin: 0; min-height: 100vh; display: flex; flex-direction: column; background: var(--bg); color: var(--text);
-    font: 17px/1.55 "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", Arial, sans-serif;
+    margin: 0; min-height: 100vh; min-height: 100dvh; display: flex; flex-direction: column; background: var(--bg); color: var(--text);
+    font: 16px/1.5 "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", Arial, sans-serif;
   }
-  a:focus-visible { outline: 2px solid var(--text); outline-offset: 3px; border-radius: 6px; }
+  :where(a, button, summary):focus-visible { outline: 2px solid var(--text); outline-offset: 2px; }
 
   main { flex: 1; display: grid; place-items: center; position: relative; overflow: hidden; padding: 56px 20px; }
   main::before { content: ""; position: absolute; inset: -30% -10% auto; height: 560px; pointer-events: none;
@@ -42,46 +55,55 @@
   .hero { position: relative; width: 100%; max-width: 980px; display: grid; grid-template-columns: minmax(0, 1fr) 320px;
           gap: 64px; align-items: center; }
 
-  .brand { display: flex; align-items: center; gap: 12px; font-weight: 650; font-size: 20px; margin-bottom: 26px; }
-  .brand img { width: 40px; height: 40px; border-radius: 10px; }
-  h1 { font-size: clamp(36px, 6vw, 54px); line-height: 1.05; letter-spacing: -.025em; margin: 0 0 16px; font-weight: 700; }
+  .brand { display: flex; align-items: center; gap: 12px; font-weight: 600; font-size: 18px; margin-bottom: 28px; }
+  .brand img { width: 36px; height: 36px; border-radius: 8px; }
+  h1 { font-family: "Segoe UI Variable Display", "Segoe UI", system-ui, -apple-system, Roboto, sans-serif;
+       font-size: clamp(32px, 7vw, 54px); line-height: 1.08; letter-spacing: -.02em; margin: 0 0 16px; font-weight: 600;
+       text-wrap: balance; }
   h1 em { font-style: normal; color: var(--accent); }
-  .lead { font-size: 19px; color: var(--muted); margin: 0 0 28px; max-width: 30em; }
+  .lead { font-size: 18px; color: var(--muted); margin: 0 0 28px; max-width: 30em; }
+  .lead, details p { text-wrap: pretty; }
 
-  .btn { display: inline-flex; align-items: center; gap: 10px; min-height: 54px; padding: 0 26px; border-radius: 12px;
-         background: var(--fill); color: var(--on-fill); font-weight: 650; font-size: 18px; text-decoration: none;
+  .btn { display: inline-flex; align-items: center; gap: 10px; min-height: 54px; padding: 0 26px; border-radius: var(--r-ctl);
+         background: var(--fill); color: var(--on-fill); font-weight: 600; font-size: 18px; text-decoration: none;
          box-shadow: 0 8px 22px rgba(30,122,82,.32); transition: transform .08s ease, filter .15s ease; }
   .btn:hover { filter: brightness(1.08); }
   .btn:active { transform: scale(.98); }
   .btn svg { width: 22px; height: 22px; }
   .meta { margin: 12px 0 0; color: var(--muted); font-size: 14px; }
   .meta a { color: var(--muted); }
+  .meta a, .ask a { padding: 12px 0; margin: -12px 0; }
+  .smart { margin-top: 6px; }
 
   .points { list-style: none; padding: 0; margin: 32px 0 0; display: grid; gap: 10px; font-size: 16px; }
   .points li { display: flex; gap: 10px; align-items: flex-start; }
   .points svg { width: 20px; height: 20px; flex: none; margin-top: 2px; color: var(--accent); }
-  .ask { margin: 22px 0 0; font-size: 15px; color: var(--muted); }
+  .ask { margin: 22px 0 0; font-size: 14px; color: var(--muted); }
   .ask a { color: var(--accent); font-weight: 600; text-decoration: none; }
   .ask a:hover { text-decoration: underline; }
 
-  .shot { justify-self: center; width: 100%; height: auto; max-width: 320px; display: block; border-radius: 14px;
+  .shot { justify-self: center; width: 100%; height: auto; max-width: 320px; display: block; border-radius: var(--r-card);
           border: 1px solid var(--stroke); box-shadow: var(--shadow); }
 
-  footer { border-top: 1px solid var(--stroke); padding: 22px 20px calc(22px + env(safe-area-inset-bottom)); font-size: 14px; color: var(--muted); }
-  footer .wrap { max-width: 980px; margin: 0 auto; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 20px; }
-  footer nav { display: flex; flex-wrap: wrap; gap: 18px; }
+  footer { border-top: 1px solid var(--stroke); padding: 12px 20px calc(12px + env(safe-area-inset-bottom)); font-size: 14px; color: var(--muted); }
+  main, footer { padding-left: max(20px, env(safe-area-inset-left)); padding-right: max(20px, env(safe-area-inset-right)); }
+  footer .wrap { max-width: 980px; margin: 0 auto; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0 20px; }
+  footer nav { display: flex; flex-wrap: wrap; gap: 0 18px; }
   footer a { color: var(--muted); }
+  footer nav a, footer .mark { display: inline-flex; align-items: center; min-height: 44px; }
   footer nav a { text-decoration: none; }
   footer nav a:hover { color: var(--text); }
-  footer .mark img { height: 20px; display: block; }
-  footer .mark .dark { display: none; }
-  @media (prefers-color-scheme: dark) { footer .mark .dark { display: block; } footer .mark .light { display: none; } }
-  .signing { width: 100%; margin: 0; font-size: 12px; }
+  footer .mark img { height: 20px; width: auto; display: block; }
 
   @media (max-width: 820px) {
-    main { padding: 40px 20px; place-items: start center; }
+    main { padding-top: 40px; padding-bottom: 24px; place-items: start center; }
     .hero { grid-template-columns: 1fr; gap: 40px; }
+    .lead { font-size: 17px; }
     .shot { max-width: 300px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { transition: none !important; animation: none !important; scroll-behavior: auto !important; }
+    .btn:active { transform: none; }
   }
 </style>
 </head>
@@ -89,37 +111,37 @@
 <main>
   <div class="hero">
     <div>
-      <div class="brand"><img src="assets/autoready-icon-192.png" alt="">AutoReady</div>
-      <h1 data-t="h1">Queue up. Step away.<br><em>We'll accept it.</em></h1>
+      <div class="brand"><img src="assets/autoready-icon-192.png" width="36" height="36" alt="">AutoReady</div>
+      <h1 data-t="h1">Queue up. Step away.<br><em>AutoReady accepts it.</em></h1>
       <p class="lead" data-t="lead">A free Windows app that accepts your Dota 2 and CS2 matches while you're away, and tells you when to come back.</p>
       <a class="btn" href="https://github.com/hercase/autoready/releases/latest/download/AutoReady.exe">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
         <span data-t="download">Download for Windows</span>
       </a>
       <p class="meta"><span data-t="meta">Free · Windows 10 and 11 · Installs in seconds, no admin rights</span> · <a href="faq/#install" data-t="what">What gets installed</a></p>
+      <p class="meta smart" data-t="smart"><a href="faq/#smartscreen">Windows may warn you</a> because the app is new: click More info → Run anyway.</p>
       <ul class="points">
         <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg><span data-t="p1">Never clicks during a match</span></li>
-        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg><span data-t="p2">Doesn't read or change the game, it just presses Accept</span></li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg><span data-t="p2">Never touches game memory. It just clicks Accept</span></li>
         <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg><span data-t="p3">No accounts, ads or tracking. Open source</span></li>
       </ul>
       <p class="ask"><span data-t="askQ">Play something else?</span> <a href="https://github.com/hercase/autoready/issues/new?template=game-request.yml" data-t="askA">Ask for your game →</a></p>
     </div>
-    <img class="shot" id="shot" src="assets/panel-en.png" width="540" height="685" alt="The AutoReady panel">
+    <img class="shot" id="shot" src="assets/panel-en.png" width="540" height="685" alt="AutoReady panel: waiting for a match in Dota 2, with pause hotkey, sound and phone notification settings">
   </div>
 </main>
 
 <footer>
   <div class="wrap">
-    <a class="mark" href="https://keis.studio" aria-label="keis.studio">
-      <img class="light" src="assets/keis-wordmark-light-tight.svg" alt="keis.studio">
-      <img class="dark" src="assets/keis-wordmark-dark-tight.svg" alt="keis.studio">
-    </a>
+    <a class="mark" href="https://keis.studio"><picture>
+      <source srcset="assets/keis-wordmark-dark-tight.svg" media="(prefers-color-scheme: dark)">
+      <img src="assets/keis-wordmark-light-tight.svg" width="105" height="20" alt="keis.studio">
+    </picture></a>
     <nav>
       <a href="faq/" data-t="faq">FAQ</a>
       <a href="https://github.com/hercase/autoready" data-t="source">Source code</a>
       <a href="https://github.com/hercase/autoready/blob/main/PRIVACY.md" data-t="privacy">Privacy</a>
     </nav>
-    <p class="signing">Free code signing provided by <a href="https://about.signpath.io">SignPath.io</a>, certificate by <a href="https://signpath.org">SignPath Foundation</a>.</p>
   </div>
 </footer>
 
@@ -128,25 +150,28 @@
   // Espanol si el navegador esta en espanol (igual que la app); ingles para todo lo demas.
   if (!/^es\b/i.test(navigator.language || "")) return;
   var ES = {
-    h1: "Buscá partida. Andá a hacer otra cosa.<br><em>Nosotros la aceptamos.</em>",
+    h1: "Buscá partida. Alejate.<br><em>AutoReady la acepta.</em>",
     lead: "Una app gratis para Windows que acepta tus partidas de Dota 2 y CS2 mientras no estás, y te avisa cuándo volver.",
     download: "Descargar para Windows",
     meta: "Gratis · Windows 10 y 11 · Se instala en segundos, sin permisos de administrador",
+    smart: "<a href=\"faq/?lang=es#smartscreen\">Windows puede avisarte</a> porque la app es nueva: tocá Más información → Ejecutar de todas formas.",
     p1: "Nunca hace click durante una partida",
-    p2: "No lee ni modifica el juego, solo toca Aceptar",
+    p2: "No toca la memoria del juego: solo hace click en Aceptar",
     p3: "Sin cuentas, publicidad ni rastreo. Código abierto",
     askQ: "¿Jugás a otra cosa?", askA: "Pedí tu juego →",
     what: "Qué se instala",
     faq: "Preguntas", source: "Código fuente", privacy: "Privacidad"
   };
   document.documentElement.lang = "es";
-  document.title = "AutoReady: aceptá tus partidas de Steam automáticamente";
+  document.title = "Buscá partida. Alejate. AutoReady la acepta.";
   [].forEach.call(document.querySelectorAll("[data-t]"), function (el) {
     var v = ES[el.getAttribute("data-t")];
     if (v) el.innerHTML = v;   // textos fijos de esta pagina
   });
+  document.querySelector("[data-t=what]").href = "faq/?lang=es#install";
   var shot = document.getElementById("shot");
-  shot.src = "assets/panel-es.png"; shot.alt = "El panel de AutoReady";
+  shot.src = "assets/panel-es.png";
+  shot.alt = "Panel de AutoReady: esperando partida en Dota 2, con tecla de pausa, sonido y avisos al celular";
 })();
 </script>
 </body>
