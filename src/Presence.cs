@@ -15,6 +15,33 @@ namespace AutoReady
     // pide en ingles para no depender del idioma del usuario.
     enum PresenceState { Unknown, Menu, Finding, InMatch }
 
+    // Steam sigue mostrando el estado de la partida anterior (por ejemplo "Turbo: Lvl 30 Heroe") un buen rato despues de
+    // cerrar y volver a abrir el juego. Si el primer estado que se lee en una sesion de juego recien abierta es de
+    // partida, se lo ignora mientras el texto no cambie: no puede ser de esta sesion (se empieza en el menu).
+    // Una partida real a la que se vuelve (reconexion) la cubre GSI.
+    class StalePresence
+    {
+        public static readonly TimeSpan FreshSession = TimeSpan.FromMinutes(10);
+
+        string stale;
+        bool seen;
+
+        public void Reset() { stale = null; seen = false; }
+
+        // Se llama en cada vuelta con lo ultimo que se leyo; solo importa la primera lectura valida.
+        public void Observe(PresenceState state, string text, bool freshSession)
+        {
+            if (seen || state == PresenceState.Unknown) return;
+            seen = true;
+            if (freshSession && state == PresenceState.InMatch) stale = text;
+        }
+
+        public PresenceState Filter(PresenceState state, string text)
+        {
+            return state == PresenceState.InMatch && stale != null && text == stale ? PresenceState.Unknown : state;
+        }
+    }
+
     static class Presence
     {
         static readonly TimeSpan Every = TimeSpan.FromSeconds(6);

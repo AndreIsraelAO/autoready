@@ -138,6 +138,22 @@ namespace AutoReady.Tests
             Check(Presence.Classify("Main Menu", d) == PresenceState.Menu, "menu");
             Check(Presence.Classify("Playing Ranked: Pudge", d) == PresenceState.InMatch, "cualquier otro estado = en partida");
             Check(Presence.Classify("", d) == PresenceState.Unknown && Presence.Classify(null, d) == PresenceState.Unknown, "sin estado = desconocido");
+
+            // Bug real: tras reabrir Dota, Steam siguio mostrando la partida anterior ("Turbo: Lvl 30 ...") y AutoReady
+            // la tomo por una partida en curso: no miro la pantalla y no acepto la siguiente.
+            StalePresence sp = new StalePresence();
+            sp.Observe(PresenceState.InMatch, "Turbo: Lvl 30 Bloodseeker", true);
+            Check(sp.Filter(PresenceState.InMatch, "Turbo: Lvl 30 Bloodseeker") == PresenceState.Unknown, "sesion nueva: el estado de la partida anterior se ignora");
+            Check(sp.Filter(PresenceState.Finding, "Finding A Match") == PresenceState.Finding, "un estado nuevo cuenta");
+            Check(sp.Filter(PresenceState.InMatch, "Hero Selection") == PresenceState.InMatch, "una partida nueva (texto distinto) cuenta");
+            sp.Reset();
+            sp.Observe(PresenceState.Unknown, null, true);
+            sp.Observe(PresenceState.Menu, "Main Menu", true);
+            sp.Observe(PresenceState.InMatch, "Hero Selection", true);   // no es la primera lectura: no se descarta
+            Check(sp.Filter(PresenceState.InMatch, "Hero Selection") == PresenceState.InMatch, "empezando en el menu, la partida cuenta");
+            StalePresence old = new StalePresence();
+            old.Observe(PresenceState.InMatch, "Playing Ranked", false);   // el juego ya llevaba rato abierto: se confia
+            Check(old.Filter(PresenceState.InMatch, "Playing Ranked") == PresenceState.InMatch, "sesion vieja: el estado de partida se respeta");
         }
 
         // ---------- opciones de lanzamiento ----------

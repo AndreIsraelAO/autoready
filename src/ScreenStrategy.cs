@@ -17,6 +17,8 @@ namespace AutoReady
         DateTime lastBusySkip = DateTime.MinValue;
         DateTime openedAt = DateTime.MinValue;
         bool gsiHintShown;
+        readonly StalePresence stalePresence = new StalePresence();
+        volatile bool freshSession;   // el juego se abrio hace poco (ver StalePresence)
 
         public ScreenStrategy(GameProfile game, IGameHost host) : base(game, host) { }
 
@@ -33,13 +35,33 @@ namespace AutoReady
             base.Reset();
             openedAt = DateTime.Now;
             flashedWindow = IntPtr.Zero;   // un titileo de antes de vigilarlo no cuenta
+            stalePresence.Reset();
+            freshSession = GameProcessAge() < StalePresence.FreshSession;
+        }
+
+        // Hace cuanto arranco el proceso del juego (MaxValue si no se puede saber: nunca cuenta como recien abierto).
+        TimeSpan GameProcessAge()
+        {
+            try
+            {
+                foreach (System.Diagnostics.Process p in System.Diagnostics.Process.GetProcessesByName(Game.Process))
+                    using (p) return DateTime.Now - p.StartTime;
+            }
+            catch (Exception e) { Log.Write("No pude leer cuando arranco " + Game.Name + ": " + e.Message); }
+            return TimeSpan.MaxValue;
+        }
+
+        // Estado de Steam sin el que quedo de la partida anterior (ver StalePresence).
+        PresenceState SteamState
+        {
+            get { return stalePresence.Filter(Presence.Current, Presence.Text); }
         }
 
         public override void ResetDetection() { resetRequested = true; }
 
         public override bool InMatch
         {
-            get { return Gsi.InMatch(Game) || (Game.UsesPresence && Presence.Current == PresenceState.InMatch); }
+            get { return Gsi.InMatch(Game) || (Game.UsesPresence && SteamState == PresenceState.InMatch); }
         }
 
         // En el menu segun el estado de Steam (el unico que distingue "menu" de "buscando"). Sin eso no se sabe: false.
@@ -78,7 +100,8 @@ namespace AutoReady
 
             // Estado de Steam (Dota sin GSI): en partida no se mira la pantalla. El estado llega con algunos segundos de
             // demora, asi que solo se usa para frenar, nunca para relajar las reglas del modo seguro.
-            PresenceState ps = Cfg.UseSteamStatus && Game.UsesPresence && !Gsi.Connected(Game) ? Presence.Current : PresenceState.Unknown;
+            stalePresence.Observe(Presence.Current, Presence.Text, freshSession);
+            PresenceState ps = Cfg.UseSteamStatus && Game.UsesPresence && !Gsi.Connected(Game) ? SteamState : PresenceState.Unknown;
             if (ps == PresenceState.InMatch) { Host.SetState(AppState.InMatch); consecutiveHits = 0; return 1000; }
             Host.SetState(AppState.Searching);
             if (ps == PresenceState.Unknown) MaybeShowGsiHint();
