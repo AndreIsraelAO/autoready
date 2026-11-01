@@ -76,24 +76,50 @@
   .code .btn { min-height: 44px; padding: 0 16px; border-radius: var(--r-in); font-size: 15px; background: var(--fill); color: var(--on-fill); }
   .code .btn.done { background: var(--soft); color: var(--accent); }
 
-  /* Dibujos de lo que se ve en el celular (no son capturas: maquetas simples y traducibles). */
-  .mock { margin-top: 14px; border: 1px solid var(--stroke); border-radius: 14px; background: var(--mock-bg); overflow: hidden;
-          font: 14px/1.3 -apple-system, system-ui, "Segoe UI", Roboto, sans-serif; color: var(--text); }
-  .mock .bar { display: flex; align-items: center; justify-content: space-between; padding: 12px 14px; border-bottom: 1px solid var(--stroke); font-weight: 600; }
-  .mock .plus { width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; font-size: 22px; font-weight: 400;
-                color: var(--accent); box-shadow: 0 0 0 3px var(--ring); }
-  .mock .empty { padding: 18px 14px; color: var(--muted); font-size: 13px; }
-  .mock .sheet { padding: 14px; display: grid; gap: 10px; }
-  .mock .label { font-size: 12px; color: var(--muted); }
-  .mock .field { border: 1px solid var(--stroke); border-radius: 8px; padding: 9px 10px; background: var(--card);
-                 font: 600 15px ui-monospace, "SF Mono", Menlo, Consolas, monospace; }
-  .mock .go { justify-self: end; padding: 7px 14px; border-radius: 8px; font-weight: 600; color: var(--accent); box-shadow: 0 0 0 3px var(--ring); }
-  .mock.alert { text-align: center; max-width: 270px; margin-left: auto; margin-right: auto; }
-  .mock.alert .q { padding: 16px 16px 12px; font-weight: 600; }
-  .mock.alert .q small { display: block; font-weight: 400; color: var(--muted); font-size: 12px; margin-top: 4px; }
-  .mock.alert .opts { display: grid; grid-template-columns: 1fr 1fr; border-top: 1px solid var(--stroke); }
-  .mock.alert .opts span { padding: 11px 0; color: var(--ios-blue); }
-  .mock.alert .opts span + span { border-left: 1px solid var(--stroke); font-weight: 600; box-shadow: inset 0 0 0 3px var(--ring); border-bottom-right-radius: 13px; }
+  /* Pantallas de ejemplo con el aspecto de iOS y de la app ntfy (no son capturas: se traducen y muestran tu codigo). */
+  .screen { --ios-bg: #F2F2F7; --ios-cell: #FFFFFF; --ios-sep: #C6C6C8; --ios-text: #000; --ios-sub: #8E8E93; --ntfy: #317F6F;
+            --tap: rgba(49,127,111,.28);
+            width: 100%; max-width: 280px; margin: 16px auto 0; border-radius: 26px; overflow: hidden; background: var(--ios-bg);
+            border: 6px solid #1C1C1E; box-shadow: 0 1px 2px rgba(0,0,0,.06), 0 8px 24px rgba(0,0,0,.08);
+            font: 15px/1.3 -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, "Segoe UI", Roboto, sans-serif; color: var(--ios-text);
+            text-align: left; position: relative; }
+  @media (prefers-color-scheme: dark) {
+    .screen { --ios-bg: #000; --ios-cell: #1C1C1E; --ios-sep: #38383A; --ios-text: #FFF; --ios-sub: #8E8E93; --ntfy: #3FA391;
+              --tap: rgba(63,163,145,.32); border-color: #2C2C2E; box-shadow: none; }
+  }
+  .screen .nav { display: flex; align-items: center; justify-content: space-between; gap: 6px; padding: 12px 12px 4px; color: var(--ntfy); font-size: 15px; white-space: nowrap; }
+  .screen .nav b { color: var(--ios-text); font-weight: 600; font-size: 14px; }
+  .screen .big { font-size: 28px; font-weight: 700; letter-spacing: -.01em; padding: 2px 14px 10px; }
+  .screen .empty { padding: 26px 22px 30px; text-align: center; color: var(--ios-sub); font-size: 14px; }
+  .screen .tabs-ios { display: grid; grid-template-columns: 1fr 1fr; border-top: .5px solid var(--ios-sep); background: var(--ios-cell);
+                      padding: 7px 0 10px; font-size: 10px; text-align: center; color: var(--ios-sub); }
+  .screen .tabs-ios span:first-child { color: var(--ntfy); }
+  .screen .tabs-ios i { display: block; font-style: normal; font-size: 18px; line-height: 1.2; }
+  .screen .group { margin: 14px 12px 0; border-radius: 10px; background: var(--ios-cell); overflow: hidden; }
+  .screen .cell { padding: 11px 14px; display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  .screen .cell + .cell { border-top: .5px solid var(--ios-sep); }
+  .screen .cell.code { font: 600 16px ui-monospace, "SF Mono", Menlo, Consolas, monospace; }
+  .screen .switch { width: 44px; height: 26px; border-radius: 13px; background: var(--ios-sep); position: relative; flex: none; }
+  .screen .switch::after { content: ""; position: absolute; left: 2px; top: 2px; width: 22px; height: 22px; border-radius: 50%; background: #fff; }
+  .screen .foot { padding: 8px 26px 18px; font-size: 12px; color: var(--ios-sub); }
+  /* Donde tocar: aro con pulso suave sobre el boton. */
+  .tap { position: relative; border-radius: 999px; box-shadow: 0 0 0 3px var(--ntfy); }
+  .tap::after { content: ""; position: absolute; inset: -8px; border-radius: inherit; background: var(--tap); animation: pulse 1.6s ease-out infinite; }
+  .screen .plus { width: 30px; height: 30px; display: grid; place-items: center; font-size: 26px; line-height: 1; }
+  .screen .sub { padding: 2px 8px; font-weight: 600; }
+  @keyframes pulse { from { transform: scale(.7); opacity: 1; } to { transform: scale(1.35); opacity: 0; } }
+  /* El aviso de permisos sobre la pantalla oscurecida, como lo muestra iOS. */
+  .screen.alert { border: 0; max-width: 280px; padding: 22px 18px; background: #A9A9AE; box-shadow: none; }
+  @media (prefers-color-scheme: dark) { .screen.alert { background: #2C2C2E; } }
+  .alert .box { background: var(--ios-cell); border-radius: 14px; text-align: center; overflow: hidden; }
+  .alert .q { padding: 18px 16px 14px; font-weight: 600; font-size: 16px; }
+  .alert .q small { display: block; margin-top: 4px; font-weight: 400; font-size: 13px; color: var(--ios-sub); }
+  .alert .opts { display: grid; grid-template-columns: 1fr 1fr; border-top: .5px solid var(--ios-sep); }
+  .alert .opts span { padding: 12px 0; color: #0A84FF; font-size: 16px; }
+  /* En el aviso de iOS no hay aro: el boton a tocar se marca con un fondo suave. */
+  .alert .opts span + span { border-left: .5px solid var(--ios-sep); font-weight: 600; border-radius: 0; box-shadow: none; background: var(--tap); }
+  .alert .opts span + span::after { display: none; }
+
   details.manual { margin-top: 16px; background: var(--card); border: 1px solid var(--stroke); border-radius: var(--r-card); padding: 0 18px; }
   details.manual summary { cursor: pointer; padding: 14px 0; font-weight: 600; min-height: 44px; }
   details.manual > div { padding: 0 0 18px; color: var(--muted); font-size: 15px; }
@@ -112,6 +138,7 @@
   footer .mark { display: inline-flex; align-items: center; min-height: 44px; }
   footer .mark img { height: 20px; width: auto; display: block; }
   @media (prefers-reduced-motion: reduce) {
+    .tap::after { animation: none; opacity: 0; }
     *, *::before, *::after { transition: none !important; animation: none !important; scroll-behavior: auto !important; }
     .btn:active { transform: none; }
   }
@@ -145,19 +172,31 @@
         <div class="code"><span class="topic"></span><button class="btn copy" type="button" data-t="copy">Copy</button></div>
       </div></li>
       <li class="step"><div>
-        <h2 data-t="plusTitle">Open ntfy and tap +</h2>
-        <p data-t="plusText">It's at the top right of the main screen.</p>
-        <div class="mock" aria-hidden="true"><div class="bar"><span>Subscribed topics</span><span class="plus">+</span></div><div class="empty" data-t="mockEmpty">No topics yet</div></div>
+        <h2 data-t="allowTitle2">Open ntfy and tap Allow</h2>
+        <p data-t="allowText2">It asks the first time you open it. Without this, nothing arrives.</p>
+        <div class="screen alert" aria-hidden="true"><div class="box">
+          <div class="q" data-t="mockAsk">“ntfy” Would Like to Send You Notifications<small>Notifications may include alerts, sounds and icon badges.</small></div>
+          <div class="opts"><span data-t="mockNo">Don’t Allow</span><span class="tap" data-t="mockYes">Allow</span></div>
+        </div></div>
+      </div></li>
+      <li class="step"><div>
+        <h2 data-t="plusTitle">Tap + at the top right</h2>
+        <p data-t="plusText">On the Subscribed topics screen.</p>
+        <div class="screen" aria-hidden="true">
+          <div class="nav"><span>↻</span><span class="plus tap">+</span></div>
+          <div class="big">Subscribed topics</div>
+          <div class="empty">It looks like you don't have any subscriptions yet</div>
+          <div class="tabs-ios"><span><i>●</i>Notifications</span><span><i>⚙</i>Settings</span></div>
+        </div>
       </div></li>
       <li class="step"><div>
         <h2 data-t="pasteTitle">Paste the code and tap Subscribe</h2>
-        <p data-t="pasteText">Touch and hold the <b>Topic name</b> box, tap <b>Paste</b>, then <b>Subscribe</b>. Leave the server as it is.</p>
-        <div class="mock" aria-hidden="true"><div class="sheet"><span class="label">Topic name</span><span class="field topic"></span><span class="go">Subscribe</span></div></div>
-      </div></li>
-      <li class="step"><div>
-        <h2 data-t="allowTitle2">Allow notifications</h2>
-        <p data-t="allowText2">When ntfy asks, tap <b>Allow</b>. Without this, nothing arrives.</p>
-        <div class="mock alert" aria-hidden="true"><div class="q" data-t="mockAsk">“ntfy” Would Like to Send You Notifications<small>Notifications may include alerts, sounds and icon badges.</small></div><div class="opts"><span data-t="mockNo">Don’t Allow</span><span data-t="mockYes">Allow</span></div></div>
+        <p data-t="pasteText">Touch and hold the <b>Topic name</b> box, tap <b>Paste</b>, then <b>Subscribe</b> at the top right.</p>
+        <div class="screen" aria-hidden="true">
+          <div class="nav"><span>Cancel</span><b>Add subscription</b><span class="sub tap">Subscribe</span></div>
+          <div class="group"><div class="cell code topic"></div><div class="cell">Use another server<span class="switch"></span></div></div>
+          <div class="foot">Topics may not be password-protected, so choose a name that's not easy to guess.</div>
+        </div>
       </div></li>
     </ol>
 
@@ -208,15 +247,14 @@
     copyTitle: "Copiá tu código",
     copyText: "Es tu canal privado. No lo compartas ni lo muestres en streams.",
     copy: "Copiar", copied: "Copiado",
-    plusTitle: "Abrí ntfy y tocá +",
-    plusText: "Está arriba a la derecha de la pantalla principal.",
-    mockEmpty: "Todavía no hay temas",
-    pasteTitle: "Pegá el código y tocá Subscribe",
-    pasteText: "Mantené apretado el campo <b>Topic name</b>, tocá <b>Pegar</b> y después <b>Subscribe</b>. El servidor dejalo como está.",
-    allowTitle2: "Permití las notificaciones",
-    allowText2: "Cuando ntfy pregunte, tocá <b>Permitir</b>. Sin esto no llega nada.",
-    mockAsk: "“ntfy” quiere enviarte notificaciones<small>Las notificaciones pueden incluir alertas, sonidos y globos en el ícono.</small>",
+    allowTitle2: "Abrí ntfy y tocá Permitir",
+    allowText2: "Lo pregunta la primera vez que la abrís. Sin esto no llega nada.",
+    mockAsk: "“ntfy” quiere enviarte notificaciones<small>Las notificaciones pueden incluir alertas, sonidos e indicadores en el ícono.</small>",
     mockNo: "No permitir", mockYes: "Permitir",
+    plusTitle: "Tocá + arriba a la derecha",
+    plusText: "En la pantalla Subscribed topics.",
+    pasteTitle: "Pegá el código y tocá Subscribe",
+    pasteText: "Mantené apretado el campo <b>Topic name</b>, tocá <b>Pegar</b> y después <b>Subscribe</b>, arriba a la derecha.",
     manualTitle: "¿No funcionó? Hacelo a mano",
     manualText: "Copiá el código, abrí ntfy, tocá <b>+</b>, pegalo en <b>Topic name</b> y tocá <b>Subscribe</b>.",
     openTitle: "Conectá ntfy",
