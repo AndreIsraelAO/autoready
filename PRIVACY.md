@@ -7,7 +7,7 @@ settings or logs anywhere. It only connects to the internet for the features bel
 
 | Service | What is sent | When | How to turn it off |
 |---|---|---|---|
-| **GitHub** (`api.github.com`, `github.com`) | A request for the list of AutoReady releases, and the download of a new version if you choose to update | At startup and once a day | Panel → More settings → *Check for updates automatically* (or during installation) |
+| **GitHub** (`api.github.com`, `github.com`) | A request for the list of AutoReady releases, and the download of a new version if you choose to update | At startup and once a day | Panel → More settings → *Update automatically* (or during installation) |
 | **Steam Community** (`steamcommunity.com`) | A request for the public mini-profile of the Steam account signed in on this PC, to read its status (for example "Finding A Match") | Every few seconds, only while a supported game that uses it (Dota 2) is open | During installation (*Use my Steam status*), or later with `UseSteamStatus=False` in `%APPDATA%\AutoReady\autoready.ini` |
 | **ntfy** (`ntfy.sh`) | The notification text (for example "Match accepted") sent to your private topic | Only if you turn on *Phone* notifications, and only when there's something to notify | Panel → *Phone notifications* (off by default) |
 
@@ -31,7 +31,7 @@ configuración ni tus logs a ningún lado. Solo se conecta a internet para estas
 
 | Servicio | Qué se envía | Cuándo | Cómo apagarlo |
 |---|---|---|---|
-| **GitHub** (`api.github.com`, `github.com`) | Un pedido de la lista de versiones de AutoReady, y la descarga de una versión nueva si elegís actualizar | Al iniciar y una vez por día | Panel → Más opciones → *Buscar actualizaciones automáticamente* (o al instalar) |
+| **GitHub** (`api.github.com`, `github.com`) | Un pedido de la lista de versiones de AutoReady, y la descarga de una versión nueva si elegís actualizar | Al iniciar y una vez por día | Panel → Más opciones → *Actualizar automáticamente* (o al instalar) |
 | **Comunidad de Steam** (`steamcommunity.com`) | Un pedido del mini-perfil público de la cuenta de Steam conectada en esta PC, para leer su estado (por ejemplo "Buscando partida") | Cada pocos segundos, solo mientras está abierto un juego que lo usa (Dota 2) | Al instalar (*Usar mi estado de Steam*), o después con `UseSteamStatus=False` en `%APPDATA%\AutoReady\autoready.ini` |
 | **ntfy** (`ntfy.sh`) | El texto del aviso (por ejemplo "Partida aceptada") enviado a tu canal privado | Solo si activás los avisos al *Celular*, y solo cuando hay algo para avisar | Panel → *Avisos al celular* (apagado por defecto) |
 

@@ -50,7 +50,7 @@ namespace AutoReady
     class Panel : Window
     {
         [DllImport("dwmapi.dll")] static extern int DwmSetWindowAttribute(IntPtr hwnd, int attr, ref int value, int size);
-        const int DWMWA_USE_IMMERSIVE_DARK_MODE = 20, DWMWA_WINDOW_CORNER_PREFERENCE = 33, DWMWCP_ROUND = 2;
+        const int DWMWA_USE_IMMERSIVE_DARK_MODE = 20, DWMWA_WINDOW_CORNER_PREFERENCE = 33, DWMWA_BORDER_COLOR = 34, DWMWCP_ROUND = 2;
 
         readonly IPanelHost host;
         readonly Theme theme;
@@ -86,21 +86,29 @@ namespace AutoReady
             Topmost = true;
             Background = theme.Background;
             BorderBrush = theme.Dark ? new SolidColorBrush(Color.FromRgb(0x3A, 0x3A, 0x3A)) : new SolidColorBrush(Color.FromRgb(0xD0, 0xD0, 0xD0));
-            BorderThickness = new Thickness(1);
+            BorderThickness = new Thickness(0);   // el borde lo dibuja DWM (ver abajo), asi no se corta en las esquinas redondeadas
             FontFamily = new FontFamily("Segoe UI Variable Text, Segoe UI");
             FontSize = 14;
             Foreground = theme.Text;
             UseLayoutRounding = true;
 
-            // Si la pantalla es baja, el contenido scrollea en vez de cortarse (MaxHeight se ajusta al abrir).
-            Content = new ScrollViewer { Content = Build(), VerticalScrollBarVisibility = ScrollBarVisibility.Auto, Focusable = false };
+            // El pie queda fijo abajo; si la pantalla es baja, solo el contenido scrollea (MaxHeight se ajusta al abrir).
+            DockPanel layout = new DockPanel { LastChildFill = true };
+            Border footer = BuildFooter();
+            DockPanel.SetDock(footer, Dock.Bottom);
+            layout.Children.Add(footer);
+            layout.Children.Add(new ScrollViewer { Content = Build(), VerticalScrollBarVisibility = ScrollBarVisibility.Auto, Focusable = false });
+            Content = layout;
 
             SourceInitialized += (s, e) =>
             {
                 IntPtr hwnd = new WindowInteropHelper(this).Handle;
                 int round = DWMWCP_ROUND, dark = theme.Dark ? 1 : 0;
+                int border = theme.Dark ? 0x3A3A3A : 0xD0D0D0;   // COLORREF (BGR): con grises da igual el orden
                 DwmSetWindowAttribute(hwnd, DWMWA_WINDOW_CORNER_PREFERENCE, ref round, 4);   // esquinas redondeadas de Windows 11
                 DwmSetWindowAttribute(hwnd, DWMWA_USE_IMMERSIVE_DARK_MODE, ref dark, 4);
+                // Windows 10 no tiene color de borde de DWM: ahi lo dibuja WPF.
+                if (DwmSetWindowAttribute(hwnd, DWMWA_BORDER_COLOR, ref border, 4) != 0) BorderThickness = new Thickness(1);
             };
             Deactivated += (s, e) => { StopHotkeyCapture(); HidePanel(); };
             // Al abrir "Mas opciones" o el QR el panel cambia de alto: se reacomoda para no salirse de la pantalla.
@@ -254,7 +262,7 @@ namespace AutoReady
             StackPanel titles = new StackPanel { VerticalAlignment = VerticalAlignment.Center };
             titles.Children.Add(new TextBlock { Text = "AutoReady", FontSize = 16, FontWeight = FontWeights.SemiBold });
             DockPanel statusLine = new DockPanel { Margin = new Thickness(0, 2, 0, 0) };   // DockPanel: el texto largo baja de renglon
-            statusDot = new Ellipse { Width = 8, Height = 8, Fill = theme.Idle, Margin = new Thickness(0, 5, 6, 0), VerticalAlignment = VerticalAlignment.Top };
+            statusDot = new Ellipse { Width = 8, Height = 8, Fill = theme.Idle, Margin = new Thickness(0, 6, 6, 0), VerticalAlignment = VerticalAlignment.Top };
             statusText = new TextBlock { Text = S.Starting, FontSize = 12, Foreground = theme.TextSecondary, TextWrapping = TextWrapping.Wrap };
             AutomationProperties.SetLiveSetting(statusText, AutomationLiveSetting.Polite);   // el lector anuncia los cambios de estado
             statusLine.Children.Add(statusDot);
@@ -274,7 +282,7 @@ namespace AutoReady
             welcome.Children.Add(new TextBlock { Text = S.WelcomeTitle, FontWeight = FontWeights.SemiBold });
             welcome.Children.Add(new TextBlock { Text = S.WelcomeText, FontSize = 12, Foreground = theme.TextSecondary, TextWrapping = TextWrapping.Wrap, Margin = new Thickness(0, 4, 0, 8) });
             welcome.Children.Add(Link(S.WelcomeDismiss, () => welcomeCard.Visibility = Visibility.Collapsed, 13));
-            welcomeCard = Wrap(welcome, new Thickness(0, 14, 0, 0));
+            welcomeCard = Wrap(welcome, new Thickness(0, 12, 0, 0));
             welcomeCard.Visibility = Visibility.Collapsed;
             root.Children.Add(welcomeCard);
 
@@ -288,7 +296,7 @@ namespace AutoReady
             };
             StackPanel prot = new StackPanel();
             prot.Children.Add(Row(protectionText, protectionButton));
-            protectionCard = Wrap(prot, new Thickness(0, 14, 0, 0));
+            protectionCard = Wrap(prot, new Thickness(0, 12, 0, 0));
             protectionCard.BorderBrush = theme.Paused;
             protectionCard.Visibility = Visibility.Collapsed;
             root.Children.Add(protectionCard);
@@ -332,16 +340,16 @@ namespace AutoReady
             main.Children.Add(phoneDetails);
             phoneToggle.Changed += on => { host.SetPhone(on); ShowPhoneDetails(on); };
             ShowPhoneDetails(host.Cfg.NotifyPhone && !host.Cfg.PhoneTested);
-            root.Children.Add(Wrap(main, new Thickness(0, 14, 0, 0)));
+            root.Children.Add(Wrap(main, new Thickness(0, 12, 0, 0)));
 
             // Mas opciones: se configuran una vez (ya se eligieron al instalar), cerradas por defecto.
-            moreChevron = new TextBlock { Text = "", FontFamily = new FontFamily("Segoe Fluent Icons, Segoe MDL2 Assets"), FontSize = 10, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 8, 0), Foreground = theme.TextSecondary };
+            moreChevron = new TextBlock { Text = "", FontFamily = new FontFamily("Segoe Fluent Icons, Segoe MDL2 Assets"), FontSize = 10, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 6, 0), Foreground = theme.TextSecondary };
             StackPanel moreHead = new StackPanel { Orientation = Orientation.Horizontal };
             moreHead.Children.Add(moreChevron);
             moreHead.Children.Add(new TextBlock { Text = S.MoreSettings, FontSize = 13, Foreground = theme.TextSecondary });
             ClickArea moreButton = new ClickArea(theme, moreHead, ToggleMore, S.MoreSettings)
             {
-                Margin = new Thickness(2, 14, 0, 0), Padding = new Thickness(0, 2, 6, 2), HorizontalAlignment = HorizontalAlignment.Left,
+                Margin = new Thickness(0, 12, 0, 0), Padding = new Thickness(0, 6, 8, 6), HorizontalAlignment = HorizontalAlignment.Left,
             };
             root.Children.Add(moreButton);
 
@@ -357,18 +365,28 @@ namespace AutoReady
             updateText = new TextBlock { FontSize = 12, Foreground = theme.TextSecondary, VerticalAlignment = VerticalAlignment.Center, TextWrapping = TextWrapping.Wrap };
             general.Children.Add(Row(updateText, Link(S.CheckUpdates, () => host.CheckUpdatesNow(), 12)));
             moreBox = new StackPanel { Visibility = Visibility.Collapsed };
-            moreBox.Children.Add(Wrap(general, new Thickness(0, 8, 0, 0)));
+            moreBox.Children.Add(Wrap(general, new Thickness(0, 4, 0, 0)));
             root.Children.Add(moreBox);
 
-            // Pie: el wordmark de keis.studio con la k en tres colores; a este tamano el corrimiento va exagerado
-            // (como mark-*-small de la guia) para que los colores se vean nitidos.
-            Image brand = new Image { Source = KeisMark.BuildWordmark(theme.Dark, true, 2.2), Height = 18, ToolTip = "keis.studio" };
-            root.Children.Add(new ClickArea(theme, brand, () => System.Diagnostics.Process.Start("https://keis.studio"), "keis.studio")
-            {
-                HorizontalAlignment = HorizontalAlignment.Center, Margin = new Thickness(0, 18, 0, 2),
-            });
-
             return root;
+        }
+
+        // Pie: franja un tono mas oscura con linea arriba (como Configuracion rapida de Windows 11), de borde a borde,
+        // con el wordmark de keis.studio centrado. La k en tres colores necesita 18 px y fondo neutro para verse nitida.
+        Border BuildFooter()
+        {
+            Image brand = new Image { Source = KeisMark.BuildWordmark(theme.Dark, true, 2.2), Height = 18, ToolTip = "keis.studio" };
+            ClickArea link = new ClickArea(theme, brand, () => System.Diagnostics.Process.Start("https://keis.studio"), "keis.studio")
+            {
+                HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center,
+                Padding = new Thickness(8, 4, 8, 4), CornerRadius = new CornerRadius(4),
+            };
+            return new Border
+            {
+                Height = 49, BorderThickness = new Thickness(0, 1, 0, 0), Child = link,
+                Background = new SolidColorBrush(theme.Dark ? Color.FromRgb(0x1C, 0x1C, 0x1C) : Color.FromRgb(0xEE, 0xEE, 0xEE)),
+                BorderBrush = new SolidColorBrush(theme.Dark ? Color.FromRgb(0x2E, 0x2E, 0x2E) : Color.FromRgb(0xE5, 0xE5, 0xE5)),
+            };
         }
 
         void ToggleMore()
