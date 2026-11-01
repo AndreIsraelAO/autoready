@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Threading;
@@ -6,7 +7,7 @@ using System.Windows.Forms;
 
 [assembly: System.Reflection.AssemblyTitle("ReadyUp")]
 [assembly: System.Reflection.AssemblyProduct("ReadyUp - auto-accept for Dota 2")]
-[assembly: System.Reflection.AssemblyVersion("0.1.0.0")]
+// La version la genera build.bat en obj\Version.cs (en los releases sale del tag de git).
 
 namespace ReadyUp
 {
@@ -21,6 +22,15 @@ namespace ReadyUp
             // ReadyUp.exe --test captura.png  -> corre el detector sobre una imagen y guarda captura.result.png
             // Codigo de salida: 0 = boton encontrado, 1 = no encontrado, 2 = error.
             if (args.Length == 2 && args[0] == "--test") return TestImage(args[1]);
+
+            // Despues de actualizar: esperamos a que cierre la version vieja (que tiene el mutex).
+            int oldPid;
+            if (args.Length == 2 && args[0] == "--after-update" && int.TryParse(args[1], out oldPid))
+            {
+                try { using (Process old = Process.GetProcessById(oldPid)) old.WaitForExit(15000); }
+                catch (ArgumentException) { }   // ya cerro
+            }
+            Updater.CleanupOldExe();
 
             bool created;
             using (Mutex mutex = new Mutex(true, @"Local\ReadyUp", out created))

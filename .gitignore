@@ -1,4 +1,5 @@
 dist/
+obj/
 *.result.png
 *.result.txt
 captura-*.png

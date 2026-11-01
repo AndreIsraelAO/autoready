@@ -1,0 +1,35 @@
+# Al subir un tag vX.Y.Z: compila ReadyUp.exe con esa version y publica el Release con el exe y su SHA-256.
+name: release
+
+on:
+  push:
+    tags: ['v*.*.*']
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build
+        shell: pwsh
+        run: |
+          $version = $env:GITHUB_REF_NAME.TrimStart('v')
+          & "$env:GITHUB_WORKSPACE\build.bat" $version
+          if ($LASTEXITCODE -ne 0) { exit 1 }
+
+      - name: Checksum
+        shell: pwsh
+        run: |
+          $hash = (Get-FileHash dist/ReadyUp.exe -Algorithm SHA256).Hash.ToLower()
+          Set-Content dist/ReadyUp.exe.sha256 "$hash  ReadyUp.exe" -Encoding ascii -NoNewline
+          "SHA-256: $hash"
+
+      - name: Publish release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create $env:GITHUB_REF_NAME dist/ReadyUp.exe dist/ReadyUp.exe.sha256 --title "ReadyUp $env:GITHUB_REF_NAME" --generate-notes

@@ -20,6 +20,7 @@ namespace ReadyUp
         public string NtfyTopic = "";
         public bool NotifyPickStarted = true;
         public bool Sound = true;
+        public bool AutoUpdateCheck = true;
 
         public Detector.Settings Detector = new Detector.Settings();
 
@@ -44,6 +45,7 @@ namespace ReadyUp
                 c.NtfyTopic = Str(kv, "NtfyTopic", c.NtfyTopic);
                 c.NotifyPickStarted = Bool(kv, "NotifyPickStarted", c.NotifyPickStarted);
                 c.Sound = Bool(kv, "Sound", c.Sound);
+                c.AutoUpdateCheck = Bool(kv, "AutoUpdateCheck", c.AutoUpdateCheck);
 
                 Detector.Settings d = c.Detector;
                 d.RoiX0 = Dbl(kv, "RoiX0", d.RoiX0); d.RoiY0 = Dbl(kv, "RoiY0", d.RoiY0);
@@ -78,6 +80,7 @@ namespace ReadyUp
             lines.Add("NtfyTopic=" + NtfyTopic);
             lines.Add("NotifyPickStarted=" + NotifyPickStarted);
             lines.Add("Sound=" + Sound);
+            lines.Add("AutoUpdateCheck=" + AutoUpdateCheck);
             lines.Add("");
             lines.Add("; Detector: area de busqueda (fracciones de la ventana), color en HSV (H en grados, S/V 0..1) y forma del boton");
             lines.Add("RoiX0=" + F(d.RoiX0)); lines.Add("RoiY0=" + F(d.RoiY0));

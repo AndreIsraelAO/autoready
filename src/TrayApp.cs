@@ -20,6 +20,9 @@ namespace ReadyUp
         readonly HiddenWindow ui;
         readonly NotifyIcon tray;
         readonly ToolStripMenuItem statusItem, gsiItem, pauseItem, phoneItem, soundItem, pickItem, autostartItem;
+        readonly ToolStripMenuItem updateItem, autoUpdateItem;
+        System.Threading.Timer updateTimer;
+        Updater.Release pendingUpdate;
         readonly Icon iconOn, iconOff, iconWait;
 
         volatile bool paused;
@@ -49,8 +52,12 @@ namespace ReadyUp
             soundItem = new ToolStripMenuItem("Sonido", null, (s, e) => { cfg.Sound = !cfg.Sound; soundItem.Checked = cfg.Sound; cfg.Save(); }) { Checked = cfg.Sound };
             pickItem = new ToolStripMenuItem("Avisar cuando empieza el pick", null, (s, e) => { cfg.NotifyPickStarted = !cfg.NotifyPickStarted; pickItem.Checked = cfg.NotifyPickStarted; cfg.Save(); }) { Checked = cfg.NotifyPickStarted };
             autostartItem = new ToolStripMenuItem("Iniciar con Windows", null, (s, e) => ToggleAutostart()) { Checked = AutostartEnabled() };
+            updateItem = new ToolStripMenuItem("Actualizar", null, (s, e) => InstallUpdate()) { Visible = false, Font = new Font(SystemFonts.MenuFont, FontStyle.Bold) };
+            autoUpdateItem = new ToolStripMenuItem("Buscar actualizaciones automaticamente", null, (s, e) => ToggleAutoUpdate()) { Checked = cfg.AutoUpdateCheck };
 
             ContextMenuStrip menu = new ContextMenuStrip();
+            menu.Items.Add(new ToolStripMenuItem("ReadyUp v" + Updater.CurrentVersionText) { Enabled = false });
+            menu.Items.Add(updateItem);
             menu.Items.Add(statusItem);
             menu.Items.Add(gsiItem);
             menu.Items.Add(new ToolStripSeparator());
@@ -64,6 +71,8 @@ namespace ReadyUp
             menu.Items.Add(new ToolStripMenuItem("Guardar captura de prueba", null, (s, e) => SaveDebugCapture()));
             menu.Items.Add(new ToolStripMenuItem("Abrir carpeta de ReadyUp", null, (s, e) => Process.Start("explorer.exe", Config.Dir)));
             menu.Items.Add(autostartItem);
+            menu.Items.Add(autoUpdateItem);
+            menu.Items.Add(new ToolStripMenuItem("Buscar actualizaciones ahora", null, (s, e) => CheckUpdates(true)));
             menu.Items.Add(new ToolStripSeparator());
             menu.Items.Add(new ToolStripMenuItem("Salir", null, (s, e) => Quit()));
 
@@ -78,6 +87,86 @@ namespace ReadyUp
             Log.Write("ReadyUp iniciado");
             Thread scanner = new Thread(ScanLoop) { IsBackground = true, Name = "scanner" };
             scanner.Start();
+
+            // Primer chequeo a los 30 s de arrancar y despues una vez por dia.
+            updateTimer = new System.Threading.Timer(_ => { if (cfg.AutoUpdateCheck) CheckUpdates(false); },
+                                                     null, TimeSpan.FromSeconds(30), TimeSpan.FromHours(24));
+        }
+
+        // ---------- actualizaciones ----------
+
+        void CheckUpdates(bool manual)
+        {
+            if (Updater.IsDevBuild)
+            {
+                if (manual) ui.Post(() => MessageBox.Show("Esta es una build de desarrollo (v0.0.0): no se actualiza sola.", "ReadyUp"));
+                return;
+            }
+            ThreadPool.QueueUserWorkItem(_ =>
+            {
+                Updater.Release r = null;
+                try { r = Updater.CheckForUpdate(); }
+                catch (Exception e)
+                {
+                    Log.Write("Updater: no pude consultar GitHub: " + e.Message);
+                    if (manual) ui.Post(() => MessageBox.Show("No pude buscar actualizaciones:\n" + e.Message, "ReadyUp"));
+                    return;
+                }
+                if (r == null)
+                {
+                    if (manual) ui.Post(() => MessageBox.Show("Ya tenes la ultima version (v" + Updater.CurrentVersionText + ").", "ReadyUp"));
+                    return;
+                }
+                bool isNew = pendingUpdate == null || pendingUpdate.Version != r.Version;
+                pendingUpdate = r;
+                Log.Write("Updater: hay una version nueva " + r.Tag);
+                ui.Post(() =>
+                {
+                    updateItem.Text = "Actualizar a " + r.Tag;
+                    updateItem.Visible = true;
+                    if (isNew || manual)
+                        tray.ShowBalloonTip(8000, "ReadyUp " + r.Tag + " disponible", "Click derecho en el icono > Actualizar.", ToolTipIcon.Info);
+                });
+            });
+        }
+
+        void InstallUpdate()
+        {
+            Updater.Release r = pendingUpdate;
+            if (r == null) return;
+            if (gsi.InMatch)
+            {
+                MessageBox.Show("Estas en partida: actualizo cuando termine.", "ReadyUp");
+                return;
+            }
+            updateItem.Enabled = false;
+            updateItem.Text = "Actualizando a " + r.Tag + "...";
+            ThreadPool.QueueUserWorkItem(_ =>
+            {
+                try
+                {
+                    string exe = Updater.DownloadAndInstall(r);
+                    Updater.Relaunch(exe);
+                    ui.Post(Quit);
+                }
+                catch (Exception e)
+                {
+                    Log.Write("Updater: fallo la actualizacion: " + e.Message);
+                    ui.Post(() =>
+                    {
+                        updateItem.Enabled = true;
+                        updateItem.Text = "Actualizar a " + r.Tag;
+                        MessageBox.Show("No se pudo actualizar:\n" + e.Message, "ReadyUp");
+                    });
+                }
+            });
+        }
+
+        void ToggleAutoUpdate()
+        {
+            cfg.AutoUpdateCheck = !cfg.AutoUpdateCheck;
+            autoUpdateItem.Checked = cfg.AutoUpdateCheck;
+            cfg.Save();
         }
 
         // ---------- loop de escaneo ----------
