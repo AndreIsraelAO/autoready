@@ -12,7 +12,8 @@ namespace ReadyUp
     // Busca versiones nuevas en los Releases de GitHub y se reemplaza a si mismo.
     static class Updater
     {
-        const string LatestApi = "https://api.github.com/repos/hercase/readyup/releases/latest";
+        // La lista incluye los pre-releases (las 0.x lo son); /releases/latest no. Viene ordenada del mas nuevo al mas viejo.
+        const string ReleasesApi = "https://api.github.com/repos/hercase/readyup/releases?per_page=5";
 
         public class Release
         {
@@ -50,12 +51,15 @@ namespace ReadyUp
         public static Release CheckForUpdate()
         {
             string json;
-            using (WebClient wc = Client()) json = wc.DownloadString(LatestApi);
+            using (WebClient wc = Client()) json = wc.DownloadString(ReleasesApi);
 
             Match tag = Regex.Match(json, "\"tag_name\"\\s*:\\s*\"v?([0-9.]+)\"");
-            Match exe = Regex.Match(json, "\"browser_download_url\"\\s*:\\s*\"([^\"]+/ReadyUp\\.exe)\"");
-            Match sha = Regex.Match(json, "\"browser_download_url\"\\s*:\\s*\"([^\"]+/ReadyUp\\.exe\\.sha256)\"");
-            if (!tag.Success || !exe.Success || !sha.Success) return null;
+            if (!tag.Success) return null;
+            // Los assets tienen que ser de ese mismo tag (si el release mas nuevo quedo sin exe, no tomamos el de otro).
+            string dl = "[^\"]+/download/v" + Regex.Escape(tag.Groups[1].Value) + "/";
+            Match exe = Regex.Match(json, "\"browser_download_url\"\\s*:\\s*\"(" + dl + "ReadyUp\\.exe)\"");
+            Match sha = Regex.Match(json, "\"browser_download_url\"\\s*:\\s*\"(" + dl + "ReadyUp\\.exe\\.sha256)\"");
+            if (!exe.Success || !sha.Success) return null;
 
             Version v = new Version(tag.Groups[1].Value);
             if (v <= Current) return null;

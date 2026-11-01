@@ -32,4 +32,7 @@ jobs:
         shell: pwsh
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release create $env:GITHUB_REF_NAME dist/ReadyUp.exe dist/ReadyUp.exe.sha256 --title "ReadyUp $env:GITHUB_REF_NAME" --generate-notes
+        run: |
+          # Mientras sea 0.x (beta) se publica como pre-release.
+          $pre = if ($env:GITHUB_REF_NAME -like 'v0.*') { '--prerelease' } else { $null }
+          gh release create $env:GITHUB_REF_NAME dist/ReadyUp.exe dist/ReadyUp.exe.sha256 --title "ReadyUp $env:GITHUB_REF_NAME" --generate-notes $pre
