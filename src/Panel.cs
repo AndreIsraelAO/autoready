@@ -430,7 +430,7 @@ namespace AutoReady
             TextBox code = new TextBox
             {
                 Text = host.Cfg.NtfyTopic, IsReadOnly = true, BorderThickness = new Thickness(0), Background = Brushes.Transparent,
-                Foreground = theme.Text, FontFamily = new FontFamily("Cascadia Mono, Consolas"), FontSize = 13,
+                Foreground = theme.Text, FontFamily = new FontFamily("Cascadia Mono, Consolas"), FontSize = 15,
                 Padding = new Thickness(-2, 0, 0, 0), Margin = new Thickness(0, 4, 0, 0), CaretBrush = Brushes.Transparent,
             };
             AutomationProperties.SetName(code, S.PhoneOrCode);

@@ -98,20 +98,19 @@ namespace AutoReady
             return c;
         }
 
-        // Los topics de ntfy.sh son publicos: quien sabe el nombre lo lee. Por eso uno aleatorio por usuario,
-        // con el nombre de la app adelante (asi se reconoce en la lista de ntfy) y dos grupos de 4 para leerlo de un vistazo
-        // (autoready-k7m2-q9xp), sin letras que se confunden (0/o, 1/l/i). Un numero corto no sirve: dos usuarios caerian en
-        // el mismo canal y cualquiera podria adivinarlo. Los codigos viejos (ar-xxxxxxxx) siguen valiendo: cambiarlos
-        // cortaria los avisos de quien ya se suscribio.
+        // Los topics de ntfy.sh son publicos: quien sabe el nombre lo lee. Por eso uno aleatorio por usuario, lo mas corto
+        // posible para escribirlo o pegarlo facil (ar-k7m2q9) y sin letras que se confunden (0/o, 1/l/i).
+        // 6 caracteres de 31 = ~890 millones: aun con 100 mil usuarios, la chance de que a alguien le toque el canal de otro
+        // es de ~0,01 %. Con 5 seria ~0,35 %. Los codigos viejos (ar- y 8 caracteres) siguen valiendo.
         static string NewTopic()
         {
             const string alphabet = "abcdefghjkmnpqrstuvwxyz23456789";
-            byte[] rnd = new byte[8];
+            byte[] rnd = new byte[6];
             using (System.Security.Cryptography.RandomNumberGenerator rng = System.Security.Cryptography.RandomNumberGenerator.Create())
                 rng.GetBytes(rnd);
-            char[] chars = new char[8];
-            for (int i = 0; i < 8; i++) chars[i] = alphabet[rnd[i] % alphabet.Length];
-            return "autoready-" + new string(chars, 0, 4) + "-" + new string(chars, 4, 4);   // 31^8: unos 850 mil millones de combinaciones
+            char[] chars = new char[6];
+            for (int i = 0; i < 6; i++) chars[i] = alphabet[rnd[i] % alphabet.Length];
+            return "ar-" + new string(chars);
         }
 
         public void Save()
