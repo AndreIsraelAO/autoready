@@ -34,6 +34,7 @@ namespace AutoReady.Tests
             Group("GSI", GsiTests);
             Group("League of Legends (API del cliente)", LeagueTests);
             Group("QR", QrTests);
+            Group("Instalador y desinstalador", SetupTests);
 
             Console.WriteLine();
             Console.WriteLine(failed == 0 ? "OK: " + passed + " pruebas" : "FALLARON " + failed + " de " + (passed + failed));
@@ -177,6 +178,45 @@ namespace AutoReady.Tests
                 }
             }
             finally { Lang.Spanish = original; }
+        }
+
+        // Las ventanas se arman en los dos idiomas sin errores. Desinstalar no borra la configuracion salvo que se pida,
+        // y el foco arranca en Cancelar (lo destructivo no queda a un Enter).
+        static void SetupTests()
+        {
+            bool original = Lang.Spanish;
+            Exception error = null;
+            System.Threading.Thread t = new System.Threading.Thread(() =>
+            {
+                try
+                {
+                    foreach (bool spanish in new[] { true, false })
+                    {
+                        Lang.Spanish = spanish;
+                        System.Windows.Window install = new InstallWindow(), uninstall = new UninstallWindow();
+                        Check(install.Title == (spanish ? "Instalar AutoReady" : "Install AutoReady"), "titulo del instalador");
+                        Check(uninstall.Title == (spanish ? "Desinstalar AutoReady" : "Uninstall AutoReady"), "titulo del desinstalador");
+                        System.Collections.Generic.List<Toggle> toggles = new System.Collections.Generic.List<Toggle>();
+                        FindToggles(uninstall.Content as System.Windows.DependencyObject, toggles);
+                        Check(toggles.Count == 1 && !toggles[0].IsOn, "borrar la configuracion arranca apagado");
+                        Check(!((UninstallWindow)uninstall).Removed, "nada se borra sin tocar Desinstalar");
+                        install.Close(); uninstall.Close();
+                    }
+                }
+                catch (Exception e) { error = e; }
+            });
+            t.SetApartmentState(System.Threading.ApartmentState.STA);
+            t.Start();
+            t.Join();
+            Lang.Spanish = original;
+            if (error != null) Fail("ventanas: " + error.Message);
+        }
+
+        static void FindToggles(System.Windows.DependencyObject o, System.Collections.Generic.List<Toggle> found)
+        {
+            if (o == null) return;
+            if (o is Toggle) found.Add((Toggle)o);
+            foreach (object c in System.Windows.LogicalTreeHelper.GetChildren(o)) FindToggles(c as System.Windows.DependencyObject, found);
         }
 
         static bool IsSameInBothLanguages(string name) { return name == "SectionGeneral" || name == "Version"; }

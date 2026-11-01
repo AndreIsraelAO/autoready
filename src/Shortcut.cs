@@ -11,7 +11,7 @@ namespace AutoReady
         public static string StartMenuPath { get { return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Programs), "AutoReady.lnk"); } }
         public static string DesktopPath { get { return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory), "AutoReady.lnk"); } }
 
-        // El de Inicio se mantiene apuntando al exe actual (por si se movio); asi AutoReady aparece al buscarlo.
+        // El de Inicio se mantiene apuntando al exe instalado (por si se borro); asi AutoReady aparece al buscarlo.
         public static void EnsureStartMenu()
         {
             try

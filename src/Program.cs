@@ -43,7 +43,7 @@ namespace AutoReady
 
             // Desinstalar (lo llama Configuracion > Aplicaciones) o, si es un exe recien bajado, instalarlo. Tanto si se
             // instala (arranca la copia instalada) como si se cancela, este exe termina aca.
-            if (args.Length >= 1 && args[0] == "--uninstall") return Installer.Uninstall();
+            if (args.Length >= 1 && args[0] == "--uninstall") return Installer.Uninstall(Array.IndexOf(args, "--quiet") > 0);
             if (Installer.ShouldOffer(args))
             {
                 Installer.Offer();
@@ -58,7 +58,9 @@ namespace AutoReady
                     MessageBox.Show(S.AlreadyRunning, "AutoReady");
                     return 0;
                 }
-                if (Installer.IsInstalledCopy) Installer.Register();   // la version mostrada en Aplicaciones se actualiza
+                // Solo la copia instalada: entrada en Configuracion > Aplicaciones (con la version al dia) y acceso directo
+                // en Inicio. Una build de desarrollo no deja rastros que parezcan una instalacion sin desinstalador.
+                if (Installer.IsInstalledCopy) { Installer.Register(); Shortcut.EnsureStartMenu(); }
                 // Si se cierra por un error o se cuelga, Windows la vuelve a abrir sola (despues de 60 s de uso).
                 // No aplica al reinicio por actualizaciones de Windows (flag 8), donde vuelve con el inicio de Windows.
                 Win32.RegisterApplicationRestart("--restarted", 8);

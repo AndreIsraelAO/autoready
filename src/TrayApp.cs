@@ -90,7 +90,6 @@ namespace AutoReady
 
             if (cfg.HotkeyVk != 0 && !RegisterHotkey(cfg.HotkeyVk, cfg.HotkeyMods))
                 Log.Write("Atajo: no se pudo registrar (otra app lo usa)");
-            Shortcut.EnsureStartMenu();
             using (Stream logo = typeof(TrayApp).Assembly.GetManifestResourceStream("AutoReady.logo-64.png"))
                 useToasts = Toast.Init(logo);
 
