@@ -11,7 +11,7 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/hercase/autoready/releases/latest"><img src="https://img.shields.io/badge/Download_for_Windows-1E7A52?style=for-the-badge" alt="Download for Windows"></a>
+  <a href="https://github.com/hercase/autoready/releases/latest/download/AutoReady.exe"><img src="https://img.shields.io/badge/Download_for_Windows-1E7A52?style=for-the-badge" alt="Download for Windows"></a>
 </p>
 
 <p align="center">
@@ -47,7 +47,7 @@
 
 ## Get started
 
-1. **[Download `AutoReady.exe`](https://github.com/hercase/autoready/releases/latest)** and open it.
+1. **[Download `AutoReady.exe`](https://github.com/hercase/autoready/releases/latest/download/AutoReady.exe)** and open it.
 2. Click **Install**. It installs for your user in a few seconds, no admin rights needed.
 3. The icon appears next to the clock (it may be hidden under **^**: drag it out to keep it handy).
 4. Queue up in your game and step away.

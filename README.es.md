@@ -11,7 +11,7 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/hercase/autoready/releases/latest"><img src="https://img.shields.io/badge/Descargar_para_Windows-1E7A52?style=for-the-badge" alt="Descargar para Windows"></a>
+  <a href="https://github.com/hercase/autoready/releases/latest/download/AutoReady.exe"><img src="https://img.shields.io/badge/Descargar_para_Windows-1E7A52?style=for-the-badge" alt="Descargar para Windows"></a>
 </p>
 
 <p align="center">
@@ -47,7 +47,7 @@
 
 ## Empezar
 
-1. **[Descargá `AutoReady.exe`](https://github.com/hercase/autoready/releases/latest)** y abrilo.
+1. **[Descargá `AutoReady.exe`](https://github.com/hercase/autoready/releases/latest/download/AutoReady.exe)** y abrilo.
 2. Tocá **Instalar**. Se instala para tu usuario en unos segundos, sin permisos de administrador.
 3. El ícono aparece junto al reloj (puede estar escondido en **^**: arrastralo afuera para tenerlo a mano).
 4. Buscá partida en tu juego y andá a hacer otra cosa.

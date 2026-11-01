@@ -79,7 +79,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          # Mientras sea 0.x (beta) se publica como pre-release.
-          $pre = if ($env:GITHUB_REF_NAME -like 'v0.*') { '--prerelease' } else { $null }
+          # Se publica como "latest" (no pre-release): el boton de descarga del README usa
+          # releases/latest/download/AutoReady.exe, que ignora las pre-releases. La beta se indica con la version 0.x.
           $notes = "Code signing policy: https://github.com/hercase/autoready#code-signing-policy`n`nPrivacy policy: https://github.com/hercase/autoready/blob/main/PRIVACY.md"
-          gh release create $env:GITHUB_REF_NAME dist/AutoReady.exe dist/AutoReady.exe.sha256 --title "AutoReady $env:GITHUB_REF_NAME" --notes "$notes" --generate-notes $pre
+          gh release create $env:GITHUB_REF_NAME dist/AutoReady.exe dist/AutoReady.exe.sha256 --title "AutoReady $env:GITHUB_REF_NAME" --notes "$notes" --generate-notes --latest
