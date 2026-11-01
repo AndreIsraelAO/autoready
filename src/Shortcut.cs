@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Windows.Forms;
 
 namespace AutoReady
@@ -16,7 +17,13 @@ namespace AutoReady
         {
             try
             {
-                if (string.Equals(Target(StartMenuPath), Application.ExecutablePath, StringComparison.OrdinalIgnoreCase)) return;
+                if (string.Equals(Target(StartMenuPath), Application.ExecutablePath, StringComparison.OrdinalIgnoreCase))
+                {
+                    // Accesos directos de versiones viejas no fijan el ícono: se reescriben una vez.
+                    if (!string.Equals(IconLocation(StartMenuPath), Application.ExecutablePath + ",0", StringComparison.OrdinalIgnoreCase))
+                        RefreshIcons(Application.ExecutablePath);
+                    return;
+                }
                 Create(StartMenuPath, Application.ExecutablePath);
                 Log.Write("Acceso directo del menu Inicio: " + StartMenuPath);
             }
@@ -31,7 +38,31 @@ namespace AutoReady
             t.InvokeMember("WorkingDirectory", BindingFlags.SetProperty, null, sc, new object[] { Path.GetDirectoryName(exe) });
             t.InvokeMember("Description", BindingFlags.SetProperty, null, sc,
                            new object[] { Lang.T("Acepta tus partidas automáticamente", "Accepts your matches automatically") });
+            // Ícono explícito (el del exe): sin esto Windows usa el que tenía guardado de antes.
+            t.InvokeMember("IconLocation", BindingFlags.SetProperty, null, sc, new object[] { exe + ",0" });
             t.InvokeMember("Save", BindingFlags.InvokeMethod, null, sc, null);
+        }
+
+        public static string IconLocation(string lnk)
+        {
+            if (!File.Exists(lnk)) return null;
+            object sc = Load(lnk);
+            return (string)sc.GetType().InvokeMember("IconLocation", BindingFlags.GetProperty, null, sc, null);
+        }
+
+        [DllImport("shell32.dll")] static extern void SHChangeNotify(int eventId, uint flags, IntPtr item1, IntPtr item2);
+
+        // Despues de actualizar el exe (el ícono puede ser otro): se reescriben los accesos directos que apuntan a la copia
+        // instalada y se le avisa a Windows que vuelva a leer los íconos.
+        public static void RefreshIcons(string exe)
+        {
+            try
+            {
+                foreach (string lnk in new[] { StartMenuPath, DesktopPath })
+                    if (string.Equals(Target(lnk), exe, StringComparison.OrdinalIgnoreCase)) Create(lnk, exe);
+                SHChangeNotify(0x08000000, 0, IntPtr.Zero, IntPtr.Zero);   // SHCNE_ASSOCCHANGED
+            }
+            catch (Exception e) { Log.Write("No pude refrescar los accesos directos: " + e.Message); }
         }
 
         // Ruta a la que apunta un acceso directo, o null si no existe.

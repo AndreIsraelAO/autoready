@@ -88,8 +88,11 @@ namespace AutoReady
         public static void Register()
         {
             if (!File.Exists(InstalledExe)) return;
+            bool updated = false;
             using (RegistryKey k = Registry.CurrentUser.CreateSubKey(UninstallKey))
             {
+                string previous = k.GetValue("DisplayVersion") as string;
+                updated = previous != null && previous != Updater.CurrentVersionText;
                 k.SetValue("DisplayName", "AutoReady");
                 k.SetValue("DisplayVersion", Updater.CurrentVersionText);
                 k.SetValue("Publisher", "keis.studio");
@@ -104,6 +107,7 @@ namespace AutoReady
                 k.SetValue("EstimatedSize", (int)(new FileInfo(InstalledExe).Length / 1024), RegistryValueKind.DWord);
                 if (k.GetValue("InstallDate") == null) k.SetValue("InstallDate", DateTime.Now.ToString("yyyyMMdd"));
             }
+            if (updated) Shortcut.RefreshIcons(InstalledExe);   // el exe nuevo puede traer otro ícono
         }
 
         // Lo llama Configuracion > Aplicaciones (o winget con --quiet, sin preguntar y sin borrar la configuracion).

@@ -36,6 +36,7 @@ namespace AutoReady.Tests
             Group("QR", QrTests);
             Group("Instalador y desinstalador", SetupTests);
             Group("Tecla de pausa (panel)", HotkeyTests);
+            Group("Accesos directos", ShortcutTests);
 
             Console.WriteLine();
             Console.WriteLine(failed == 0 ? "OK: " + passed + " pruebas" : "FALLARON " + failed + " de " + (passed + failed));
@@ -378,6 +379,24 @@ namespace AutoReady.Tests
             int port = ((IPEndPoint)l.LocalEndpoint).Port;
             l.Stop();
             return port;
+        }
+
+        // ---------- accesos directos ----------
+
+        // El acceso directo fija el ícono del exe (si no, Windows sigue mostrando el de una version vieja).
+        static void ShortcutTests()
+        {
+            string dir = Path.Combine(Path.GetTempPath(), "autoready-test-" + Guid.NewGuid().ToString("N"));
+            Directory.CreateDirectory(dir);
+            try
+            {
+                string exe = Path.Combine(dir, "AutoReady.exe"), lnk = Path.Combine(dir, "AutoReady.lnk");
+                File.WriteAllText(exe, "x");
+                Shortcut.Create(lnk, exe);
+                Check(string.Equals(Shortcut.Target(lnk), exe, StringComparison.OrdinalIgnoreCase), "el acceso directo apunta al exe");
+                Check(string.Equals(Shortcut.IconLocation(lnk), exe + ",0", StringComparison.OrdinalIgnoreCase), "el acceso directo fija el icono del exe");
+            }
+            finally { try { Directory.Delete(dir, true); } catch { } }
         }
 
         // ---------- League of Legends ----------
