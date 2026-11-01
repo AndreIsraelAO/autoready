@@ -75,6 +75,13 @@ namespace AutoReady
             return libs;
         }
 
+        public static bool IsInstalled(GameProfile g)
+        {
+            foreach (string lib in SteamLibraries())
+                if (Directory.Exists(Path.GetDirectoryName(Path.Combine(lib, g.CfgDir)))) return true;
+            return false;
+        }
+
         // Escribe el .cfg de GSI en cada instalacion encontrada del juego. Devuelve la cantidad escrita.
         public int InstallConfig(GameProfile g)
         {

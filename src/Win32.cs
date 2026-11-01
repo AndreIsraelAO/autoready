@@ -114,6 +114,18 @@ namespace AutoReady
         }
 
         // Click en coordenadas de pantalla y devuelve el mouse a donde estaba.
+        [StructLayout(LayoutKind.Sequential)] struct LASTINPUTINFO { public uint cbSize; public uint dwTime; }
+        [DllImport("user32.dll")] static extern bool GetLastInputInfo(ref LASTINPUTINFO info);
+
+        // Cuanto hace que el usuario toco el mouse o el teclado (en cualquier ventana).
+        public static TimeSpan IdleTime()
+        {
+            LASTINPUTINFO li = new LASTINPUTINFO();
+            li.cbSize = (uint)Marshal.SizeOf(li);
+            if (!GetLastInputInfo(ref li)) return TimeSpan.MaxValue;
+            return TimeSpan.FromMilliseconds(unchecked((uint)Environment.TickCount - li.dwTime));
+        }
+
         public static void PressEnter()
         {
             const byte VK_RETURN = 0x0D;

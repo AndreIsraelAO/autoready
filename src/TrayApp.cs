@@ -38,6 +38,8 @@ namespace AutoReady
         DateTime gameSeenSince = DateTime.MinValue;
         readonly HashSet<string> gsiHintShown = new HashSet<string>();
         int consecutiveHits;
+        Point lastHit;
+        DateTime lastBusySkip = DateTime.MinValue;
         bool useToasts;
 
         public TrayApp()
@@ -131,6 +133,28 @@ namespace AutoReady
             cfg.Save();
         }
 
+        // Abre las propiedades del juego en Steam; el panel ya copio la opcion para pegarla.
+        public void FixProtection(GameProfile game)
+        {
+            Log.Write("Proteccion: abro las propiedades de " + game.Name + " en Steam para agregar " + game.GsiLaunchOption);
+            try { SteamConfig.OpenProperties(game.AppId); }
+            catch (Exception e) { Log.Write("No pude abrir Steam: " + e.Message); }
+        }
+
+        // Juego instalado al que le falta la opcion de lanzamiento para GSI (o null si esta todo bien).
+        // Cuenta como activo si GSI ya esta mandando datos, aunque no se haya podido leer la config de Steam.
+        GameProfile MissingProtection()
+        {
+            foreach (GameProfile g in GameProfile.All)
+            {
+                if (g.GsiLaunchOption == null || !cfg.For(g).Enabled || !Gsi.IsInstalled(g)) continue;
+                if (gsi.Connected(g)) continue;
+                string lo = SteamConfig.LaunchOptions(g.AppId);
+                if (lo != null && !SteamConfig.HasOption(g.AppId, g.GsiLaunchOption)) return g;
+            }
+            return null;
+        }
+
         public void SendTestPush()
         {
             Notifier.Send(cfg, "AutoReady conectado", "Los avisos funcionan. ¡Buena suerte en la cola!", "white_check_mark");
@@ -216,6 +240,11 @@ namespace AutoReady
                 UpdateTag = pendingUpdate != null ? pendingUpdate.Tag : null,
                 UpdateMessage = updateMessage,
             };
+            GameProfile missing = MissingProtection();
+            st.ProtectionFix = missing;
+            st.Protection = missing != null
+                ? "Falta un paso en " + missing.Name + ". Mientras tanto acepta en modo seguro."
+                : "Activa: nunca toca nada durante una partida.";
             ui.Post(() =>
             {
                 pauseItem.Text = paused ? "Reanudar" : "Pausar";
@@ -356,30 +385,49 @@ namespace AutoReady
                 return 700;
             }
 
+            // Modo seguro: sin GSI no sabemos si ya hay una partida en curso, asi que se exige mas antes de tocar nada.
+            bool safe = !gsi.Connected(game);
+            int needed = safe ? 3 : 2;   // detecciones seguidas
+
             Detector.Hit hit;
             using (Bitmap shot = Win32.Capture(hwnd))
             {
                 if (shot == null) return cfg.ScanIntervalMs;
                 hit = Detector.FindButton(shot, game, cfg.For(game).Detector);
                 Samples.Remember(shot);
-                if (hit != null && consecutiveHits + 1 >= 2)   // la que dispara el click
+                if (hit != null && consecutiveHits + 1 >= needed)   // la que dispara el click
                     Samples.Accepted(shot, game, Detector.Roi(shot.Width, shot.Height, cfg.For(game).Detector));
             }
             if (hit == null) { consecutiveHits = 0; return cfg.ScanIntervalMs; }
 
-            // Pedimos dos detecciones seguidas para evitar falsos positivos.
-            if (++consecutiveHits < 2) return 250;
+            // El popup no se mueve: en modo seguro la deteccion tiene que repetirse en el mismo lugar.
+            if (safe && consecutiveHits > 0 &&
+                (Math.Abs(hit.Center.X - lastHit.X) > 12 || Math.Abs(hit.Center.Y - lastHit.Y) > 12))
+                consecutiveHits = 0;
+            lastHit = hit.Center;
+            if (++consecutiveHits < needed) return 250;
             consecutiveHits = 0;
-            Accept(game, hwnd, hit);
+
+            // Sin GSI, con el juego al frente y alguien usando el mouse o el teclado: puede estar jugando.
+            // No se toca nada; si es el popup, lo acepta la persona.
+            if (safe && Win32.GetForegroundWindow() == hwnd && Win32.IdleTime() < TimeSpan.FromSeconds(3))
+            {
+                if ((DateTime.Now - lastBusySkip).TotalSeconds > 30)
+                    Log.Write(game.Name + ": posible popup, pero estas usando la PC y no hay GSI: no acepto");
+                lastBusySkip = DateTime.Now;
+                return 500;
+            }
+            Accept(game, hwnd, hit, safe);
             return 500;
         }
 
-        void Accept(GameProfile game, IntPtr hwnd, Detector.Hit hit)
+        void Accept(GameProfile game, IntPtr hwnd, Detector.Hit hit, bool safe)
         {
             Win32.Focus(hwnd);
             Thread.Sleep(250);
             string how;
-            if (game.AcceptWithEnter)
+            // Enter solo con GSI: si por error no fuera el popup, en Dota abriria el chat en medio de la partida.
+            if (game.AcceptWithEnter && !safe)
             {
                 Win32.PressEnter();
                 Thread.Sleep(900);

@@ -55,7 +55,7 @@
 
 | Juego | Configuración |
 |---|---|
-| **Dota 2** | Agregá `-gamestateintegration` en las opciones de lanzamiento (Steam → Dota 2 → Propiedades). |
+| **Dota 2** | Abrí el panel y tocá **Activar** en *Protección en partida*: te abre las propiedades de Dota en Steam con la opción lista para pegar. |
 | **Counter-Strike 2** | Nada. Reiniciá CS2 una vez después de abrir AutoReady. |
 
 ¿Querés otro juego? [Pedilo](https://github.com/hercase/autoready/issues).
@@ -85,7 +85,8 @@ nada y no modifica archivos del juego. Lo único que escribe es la configuració
 <details>
 <summary><b>¿Hace clicks durante la partida?</b></summary>
 <br>
-No. Game State Integration le avisa cuando estás en partida, y deja de mirar hasta que termina.
+No. Game State Integration le avisa cuando estás en partida, y deja de mirar hasta que termina. Si eso todavía no está
+configurado, trabaja en modo seguro: nunca acepta mientras estás usando el mouse o el teclado en el juego, y solo hace click.
 </details>
 
 <details>
@@ -113,8 +114,7 @@ Debería, esté donde esté el juego. Todavía lo estamos probando con varios mo
 <details>
 <summary><b>No me aceptó la partida. ¿Qué hago?</b></summary>
 <br>
-Fijate que <b>Aceptar partidas</b> esté prendido en el panel y, en Dota 2, que <code>-gamestateintegration</code> esté en las
-opciones de lanzamiento. Si sigue fallando, <a href="https://github.com/hercase/autoready/issues">abrí un issue</a> con el
+Fijate que <b>Aceptar partidas</b> esté prendido en el panel y que <b>Protección en partida</b> diga que está activa. Si sigue fallando, <a href="https://github.com/hercase/autoready/issues">abrí un issue</a> con el
 juego, la resolución y la escala de pantalla de Windows.
 </details>
 

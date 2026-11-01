@@ -55,7 +55,7 @@
 
 | Game | Setup |
 |---|---|
-| **Dota 2** | Add `-gamestateintegration` to the launch options (Steam → Dota 2 → Properties). |
+| **Dota 2** | Open the panel and click **Activate** next to *In-match protection*: it opens Dota's properties in Steam with the option ready to paste. |
 | **Counter-Strike 2** | Nothing to do. Restart CS2 once after opening AutoReady. |
 
 Want another game? [Ask for it](https://github.com/hercase/autoready/issues).
@@ -85,7 +85,8 @@ config.
 <details>
 <summary><b>Does it click anything during a match?</b></summary>
 <br>
-No. Game State Integration tells it when you're in a match, and it stops looking until the match is over.
+No. Game State Integration tells it when you're in a match, and it stops looking until the match is over. If that's not
+set up yet, it runs in a safe mode: it never accepts while you're using your mouse or keyboard in the game, and it only clicks.
 </details>
 
 <details>
@@ -113,8 +114,7 @@ It should, wherever the game is. Multi-monitor setups are still being tested, so
 <details>
 <summary><b>It didn't accept my match. What now?</b></summary>
 <br>
-Check that <b>Accept matches</b> is on in the panel and, for Dota 2, that <code>-gamestateintegration</code> is in the
-launch options. If it still fails, <a href="https://github.com/hercase/autoready/issues">open an issue</a> with your game,
+Check that <b>Accept matches</b> is on in the panel and that <b>In-match protection</b> says it's active. If it still fails, <a href="https://github.com/hercase/autoready/issues">open an issue</a> with your game,
 screen resolution and Windows display scale.
 </details>
 

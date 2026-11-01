@@ -33,6 +33,11 @@ vuelva a tiempo. Producto de **keis.studio** (estudio del dueño del repo). Ante
    con click; o directo con **click** en el centro del botón, devolviendo el mouse a donde estaba.
 5. **GSI** (`src/Gsi.cs`): servidor HTTP local (TcpListener en 127.0.0.1:53111) que recibe el estado del juego. Si hay
    `map.game_state` (Dota) o `map.phase` (CS2) = en partida → no escanear. Sin GSI, después de aceptar sigue 90 s y se pausa.
+6. **Modo seguro (sin GSI):** 3 detecciones seguidas en el mismo lugar, solo click (nunca Enter: en Dota abriría el chat) y
+   no acepta si el juego está al frente y hubo mouse/teclado en los últimos 3 s (`Win32.IdleTime`).
+7. **Protección en partida (panel):** Dota necesita la opción de lanzamiento `-gamestateintegration`. `SteamConfig` lee
+   (nunca escribe) `userdata/<cuenta activa>/config/localconfig.vdf` para saber si está; el botón Activar copia la opción y
+   abre `steam://gameproperties/570`. No se edita el archivo: Steam lo pisa si está abierto y puede haber cuentas ajenas.
 
 ## Sumar juegos (la estrategia)
 No hay API oficial de Steam/Valve para el "partida encontrada → aceptar" (pasa por el Game Coordinator), GSI no informa

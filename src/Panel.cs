@@ -21,6 +21,8 @@ namespace AutoReady
         public bool Paused;
         public string UpdateTag;       // "v0.2.3" si hay version nueva, si no null
         public string UpdateMessage;   // resultado de "Buscar actualizaciones"
+        public string Protection;      // "Activa en Dota 2 y CS2" o "Falta un paso en Dota 2"
+        public GameProfile ProtectionFix;   // juego al que le falta la opcion de lanzamiento (null = todo bien)
     }
 
     // Lo que el panel puede pedirle a la app. Cada cambio se aplica al instante (sin boton Guardar).
@@ -29,6 +31,7 @@ namespace AutoReady
         Config Cfg { get; }
         void SetPaused(bool paused);
         void SetPhone(bool on);
+        void FixProtection(GameProfile game);
         void SendTestPush();
         void SetAutostart(bool on);
         bool AutostartEnabled { get; }
@@ -137,7 +140,9 @@ namespace AutoReady
         Toggle acceptToggle, phoneToggle;
         Border updateButton;
         StackPanel phoneDetails;
-        TextBlock hotkeyLabel, hotkeyHint;
+        TextBlock hotkeyLabel, hotkeyHint, protectionText;
+        Border protectionButton;
+        GameProfile protectionGame;
         Border hotkeyButton;
         bool capturingHotkey;
         DateTime hiddenAt = DateTime.MinValue;
@@ -255,6 +260,12 @@ namespace AutoReady
             updateButton.Visibility = hasUpdate ? Visibility.Visible : Visibility.Collapsed;
             if (hasUpdate) ((TextBlock)updateButton.Child).Text = "Actualizar a " + st.UpdateTag;
             updateText.Text = "Versión " + Updater.CurrentVersionText + (st.UpdateMessage != null ? " · " + st.UpdateMessage : "");
+
+            // Si el usuario ya toco "Activar" y todavia no termino, no se pisa la instruccion.
+            bool waitingUser = protectionGame != null && st.ProtectionFix == protectionGame && protectionText.Text.StartsWith("En Steam");
+            protectionGame = st.ProtectionFix;
+            protectionButton.Visibility = st.ProtectionFix != null ? Visibility.Visible : Visibility.Collapsed;
+            if (!waitingUser) protectionText.Text = st.Protection;
         }
 
         // ---------- construccion ----------
@@ -310,6 +321,28 @@ namespace AutoReady
             hotkeyHint = new TextBlock { Text = "Pausa o reanuda desde cualquier lado", FontSize = 12, Foreground = theme.TextSecondary, TextWrapping = TextWrapping.Wrap };
             hotkeyLeft.Children.Add(hotkeyHint);
             main.Children.Add(Row(hotkeyLeft, hotkeyButton));
+            main.Children.Add(Divider());
+
+            // Proteccion en partida (GSI): si falta, AutoReady trabaja en modo seguro y se ofrece activarla.
+            StackPanel protLeft = new StackPanel { VerticalAlignment = VerticalAlignment.Center };
+            protLeft.Children.Add(new TextBlock { Text = "Protección en partida" });
+            protectionText = new TextBlock { Text = "Revisando…", FontSize = 12, Foreground = theme.TextSecondary, TextWrapping = TextWrapping.Wrap };
+            protLeft.Children.Add(protectionText);
+            protectionButton = new Border
+            {
+                Background = theme.Accent, CornerRadius = new CornerRadius(4), Padding = new Thickness(12, 4, 12, 4),
+                Cursor = Cursors.Hand, VerticalAlignment = VerticalAlignment.Center, Visibility = Visibility.Collapsed,
+                Child = new TextBlock { Text = "Activar", Foreground = theme.OnAccent, FontSize = 13, FontWeight = FontWeights.SemiBold },
+            };
+            protectionButton.MouseLeftButtonUp += (s, e) =>
+            {
+                if (protectionGame == null) return;
+                Clipboard.SetText(protectionGame.GsiLaunchOption);
+                host.FixProtection(protectionGame);
+                protectionText.Text = "En Steam se abrió Propiedades de " + protectionGame.Name + ": pegá (Ctrl+V) en " +
+                                      "Opciones de lanzamiento y reiniciá el juego.";
+            };
+            main.Children.Add(Row(protLeft, protectionButton));
             root.Children.Add(Wrap(main, new Thickness(0, 14, 0, 0)));
 
             // Avisos.

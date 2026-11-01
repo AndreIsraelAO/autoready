@@ -17,6 +17,8 @@ namespace AutoReady
         // Aceptar apretando Enter en vez de hacer click: no depende de donde esta el boton (resolucion, escala,
         // monitor). Si despues del Enter el popup sigue en pantalla, se hace click igual.
         public bool AcceptWithEnter;
+        // Opcion de lanzamiento que el juego necesita para mandar GSI (null si no hace falta).
+        public string GsiLaunchOption;
         public string MatchStartedTitle, MatchStartedText;
         public Func<Detector.Settings> DefaultDetector;
 
@@ -30,6 +32,7 @@ namespace AutoReady
             StateKey = "game_state",
             LaunchOptionHint = "En Steam: Dota 2 > Propiedades > Opciones de lanzamiento, agrega -gamestateintegration y reinicia Dota.",
             AcceptWithEnter = true,
+            GsiLaunchOption = "-gamestateintegration",
             MatchStartedTitle = "¡Empezo el pick!",
             MatchStartedText = "Ya estan eligiendo heroes. ¡Volve!",
             // Boton ACCEPT turquesa: H ~154, S ~0.30-0.35, V ~0.35.
