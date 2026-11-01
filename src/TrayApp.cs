@@ -141,6 +141,12 @@ namespace AutoReady
             catch (Exception e) { Log.Write("No pude abrir Steam: " + e.Message); }
         }
 
+        public string LaunchOptionsWithProtection(GameProfile game)
+        {
+            string current = (SteamConfig.LaunchOptions(game.AppId) ?? "").Trim();
+            return current.Length == 0 ? game.GsiLaunchOption : current + " " + game.GsiLaunchOption;
+        }
+
         // Juego instalado al que le falta la opcion de lanzamiento para GSI (o null si esta todo bien).
         // Cuenta como activo si GSI ya esta mandando datos, aunque no se haya podido leer la config de Steam.
         GameProfile MissingProtection()

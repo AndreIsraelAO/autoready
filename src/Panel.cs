@@ -32,6 +32,8 @@ namespace AutoReady
         void SetPaused(bool paused);
         void SetPhone(bool on);
         void FixProtection(GameProfile game);
+        // Opciones de lanzamiento actuales del juego + la que falta, listas para reemplazar sin perder nada.
+        string LaunchOptionsWithProtection(GameProfile game);
         void SendTestPush();
         void SetAutostart(bool on);
         bool AutostartEnabled { get; }
@@ -262,7 +264,7 @@ namespace AutoReady
             updateText.Text = "Versión " + Updater.CurrentVersionText + (st.UpdateMessage != null ? " · " + st.UpdateMessage : "");
 
             // Si el usuario ya toco "Activar" y todavia no termino, no se pisa la instruccion.
-            bool waitingUser = protectionGame != null && st.ProtectionFix == protectionGame && protectionText.Text.StartsWith("En Steam");
+            bool waitingUser = protectionGame != null && st.ProtectionFix == protectionGame && (protectionText.Text.StartsWith("En Steam") || protectionText.Text.StartsWith("Copié"));
             protectionGame = st.ProtectionFix;
             protectionButton.Visibility = st.ProtectionFix != null ? Visibility.Visible : Visibility.Collapsed;
             if (!waitingUser) protectionText.Text = st.Protection;
@@ -337,10 +339,15 @@ namespace AutoReady
             protectionButton.MouseLeftButtonUp += (s, e) =>
             {
                 if (protectionGame == null) return;
-                Clipboard.SetText(protectionGame.GsiLaunchOption);
+                // Se copian las opciones que el jugador ya tenia + la nueva: reemplazando todo no pierde las suyas.
+                string options = host.LaunchOptionsWithProtection(protectionGame);
+                bool hadOwn = options != protectionGame.GsiLaunchOption;
+                Clipboard.SetText(options);
                 host.FixProtection(protectionGame);
-                protectionText.Text = "En Steam se abrió Propiedades de " + protectionGame.Name + ": pegá (Ctrl+V) en " +
-                                      "Opciones de lanzamiento y reiniciá el juego.";
+                protectionText.Text = hadOwn
+                    ? "Copié tus opciones de " + protectionGame.Name + " con lo que falta agregado. En Steam, en Opciones de lanzamiento, " +
+                      "seleccioná todo (Ctrl+A), pegá (Ctrl+V) y reiniciá el juego."
+                    : "En Steam, en Opciones de lanzamiento de " + protectionGame.Name + ", pegá (Ctrl+V) y reiniciá el juego.";
             };
             main.Children.Add(Row(protLeft, protectionButton));
             root.Children.Add(Wrap(main, new Thickness(0, 14, 0, 0)));

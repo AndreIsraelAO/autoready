@@ -36,7 +36,7 @@ vuelva a tiempo. Producto de **keis.studio** (estudio del dueño del repo). Ante
 6. **Modo seguro (sin GSI):** 3 detecciones seguidas en el mismo lugar, solo click (nunca Enter: en Dota abriría el chat) y
    no acepta si el juego está al frente y hubo mouse/teclado en los últimos 3 s (`Win32.IdleTime`).
 7. **Protección en partida (panel):** Dota necesita la opción de lanzamiento `-gamestateintegration`. `SteamConfig` lee
-   (nunca escribe) `userdata/<cuenta activa>/config/localconfig.vdf` para saber si está; el botón Activar copia la opción y
+   (nunca escribe) `userdata/<cuenta activa>/config/localconfig.vdf` para saber si está; el botón Activar copia las opciones actuales del jugador + la que falta (para reemplazar sin perder nada) y
    abre `steam://gameproperties/570`. No se edita el archivo: Steam lo pisa si está abierto y puede haber cuentas ajenas.
 
 ## Sumar juegos (la estrategia)
