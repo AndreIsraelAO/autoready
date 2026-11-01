@@ -15,12 +15,12 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/github/v/release/hercase/autoready?include_prereleases&label=versi%C3%B3n" alt="Última versión">
+  <img src="https://img.shields.io/github/v/release/hercase/autoready?label=versi%C3%B3n" alt="Última versión">
   <img src="https://img.shields.io/badge/Windows-10%20%7C%2011-0078D4" alt="Windows 10 y 11">
   <img src="https://img.shields.io/github/downloads/hercase/autoready/total?label=descargas" alt="Descargas">
   <img src="https://img.shields.io/github/license/hercase/autoready?label=licencia" alt="Licencia MIT">
   <br>
-  <a href="https://hercase.github.io/autoready/">Sitio web</a> · <a href="README.md">Read in English</a>
+  <a href="https://hercase.github.io/autoready/"><b>hercase.github.io/autoready</b></a> · <a href="README.md">Read in English</a>
 </p>
 
 <table>
@@ -62,10 +62,11 @@ Tocá el ícono para abrir el panel:
 
 - **El interruptor de arriba** activa o pausa AutoReady. El estado de al lado dice qué está haciendo.
 - **Tecla de pausa:** elegí una tecla (F1–F12 o una combinación) para pausar y reanudar desde cualquier lado, también jugando.
-- **Avisos al celular:** escaneá el código con la cámara del celular e instalá la app gratis [ntfy](https://ntfy.sh).
+- **Avisos al celular:** escaneá el QR con la cámara del celular. Una [página corta](https://hercase.github.io/autoready/phone/) te guía para conectar la app gratis [ntfy](https://ntfy.sh) (un toque en Android, copiar y pegar en iPhone).
 - **Más opciones:** iniciar con Windows, actualizaciones automáticas y la versión instalada.
 
 Con click derecho en el ícono tenés **Pausar/Reanudar** y **Salir**. El ícono se pone gris cuando está en pausa.
+AutoReady está pensado para quedar activo: la pausa dura hasta que la quites o cierres el juego.
 AutoReady se actualiza solo, y está en español o en inglés según el idioma de tu Windows.
 
 ## Juegos compatibles

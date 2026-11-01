@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Runtime.InteropServices;
+using System.Runtime.InteropServices.WindowsRuntime;
 using System.Security;
 using Microsoft.Win32;
 using Windows.Data.Xml.Dom;
@@ -68,14 +69,22 @@ namespace AutoReady
                 XmlDocument doc = new XmlDocument();
                 doc.LoadXml(xml);
                 ToastNotification t = new ToastNotification(doc);
-                // El csc de .NET Framework no compila "+=" sobre eventos de WinRT; por reflexion si funciona.
                 TypedEventHandler<ToastNotification, object> handler = (s, e) =>
                 {
                     ToastActivatedEventArgs a = e as ToastActivatedEventArgs;
                     Action h = a != null && a.Arguments == "button" ? onButton : onClick;
                     if (h != null) h();
                 };
-                typeof(ToastNotification).GetEvent("Activated").AddEventHandler(t, handler);
+                // El csc de .NET Framework no compila "+=" sobre eventos de WinRT, y EventInfo.AddEventHandler tampoco
+                // sirve ("not supported on WinRT events"). Se hace lo mismo que generaria el compilador: los metodos
+                // add_/remove_ del evento pasados a WindowsRuntimeMarshal.
+                Type type = typeof(ToastNotification);
+                Func<TypedEventHandler<ToastNotification, object>, EventRegistrationToken> add =
+                    (Func<TypedEventHandler<ToastNotification, object>, EventRegistrationToken>)Delegate.CreateDelegate(
+                        typeof(Func<TypedEventHandler<ToastNotification, object>, EventRegistrationToken>), t, type.GetMethod("add_Activated"));
+                Action<EventRegistrationToken> remove =
+                    (Action<EventRegistrationToken>)Delegate.CreateDelegate(typeof(Action<EventRegistrationToken>), t, type.GetMethod("remove_Activated"));
+                WindowsRuntimeMarshal.AddEventHandler(add, remove, handler);
                 notifier.Show(t);
                 return true;
             }

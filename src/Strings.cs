@@ -14,9 +14,9 @@ namespace AutoReady
         public static string StatusPausedKey(string key) { return string.Format(T("En pausa · {0} para reanudar", "Paused · {0} to resume"), key); }
         public static string StatusSearching(string game) { return string.Format(T("Esperando partida en {0}", "Waiting for a match in {0}"), game); }
         public static string StatusInMatch(string game) { return string.Format(T("En partida de {0}", "In a {0} match"), game); }
-        public static string TooltipIdle { get { return T("AutoReady: esperando un juego", "AutoReady: waiting for a game"); } }
+        public static string TooltipIdle { get { return T("AutoReady: activo, esperando un juego", "AutoReady: on, waiting for a game"); } }
         public static string TooltipPaused(string key) { return key == null ? T("AutoReady: en pausa", "AutoReady: paused") : string.Format(T("AutoReady: en pausa ({0} para reanudar)", "AutoReady: paused ({0} to resume)"), key); }
-        public static string TooltipSearching(string game) { return string.Format(T("AutoReady: esperando partida en {0}", "AutoReady: waiting for a match in {0}"), game); }
+        public static string TooltipSearching(string game) { return string.Format(T("AutoReady: activo, esperando partida en {0}", "AutoReady: on, waiting for a match in {0}"), game); }
         public static string TooltipInMatch(string game) { return string.Format(T("AutoReady: en partida de {0}", "AutoReady: in a {0} match"), game); }
 
         // Bienvenida (primer uso)
@@ -75,7 +75,7 @@ namespace AutoReady
 
         // Notificaciones
         public static string ToastPaused { get { return T("En pausa", "Paused"); } }
-        public static string ToastPausedText(string key) { return string.Format(T("No va a aceptar partidas. Reanudá con {0}.", "Matches won't be accepted. Resume with {0}."), key); }
+        public static string ToastPausedText(string key) { return string.Format(T("No acepta partidas hasta que reanudes con {0} o cierres el juego.", "Won't accept matches until you press {0} or close the game."), key); }
         public static string ToastResume { get { return T("Reanudar", "Resume"); } }
         public static string ToastAccepted { get { return T("Partida aceptada", "Match accepted"); } }
         public static string ToastAcceptedText(string game) { return string.Format(T("Si todos aceptan, tu partida de {0} arranca en segundos. Volvé a la PC.", "If everyone accepts, your {0} match starts in seconds. Come back to your PC."), game); }

@@ -15,12 +15,12 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/github/v/release/hercase/autoready?include_prereleases&label=version" alt="Latest version">
+  <img src="https://img.shields.io/github/v/release/hercase/autoready?label=version" alt="Latest version">
   <img src="https://img.shields.io/badge/Windows-10%20%7C%2011-0078D4" alt="Windows 10 and 11">
   <img src="https://img.shields.io/github/downloads/hercase/autoready/total" alt="Downloads">
   <img src="https://img.shields.io/github/license/hercase/autoready" alt="MIT license">
   <br>
-  <a href="https://hercase.github.io/autoready/">Website</a> · <a href="README.es.md">Leer en español</a>
+  <a href="https://hercase.github.io/autoready/"><b>hercase.github.io/autoready</b></a> · <a href="README.es.md">Leer en español</a>
 </p>
 
 <table>
@@ -62,10 +62,11 @@ Click the icon to open the panel:
 
 - **The switch at the top** turns accepting on or off. The status next to it tells you what AutoReady is doing.
 - **Pause hotkey:** pick a key (F1–F12 or a combination) to pause and resume from anywhere, even mid-game.
-- **Phone notifications:** scan the code with your phone camera and install the free [ntfy](https://ntfy.sh) app.
+- **Phone notifications:** scan the QR code with your phone camera. A [short page](https://hercase.github.io/autoready/phone/) walks you through connecting the free [ntfy](https://ntfy.sh) app (one tap on Android, copy and paste on iPhone).
 - **More settings:** start with Windows, automatic updates, and the current version.
 
 Right-click the icon for **Pause/Resume** and **Exit**. The icon turns gray while paused.
+AutoReady is meant to stay on: a pause lasts until you resume it or close the game.
 AutoReady updates itself, and it's in English or Spanish depending on your Windows language.
 
 ## Supported games

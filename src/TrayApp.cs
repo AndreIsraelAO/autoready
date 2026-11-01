@@ -366,6 +366,12 @@ namespace AutoReady
             GameProfile game = FindRunningGame(out hwnd);
             if (game != activeGame)
             {
+                // La pausa dura hasta cerrar el juego: asi nunca queda apagado sin querer para la proxima vez.
+                if (game == null && activeGame != null && paused)
+                {
+                    Log.Write(activeGame.Name + " cerrado: se reanuda solo");
+                    SetPaused(false);
+                }
                 activeGame = game;
                 consecutiveHits = 0;
                 gameSeenSince = game == null ? DateTime.MinValue : DateTime.Now;
