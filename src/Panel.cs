@@ -56,7 +56,7 @@ namespace AutoReady
 
         readonly IPanelHost host;
         readonly Theme theme;
-        TextBlock statusText, updateText;
+        TextBlock statusText, versionTitle, versionState;
         Ellipse statusDot;
         Toggle acceptToggle, phoneToggle;
         StackPanel phoneDetails, moreBox;
@@ -263,7 +263,10 @@ namespace AutoReady
                 updateBar.Message.Visibility = show ? Visibility.Visible : Visibility.Collapsed;
                 updateButton.Enabled = !busy;
             }
-            updateText.Text = S.Version(Updater.CurrentVersionText, st.UpdateMessage);
+            // Version arriba y, debajo, lo que pasa con las actualizaciones (si hay algo que decir).
+            versionTitle.Text = S.Version(Updater.CurrentVersionText);
+            versionState.Text = st.UpdateMessage ?? "";
+            versionState.Visibility = string.IsNullOrEmpty(st.UpdateMessage) ? Visibility.Collapsed : Visibility.Visible;
 
             // Si el usuario ya toco "Configurar" y todavia no termino, no se pisa la instruccion.
             if (st.ProtectionFix != protectionGame) awaitingUser = false;
@@ -371,10 +374,13 @@ namespace AutoReady
             autoUpdate.Changed += on => host.SetAutoUpdate(on);
             moreBox.Children.Add(Row(Texts(S.AutoUpdate, null), autoUpdate));
             moreBox.Children.Add(Divider());
-            updateText = new TextBlock { FontSize = 12, Foreground = theme.TextSecondary, VerticalAlignment = VerticalAlignment.Center, TextWrapping = TextWrapping.Wrap };
+            StackPanel versionTexts = Texts(S.Version(Updater.CurrentVersionText), "");
+            versionTitle = (TextBlock)versionTexts.Children[0];
+            versionState = (TextBlock)versionTexts.Children[1];
+            versionState.Visibility = Visibility.Collapsed;
             ClickArea check = ClickArea.Make(theme, S.CheckUpdates, () => host.CheckUpdatesNow(), ButtonKind.Standard);
             AutomationProperties.SetName(check, S.CheckUpdatesName);
-            moreBox.Children.Add(Row(updateText, check));
+            moreBox.Children.Add(Row(versionTexts, check));
             more.Children.Add(moreBox);
             root.Children.Add(Wrap(more, new Thickness(0, 8, 0, 0)));
 

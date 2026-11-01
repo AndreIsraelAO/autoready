@@ -56,7 +56,7 @@ namespace AutoReady
         public static string AutoUpdate { get { return T("Actualizar automáticamente", "Update automatically"); } }
         public static string CheckUpdates { get { return T("Buscar", "Check"); } }
         public static string CheckUpdatesName { get { return T("Buscar actualizaciones", "Check for updates"); } }
-        public static string Version(string v, string state) { return string.Format(T("Versión {0}", "Version {0}"), v) + (state != null ? " · " + state : ""); }
+        public static string Version(string v) { return string.Format(T("Versión {0}", "Version {0}"), v); }
         public static string UpdateAvailable(string tag) { return string.Format(T("Hay una versión nueva ({0})", "Version {0} is available"), tag.TrimStart('v')); }
         public static string UpdateButton { get { return T("Actualizar", "Update"); } }
         public static string UpToDate { get { return T("Al día", "Up to date"); } }
