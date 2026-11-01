@@ -67,6 +67,8 @@ namespace AutoReady
         bool awaitingUser;      // el usuario toco "Configurar" y esta haciendo el paso en Steam
         bool capturingHotkey;
         DateTime hiddenAt = DateTime.MinValue;
+        Rect workArea;          // area de trabajo del monitor donde se abrio (en DIPs)
+        bool anchoredBottom;    // pegado a la barra de tareas de abajo: si crece, crece hacia arriba
 
         public event Action Hidden;
 
@@ -101,6 +103,8 @@ namespace AutoReady
                 DwmSetWindowAttribute(hwnd, DWMWA_USE_IMMERSIVE_DARK_MODE, ref dark, 4);
             };
             Deactivated += (s, e) => { StopHotkeyCapture(); HidePanel(); };
+            // Al abrir "Mas opciones" o el QR el panel cambia de alto: se reacomoda para no salirse de la pantalla.
+            SizeChanged += (s, e) => { if (IsVisible && e.HeightChanged) KeepOnScreen(); };
             PreviewKeyDown += OnPreviewKeyDown;
         }
 
@@ -184,13 +188,20 @@ namespace AutoReady
             Matrix toDip = src != null ? src.CompositionTarget.TransformFromDevice : Matrix.Identity;
             Point tl = toDip.Transform(new Point(wa.Left, wa.Top)), br = toDip.Transform(new Point(wa.Right, wa.Bottom));
             Point c = toDip.Transform(new Point(cursor.X, cursor.Y));
-            MaxHeight = Math.Max(300, br.Y - tl.Y - 24);
+            workArea = new Rect(tl, br);
+            MaxHeight = Math.Max(300, workArea.Height - 24);
             UpdateLayout();
             Left = Math.Max(tl.X + 12, Math.Min(br.X - ActualWidth - 12, c.X - ActualWidth / 2));
             // Barra de tareas abajo (lo comun): el panel arriba de ella. Si el mouse esta en la mitad de arriba, abajo del mouse.
-            Top = c.Y > (tl.Y + br.Y) / 2 ? br.Y - ActualHeight - 12 : tl.Y + 12;
-            Activate();
-            acceptToggle.Focus();
+            anchoredBottom = c.Y > (tl.Y + br.Y) / 2;
+            KeepOnScreen();
+            Activate();   // sin foco en un control: el marco de foco aparece recien cuando se usa Tab
+        }
+
+        void KeepOnScreen()
+        {
+            if (workArea.IsEmpty) return;
+            Top = anchoredBottom ? Math.Max(workArea.Top + 12, workArea.Bottom - ActualHeight - 12) : workArea.Top + 12;
         }
 
         void HidePanel()
@@ -342,10 +353,6 @@ namespace AutoReady
             Toggle autoUpdate = new Toggle(theme, host.Cfg.AutoUpdateCheck, S.AutoUpdate);
             autoUpdate.Changed += on => host.SetAutoUpdate(on);
             general.Children.Add(Row(Texts(S.AutoUpdate, null), autoUpdate));
-            general.Children.Add(Divider());
-            Toggle steamStatus = new Toggle(theme, host.Cfg.UseSteamStatus, S.SteamStatus);
-            steamStatus.Changed += on => { host.Cfg.UseSteamStatus = on; host.Cfg.Save(); };
-            general.Children.Add(Row(Texts(S.SteamStatus, S.SteamStatusHint), steamStatus));
             general.Children.Add(Divider());
             updateText = new TextBlock { FontSize = 12, Foreground = theme.TextSecondary, VerticalAlignment = VerticalAlignment.Center, TextWrapping = TextWrapping.Wrap };
             general.Children.Add(Row(updateText, Link(S.CheckUpdates, () => host.CheckUpdatesNow(), 12)));

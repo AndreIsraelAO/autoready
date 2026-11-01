@@ -55,8 +55,6 @@ namespace AutoReady
         public static string MoreSettings { get { return T("Más opciones", "More settings"); } }
         public static string StartWithWindows { get { return T("Iniciar con Windows", "Start with Windows"); } }
         public static string AutoUpdate { get { return T("Buscar actualizaciones automáticamente", "Check for updates automatically"); } }
-        public static string SteamStatus { get { return T("Usar mi estado de Steam", "Use my Steam status"); } }
-        public static string SteamStatusHint { get { return T("Para saber si estás jugando", "To know when you're playing"); } }
         public static string CheckUpdates { get { return T("Buscar actualizaciones", "Check for updates"); } }
         public static string Version(string v, string state) { return string.Format(T("Versión {0}", "Version {0}"), v) + (state != null ? " · " + state : ""); }
         public static string UpdateTo(string tag) { return string.Format(T("Actualizar a {0}", "Update to {0}"), tag); }

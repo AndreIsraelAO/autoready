@@ -48,14 +48,15 @@ namespace AutoReady
             return t;
         }
 
-        // Marco de foco (solo con teclado) como el de Windows 11: borde de 2 px alrededor del control.
-        public Style FocusVisual()
+        // Marco de foco (solo con teclado) como el de Windows 11: borde de 2 px alrededor del control, con las esquinas
+        // siguiendo su forma (en el interruptor, una pastilla).
+        public Style FocusVisual(double radius = 6)
         {
             FrameworkElementFactory f = new FrameworkElementFactory(typeof(Border));
             f.SetValue(Border.BorderBrushProperty, Focus);
             f.SetValue(Border.BorderThicknessProperty, new Thickness(2));
-            f.SetValue(Border.CornerRadiusProperty, new CornerRadius(6));
-            f.SetValue(Border.MarginProperty, new Thickness(-4));
+            f.SetValue(Border.CornerRadiusProperty, new CornerRadius(radius));
+            f.SetValue(Border.MarginProperty, new Thickness(-3));
             Style s = new Style(typeof(Control));
             s.Setters.Add(new Setter(Control.TemplateProperty, new ControlTemplate(typeof(Control)) { VisualTree = f }));
             return s;
@@ -86,7 +87,7 @@ namespace AutoReady
             BorderThickness = new Thickness(1);
             Cursor = Cursors.Hand;
             Focusable = true;
-            FocusVisualStyle = theme.FocusVisual();
+            FocusVisualStyle = theme.FocusVisual(13);
             VerticalAlignment = VerticalAlignment.Center;
             if (label != null) AutomationProperties.SetName(this, label);
             thumb = new Ellipse { Width = 12, Height = 12, HorizontalAlignment = HorizontalAlignment.Left, Margin = new Thickness(3, 0, 0, 0), RenderTransform = slide };
