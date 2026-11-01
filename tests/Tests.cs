@@ -35,6 +35,7 @@ namespace AutoReady.Tests
             Group("League of Legends (API del cliente)", LeagueTests);
             Group("QR", QrTests);
             Group("Instalador y desinstalador", SetupTests);
+            Group("Tecla de pausa (panel)", HotkeyTests);
 
             Console.WriteLine();
             Console.WriteLine(failed == 0 ? "OK: " + passed + " pruebas" : "FALLARON " + failed + " de " + (passed + failed));
@@ -210,6 +211,80 @@ namespace AutoReady.Tests
             t.Join();
             Lang.Spanish = original;
             if (error != null) Fail("ventanas: " + error.Message);
+        }
+
+        class FakePanelHost : IPanelHost
+        {
+            public Config C = new Config();
+            public int SetCalls, Vk = 0x79, Mods;
+            public Config Cfg { get { return C; } }
+            public void SetPaused(bool paused) { }
+            public void SetPhone(bool on) { }
+            public void FixProtection(GameProfile game) { }
+            public string LaunchOptionsWithProtection(GameProfile game) { return ""; }
+            public void SendTestPush(Action<bool> done) { }
+            public void SetAutostart(bool on) { }
+            public bool AutostartEnabled { get { return false; } }
+            public void SetAutoUpdate(bool on) { }
+            public void CheckUpdatesNow() { }
+            public void InstallUpdate() { }
+            public string HotkeyText { get { return Vk == 0 ? "-" : "VK" + Vk + "+" + Mods; } }
+            public bool SetHotkey(int vk, int mods) { SetCalls++; Vk = vk; Mods = mods; return true; }
+        }
+
+        // Cambiar la tecla de pausa: Esc cancela y deja la anterior (sin tocar el atajo registrado); otra tecla la cambia.
+        static void HotkeyTests()
+        {
+            Exception error = null;
+            System.Threading.Thread t = new System.Threading.Thread(() =>
+            {
+                try
+                {
+                    FakePanelHost h = new FakePanelHost();
+                    Panel p = new Panel(h) { Left = -5000, Top = 0, ShowActivated = false };
+                    p.Show();
+                    Func<string> label = () => ((System.Windows.Controls.TextBlock)Field(p, "hotkeyLabel")).Text;
+                    string before = label();
+                    Call(p, "StartHotkeyCapture");
+                    Check(label() != before, "al tocar la tecla pide una nueva");
+                    Press(p, System.Windows.Input.Key.Escape);
+                    Check(label() == before && h.SetCalls == 0 && h.Vk == 0x79, "Esc cancela y deja la tecla anterior");
+                    Check(!(bool)Field(p, "capturingHotkey"), "Esc sale del modo de captura");
+                    Check(p.IsVisible, "Esc durante la captura no cierra el panel");
+                    Call(p, "StartHotkeyCapture");
+                    Press(p, System.Windows.Input.Key.F8);
+                    Check(h.SetCalls == 1 && h.Vk == 0x77 && label() == h.HotkeyText, "otra tecla la cambia");
+                    Call(p, "StartHotkeyCapture");
+                    Press(p, System.Windows.Input.Key.A);
+                    Check(h.SetCalls == 1 && h.Vk == 0x77, "una letra sola no se acepta");
+                    Call(p, "StopHotkeyCapture");
+                    Press(p, System.Windows.Input.Key.Escape);
+                    Check(!p.IsVisible, "Esc fuera de la captura cierra el panel");
+                    p.Close();
+                }
+                catch (Exception e) { error = e; }
+            });
+            t.SetApartmentState(System.Threading.ApartmentState.STA);
+            t.Start();
+            t.Join();
+            if (error != null) Fail("panel: " + error);
+        }
+
+        static object Field(object o, string name)
+        {
+            return o.GetType().GetField(name, BindingFlags.NonPublic | BindingFlags.Instance).GetValue(o);
+        }
+
+        static void Call(object o, string name)
+        {
+            o.GetType().GetMethod(name, BindingFlags.NonPublic | BindingFlags.Instance).Invoke(o, null);
+        }
+
+        static void Press(System.Windows.Window w, System.Windows.Input.Key key)
+        {
+            System.Windows.Input.KeyEventArgs e = new System.Windows.Input.KeyEventArgs(System.Windows.Input.Keyboard.PrimaryDevice,
+                System.Windows.PresentationSource.FromVisual(w), 0, key) { RoutedEvent = System.Windows.Input.Keyboard.PreviewKeyDownEvent };
+            w.RaiseEvent(e);
         }
 
         static void FindToggles(System.Windows.DependencyObject o, System.Collections.Generic.List<Toggle> found)
