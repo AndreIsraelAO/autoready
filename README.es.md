@@ -40,7 +40,7 @@ Windows SmartScreen puede mostrar una advertencia porque el exe no está firmado
 | ⚪ | En pausa (doble click en el ícono para cambiar) |
 | 🟡 | Dota no está abierto |
 
-Menú con click derecho: pausar, avisos al celular, sonido, aviso de pick, captura de prueba, abrir carpeta e iniciar con Windows.
+Menú con click derecho: pausar, **Juegos** (cuáles vigilar), **Avisos** (sonido, celular, arranque de partida) y **Opciones** (iniciar con Windows, actualizaciones). Con **Shift** + click derecho aparece **Diagnóstico**.
 
 ## Compilar
 
@@ -52,7 +52,7 @@ Genera `dist\ReadyUp.exe`. Solo necesitás Windows 10/11 (usa el `csc.exe` de .N
 
 ## Problemas
 
-- **No detecta el botón:** con el popup en pantalla, click derecho → *Guardar captura de prueba*. La imagen muestra el área de búsqueda (en celeste) y el botón detectado (en rojo). Los valores de detección están en `%APPDATA%\ReadyUp\readyup.ini`.
+- **No detecta el botón:** con el popup en pantalla, Shift + click derecho → *Diagnóstico* → *Guardar captura*. La imagen muestra el área de búsqueda (en celeste) y el botón detectado (en rojo). Los valores de detección están en `%APPDATA%\ReadyUp\readyup.ini`.
 - **Probar el detector con una imagen:** `ReadyUp.exe --test captura.png dota2` (o `cs2`) genera `captura.result.png` y `.result.txt`.
 - **Logs:** `%APPDATA%\ReadyUp\readyup.log`.
 

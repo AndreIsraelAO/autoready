@@ -50,12 +50,12 @@ namespace ReadyUp
             statusItem = new ToolStripMenuItem("Iniciando...") { Enabled = false };
             gsiItem = new ToolStripMenuItem("GSI: esperando al juego") { Enabled = false };
             pauseItem = new ToolStripMenuItem("Pausar", null, (s, e) => TogglePause());
-            phoneItem = new ToolStripMenuItem("Avisos al celular", null, (s, e) => TogglePhone()) { Checked = cfg.NotifyPhone };
+            phoneItem = new ToolStripMenuItem("Al celular", null, (s, e) => TogglePhone()) { Checked = cfg.NotifyPhone };
             soundItem = new ToolStripMenuItem("Sonido", null, (s, e) => { cfg.Sound = !cfg.Sound; soundItem.Checked = cfg.Sound; cfg.Save(); }) { Checked = cfg.Sound };
-            matchItem = new ToolStripMenuItem("Avisar cuando arranca la partida", null, (s, e) => { cfg.NotifyMatchStarted = !cfg.NotifyMatchStarted; matchItem.Checked = cfg.NotifyMatchStarted; cfg.Save(); }) { Checked = cfg.NotifyMatchStarted };
+            matchItem = new ToolStripMenuItem("Cuando arranca la partida", null, (s, e) => { cfg.NotifyMatchStarted = !cfg.NotifyMatchStarted; matchItem.Checked = cfg.NotifyMatchStarted; cfg.Save(); }) { Checked = cfg.NotifyMatchStarted };
             autostartItem = new ToolStripMenuItem("Iniciar con Windows", null, (s, e) => ToggleAutostart()) { Checked = AutostartEnabled() };
             updateItem = new ToolStripMenuItem("Actualizar", null, (s, e) => InstallUpdate()) { Visible = false, Font = new Font(SystemFonts.MenuFont, FontStyle.Bold) };
-            autoUpdateItem = new ToolStripMenuItem("Buscar actualizaciones automaticamente", null, (s, e) => ToggleAutoUpdate()) { Checked = cfg.AutoUpdateCheck };
+            autoUpdateItem = new ToolStripMenuItem("Actualizar automaticamente", null, (s, e) => ToggleAutoUpdate()) { Checked = cfg.AutoUpdateCheck };
 
             ToolStripMenuItem gamesItem = new ToolStripMenuItem("Juegos");
             foreach (GameProfile g in GameProfile.All)
@@ -71,31 +71,36 @@ namespace ReadyUp
                 gamesItem.DropDownItems.Add(item);
             }
 
+            ToolStripMenuItem alertsItem = new ToolStripMenuItem("Avisos");
+            alertsItem.DropDownItems.Add(soundItem);
+            alertsItem.DropDownItems.Add(phoneItem);
+            alertsItem.DropDownItems.Add(matchItem);
+
+            ToolStripMenuItem optionsItem = new ToolStripMenuItem("Opciones");
+            optionsItem.DropDownItems.Add(autostartItem);
+            optionsItem.DropDownItems.Add(autoUpdateItem);
+            optionsItem.DropDownItems.Add(new ToolStripMenuItem("Buscar actualizaciones ahora", null, (s, e) => CheckUpdates(true)));
+
+            // Herramientas para cuando algo no anda: solo aparecen abriendo el menu con Shift + click derecho.
+            ToolStripMenuItem diagItem = new ToolStripMenuItem("Diagnostico");
+            diagItem.DropDownItems.Add(gsiItem);
+            diagItem.DropDownItems.Add(new ToolStripMenuItem("Guardar captura (con el popup en pantalla)", null, (s, e) => SaveDebugCapture()));
+            diagItem.DropDownItems.Add(new ToolStripMenuItem("Abrir carpeta de configuracion y logs", null, (s, e) => OpenDataFolder()));
+
             ContextMenuStrip menu = new ContextMenuStrip();
             menu.Items.Add(new ToolStripMenuItem("ReadyUp v" + Updater.CurrentVersionText) { Enabled = false });
-            menu.Items.Add(updateItem);
             menu.Items.Add(statusItem);
-            menu.Items.Add(gsiItem);
+            menu.Items.Add(updateItem);
             menu.Items.Add(new ToolStripSeparator());
             menu.Items.Add(pauseItem);
             menu.Items.Add(gamesItem);
-            menu.Items.Add(new ToolStripSeparator());
-            menu.Items.Add(phoneItem);
-            menu.Items.Add(new ToolStripMenuItem("Conectar celular...", null, (s, e) => ShowPhoneSetup()));
-            menu.Items.Add(soundItem);
-            menu.Items.Add(matchItem);
-            menu.Items.Add(new ToolStripSeparator());
-            // Herramientas para cuando algo no anda: no hacen falta en el uso normal.
-            ToolStripMenuItem diagItem = new ToolStripMenuItem("Diagnostico");
-            diagItem.DropDownItems.Add(new ToolStripMenuItem("Guardar captura (con el popup en pantalla)", null, (s, e) => SaveDebugCapture()));
-            diagItem.DropDownItems.Add(new ToolStripMenuItem("Abrir carpeta de configuracion y logs", null, (s, e) => OpenDataFolder()));
-            menu.Items.Add(autostartItem);
-            menu.Items.Add(autoUpdateItem);
-            menu.Items.Add(new ToolStripMenuItem("Buscar actualizaciones ahora", null, (s, e) => CheckUpdates(true)));
+            menu.Items.Add(alertsItem);
+            menu.Items.Add(optionsItem);
             menu.Items.Add(diagItem);
             menu.Items.Add(new ToolStripSeparator());
             menu.Items.Add(new ToolStripMenuItem("Hecho por keis.studio", null, (s, e) => Process.Start("https://keis.studio")));
             menu.Items.Add(new ToolStripMenuItem("Salir", null, (s, e) => Quit()));
+            menu.Opening += (s, e) => { diagItem.Visible = (Control.ModifierKeys & Keys.Shift) != 0; };
 
             tray = new NotifyIcon { Icon = iconWait, Text = "ReadyUp", ContextMenuStrip = menu, Visible = true };
             tray.DoubleClick += (s, e) => TogglePause();

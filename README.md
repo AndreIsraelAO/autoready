@@ -40,7 +40,7 @@ Windows SmartScreen may warn you because the exe isn't code-signed. Click **More
 | ⚪ | Paused (double-click the icon to toggle) |
 | 🟡 | Dota is not running |
 
-Right-click menu: pause, phone notifications, sound, pick-started alert, debug screenshot, open folder, start with Windows.
+Right-click menu: pause, **Games** (which ones to watch), **Alerts** (sound, phone, match started) and **Options** (start with Windows, updates). Hold **Shift** while right-clicking to show **Diagnostics**.
 
 ## Build from source
 
@@ -52,7 +52,7 @@ Output: `dist\ReadyUp.exe`. Requires only Windows 10/11 (uses `csc.exe` from .NE
 
 ## Troubleshooting
 
-- **It doesn't detect the button:** right-click → *Save debug screenshot* while the popup is visible. The image shows the search area (blue) and the detected button (red). Detection thresholds are in `%APPDATA%\ReadyUp\readyup.ini`.
+- **It doesn't detect the button:** Shift + right-click → *Diagnostics* → *Save screenshot* while the popup is visible. The image shows the search area (blue) and the detected button (red). Detection thresholds are in `%APPDATA%\ReadyUp\readyup.ini`.
 - **Test the detector on an image:** `ReadyUp.exe --test screenshot.png dota2` (or `cs2`) writes `screenshot.result.png` and `.result.txt`.
 - **Logs:** `%APPDATA%\ReadyUp\readyup.log`.
 
