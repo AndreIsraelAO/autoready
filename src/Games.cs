@@ -22,6 +22,8 @@ namespace AutoReady
         // Cualquier otro estado del juego cuenta como "en partida". Vacio = el juego no usa el estado de Steam.
         public string[] PresenceFinding = new string[0], PresenceMenu = new string[0];
         public Func<Detector.Settings> DefaultDetector;
+        // Juegos con API local del cliente (League of Legends): no se mira la pantalla, se le pregunta al cliente (Lcu.cs).
+        public bool UsesClientApi;
 
         public bool UsesPresence { get { return PresenceFinding.Length > 0; } }
 
@@ -60,7 +62,17 @@ namespace AutoReady
             },
         };
 
-        public static readonly List<GameProfile> All = new List<GameProfile> { Dota2, Cs2 };
+        // League of Legends: se acepta por la API local del cliente (Lcu.cs). Sin GSI, sin Steam y sin mirar la pantalla.
+        public static readonly GameProfile League = new GameProfile
+        {
+            Id = "lol",
+            Name = "League of Legends",
+            Process = "LeagueClientUx",
+            UsesClientApi = true,
+            DefaultDetector = () => new Detector.Settings(),
+        };
+
+        public static readonly List<GameProfile> All = new List<GameProfile> { Dota2, Cs2, League };
 
         public static GameProfile ById(string id)
         {

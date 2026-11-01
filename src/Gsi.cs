@@ -85,6 +85,7 @@ namespace AutoReady
 
         public static bool IsInstalled(GameProfile g)
         {
+            if (g.CfgDir == null) return false;   // juego sin GSI (League of Legends)
             foreach (string lib in SteamLibraries())
                 if (Directory.Exists(Path.GetDirectoryName(Path.Combine(lib, g.CfgDir)))) return true;
             return false;
@@ -96,6 +97,7 @@ namespace AutoReady
             foreach (GameProfile g in GameProfile.All)
                 foreach (string lib in SteamLibraries())
                 {
+                    if (g.CfgDir == null) break;
                     string target = Path.Combine(Path.Combine(lib, g.CfgDir), CfgName);
                     try { if (File.Exists(target)) File.Delete(target); }
                     catch (Exception e) { Log.Write("GSI: no pude borrar " + target + ": " + e.Message); }
@@ -105,6 +107,7 @@ namespace AutoReady
         // Escribe el .cfg de GSI en cada instalacion encontrada del juego. Devuelve la cantidad escrita.
         public int InstallConfig(GameProfile g)
         {
+            if (g.CfgDir == null) return 0;
             string content =
                 "\"AutoReady\"\r\n{\r\n" +
                 "    \"uri\"           \"http://127.0.0.1:" + port + "/\"\r\n" +

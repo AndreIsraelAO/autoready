@@ -7,7 +7,7 @@
 <p align="center">
   <b>Queue up. Step away. AutoReady accepts the match for you.</b><br>
   A free Windows app that accepts your matches and tells you when to come back.<br>
-  Works with Dota 2 and Counter-Strike 2.
+  Works with Dota 2, Counter-Strike 2 and League of Legends.
 </p>
 
 <p align="center">
@@ -75,6 +75,7 @@ AutoReady updates itself, and it's in English or Spanish depending on your Windo
 |---|---|
 | **Dota 2** | Nothing to do. If a one-time step is needed, the panel shows **Set up**: it copies the launch option and opens Dota's properties in Steam so you just paste it. |
 | **Counter-Strike 2** | Nothing to do. Restart CS2 once after installing AutoReady. |
+| **League of Legends** | Nothing to do. AutoReady talks to the League client's local API on your PC (the same one community tools use): it accepts without touching your mouse and does nothing in champ select or in game. |
 
 Playing something else? **[Ask for your game](https://github.com/hercase/autoready/issues/new?template=game-request.yml)**: it takes a minute, and a screenshot of the match found popup helps a lot.
 

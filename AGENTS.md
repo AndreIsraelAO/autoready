@@ -68,6 +68,7 @@ Para sumar un juego: proceso, una captura del popup (sale de las capturas autom�
 | `src/Template.cs` | Detección por recorte del botón (NCC en color, multi-escala) |
 | `src/Samples.cs` | Capturas reales de la beta para calibrar (aceptadas y partidas que se escaparon) |
 | `src/Gsi.cs` | Instala la config de GSI en cada biblioteca de Steam y recibe el estado |
+| `src/Lcu.cs` | League of Legends: API local del cliente (lockfile → 127.0.0.1); fase y aceptar sin mouse. El camino de LoL es `TrayApp.TickClient` |
 | `src/Win32.cs` | P/Invoke: ventanas, captura, foco, click, atajos |
 | `src/Toast.cs` | Notificaciones nativas de Windows (WinRT) con logo y botón; fallback a globos de la bandeja |
 | `src/Notifier.cs` | Push al celular con ntfy.sh |

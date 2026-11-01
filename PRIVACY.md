@@ -16,6 +16,7 @@ What stays on your PC:
 - Settings and logs in `%APPDATA%\AutoReady`.
 - During the beta, screenshots of the game window to improve detection, in `%APPDATA%\AutoReady\samples` (latest 15).
   They are never uploaded. Turn them off with `SaveSamples=False` in `%APPDATA%\AutoReady\autoready.ini`.
+- For League of Legends, AutoReady talks only to the League client's local API on `127.0.0.1`, using the credentials the client writes to its own folder while open. Nothing leaves your PC.
 - A Game State Integration config file in the folders of supported games (Dota 2 and CS2 today), so those games tell AutoReady (and only AutoReady,
   on `127.0.0.1`) when you're in a match.
 
@@ -44,6 +45,7 @@ Lo que queda en tu PC:
 - La configuración y los logs, en `%APPDATA%\AutoReady`.
 - Durante la beta, capturas de la ventana del juego para mejorar la detección, en `%APPDATA%\AutoReady\samples` (las
   últimas 15). Nunca se suben. Se apagan con `SaveSamples=False` en `%APPDATA%\AutoReady\autoready.ini`.
+- Para League of Legends, AutoReady habla solo con la API local del cliente de LoL en `127.0.0.1`, con las credenciales que el cliente escribe en su propia carpeta mientras está abierto. No sale nada de tu PC.
 - Un archivo de configuración de Game State Integration en las carpetas de los juegos compatibles (hoy, Dota 2 y CS2), para que esos juegos le avisen
   a AutoReady (y solo a AutoReady, en `127.0.0.1`) cuando estás en partida.
 

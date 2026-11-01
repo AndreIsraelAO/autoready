@@ -29,7 +29,10 @@ namespace AutoReady
         string updateMessage;
 
         volatile bool paused;
-        volatile bool installWhenGameCloses;   // actualizacion automatica esperando que se cierre el juego
+        volatile bool installWhenGameCloses;
+        readonly Lcu lcu = new Lcu();
+        string clientPhase;             // ultima fase del cliente de LoL
+        volatile bool clientInMatch;    // LoL en seleccion de campeones o en partida   // actualizacion automatica esperando que se cierre el juego
         volatile bool running = true;
         volatile IntPtr flashedWindow = IntPtr.Zero;   // ultima ventana que titilo en la barra de tareas
         AppState state = AppState.Starting;
@@ -317,7 +320,7 @@ namespace AutoReady
             Updater.Release r = pendingUpdate;
             if (r == null) return;
             if (Interlocked.CompareExchange(ref installing, 1, 0) != 0) return;   // ya se esta instalando
-            if (gsi.InAnyMatch() || Presence.Current == PresenceState.InMatch)
+            if (gsi.InAnyMatch() || Presence.Current == PresenceState.InMatch || clientInMatch)
             {
                 updateMessage = S.UpdateAfterMatch;
                 installing = 0;
@@ -363,6 +366,15 @@ namespace AutoReady
             foreach (GameProfile g in GameProfile.All)
             {
                 if (!cfg.For(g).Enabled) continue;
+                if (g.UsesClientApi)
+                {
+                    // El cliente de LoL no necesita ventana visible: alcanza con que el proceso este abierto.
+                    Process[] ps = Process.GetProcessesByName(g.Process);
+                    bool open = ps.Length > 0;
+                    foreach (Process p in ps) p.Dispose();
+                    if (open) { hwnd = IntPtr.Zero; return g; }
+                    continue;
+                }
                 hwnd = Win32.FindGameWindow(g.Process);
                 if (hwnd != IntPtr.Zero) return g;
             }
@@ -396,7 +408,8 @@ namespace AutoReady
             }
             Presence.Watch(cfg.UseSteamStatus ? game : null);
             if (paused) { SetState(AppState.Paused); return 500; }
-            if (game == null) { SetState(AppState.GameClosed); return 2000; }
+            if (game == null) { clientInMatch = false; SetState(AppState.GameClosed); return 2000; }
+            if (game.UsesClientApi) return TickClient(game);
 
             if (gsi.InMatch(game)) { SetState(AppState.InMatch); return 1000; }
 
@@ -447,6 +460,35 @@ namespace AutoReady
             if (hit == null) { consecutiveHits = 0; return cfg.ScanIntervalMs; }
             using (decisive)
                 return Decide(game, hwnd, hit, safe, needed, decisive);
+        }
+
+        // League of Legends: se le pregunta la fase al cliente y, con una partida encontrada, se acepta por su API.
+        // No hay riesgo de click en partida: en seleccion de campeones o jugando no se manda nada.
+        int TickClient(GameProfile game)
+        {
+            string phase = lcu.Phase();
+            if (phase != clientPhase)
+            {
+                Log.Write(game.Name + ": fase " + (clientPhase ?? "?") + " -> " + (phase ?? "?"));
+                // Arranco la seleccion de campeones (o la partida): mismo aviso que con GSI.
+                if (Lcu.IsInMatch(phase) && !Lcu.IsInMatch(clientPhase)) OnGameStateChanged(game, null, phase);
+                else if (!Lcu.IsInMatch(phase) && Lcu.IsInMatch(clientPhase)) OnGameStateChanged(game, clientPhase, null);
+                clientPhase = phase;
+            }
+            clientInMatch = Lcu.IsInMatch(phase);
+            if (clientInMatch) { SetState(AppState.InMatch); return 1000; }
+            SetState(AppState.Searching);
+            if (phase != "ReadyCheck" || DateTime.Now < cooldownUntil) return 1000;
+            if (!lcu.ReadyCheckPending()) return 500;   // ya la acepto (o rechazo) el jugador
+            if (paused) return 500;
+            if (!lcu.Accept()) { Log.Write(game.Name + ": no pude aceptar por la API del cliente"); return 500; }
+            lastAccept = DateTime.Now;
+            cooldownUntil = DateTime.Now.AddSeconds(cfg.CooldownAfterAcceptSec);
+            Log.Write(game.Name + ": partida encontrada, aceptada por la API del cliente");
+            Notify(S.ToastAccepted, S.ToastAcceptedText(game.Name));
+            if (cfg.Sound) Beep(true);
+            Notifier.Phone(cfg, S.ToastAccepted, S.ToastAcceptedText(game.Name), "video_game");
+            return 1000;
         }
 
         int Decide(GameProfile game, IntPtr hwnd, Detector.Hit hit, bool safe, int needed, Bitmap decisive)
@@ -596,10 +638,15 @@ namespace AutoReady
         void Notify(string title, string text, string button = null, Action onButton = null, Action onClick = null)
         {
             Action click = onClick ?? OpenPanel;
-            if (useToasts && Toast.Show(title, text, button,
-                    onButton == null ? (Action)null : () => ui.Post(onButton), () => ui.Post(click)))
-                return;
-            ui.Post(() => tray.ShowBalloonTip(4000, title, string.IsNullOrEmpty(text) ? " " : text, ToolTipIcon.None));
+            // Siempre desde el hilo de la interfaz: el notificador de WinRT se creo ahi y desde el hilo del escaneo falla
+            // (RPC_E_WRONG_THREAD), y Windows terminaba mostrando el globo viejo.
+            ui.Post(() =>
+            {
+                if (useToasts && Toast.Show(title, text, button,
+                        onButton == null ? (Action)null : () => ui.Post(onButton), () => ui.Post(click)))
+                    return;
+                tray.ShowBalloonTip(4000, title, string.IsNullOrEmpty(text) ? " " : text, ToolTipIcon.None);
+            });
         }
 
         // Dos tonos subiendo = activo / partida; uno bajo = pausa.
