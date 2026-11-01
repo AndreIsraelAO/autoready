@@ -444,9 +444,10 @@ namespace ReadyUp
                         {
                             Color c = bmp.GetPixel(x, y);
                             if (c.A == 0 || c.G - c.R < 40) continue;   // solo la flecha verde
-                            int lum = (c.R + c.G + c.B) / 3;
+                            // Gris claro: tiene que leerse sobre la barra de tareas oscura.
+                            int gray = Math.Min(255, (c.R + c.G + c.B) / 3 + 75);
                             Color t = tint == TrayTint.Gray
-                                ? Color.FromArgb(c.A, lum, lum, lum)
+                                ? Color.FromArgb(c.A, gray, gray, gray)
                                 : Color.FromArgb(c.A, Math.Min(255, c.G + 40), Math.Min(255, c.G * 3 / 4), 40);
                             bmp.SetPixel(x, y, t);
                         }
