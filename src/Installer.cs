@@ -176,7 +176,7 @@ namespace AutoReady
             titles.Children.Add(new TextBlock { Text = "AutoReady", FontSize = 20, FontWeight = FontWeights.SemiBold, FontFamily = new FontFamily("Segoe UI Variable Display, Segoe UI") });
             titles.Children.Add(new TextBlock
             {
-                Text = Lang.T("Acepta tus partidas de Dota 2 y CS2 mientras no estás.", "Accepts your Dota 2 and CS2 matches while you're away."),
+                Text = Lang.T("Acepta tus partidas mientras no estás.", "Accepts your matches while you're away."),
                 Foreground = theme.TextSecondary, TextWrapping = TextWrapping.Wrap,
             });
             Grid.SetColumn(titles, 1);

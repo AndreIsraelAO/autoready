@@ -16,7 +16,7 @@ What stays on your PC:
 - Settings and logs in `%APPDATA%\AutoReady`.
 - During the beta, screenshots of the game window to improve detection, in `%APPDATA%\AutoReady\samples` (latest 15).
   They are never uploaded. Turn them off with `SaveSamples=False` in `%APPDATA%\AutoReady\autoready.ini`.
-- A Game State Integration config file in the Dota 2 and CS2 folders, so those games tell AutoReady (and only AutoReady,
+- A Game State Integration config file in the folders of supported games (Dota 2 and CS2 today), so those games tell AutoReady (and only AutoReady,
   on `127.0.0.1`) when you're in a match.
 
 The phone setup page ([hercase.github.io/autoready/phone](https://hercase.github.io/autoready/phone/)) that the QR code
@@ -44,7 +44,7 @@ Lo que queda en tu PC:
 - La configuración y los logs, en `%APPDATA%\AutoReady`.
 - Durante la beta, capturas de la ventana del juego para mejorar la detección, en `%APPDATA%\AutoReady\samples` (las
   últimas 15). Nunca se suben. Se apagan con `SaveSamples=False` en `%APPDATA%\AutoReady\autoready.ini`.
-- Un archivo de configuración de Game State Integration en las carpetas de Dota 2 y CS2, para que esos juegos le avisen
+- Un archivo de configuración de Game State Integration en las carpetas de los juegos compatibles (hoy, Dota 2 y CS2), para que esos juegos le avisen
   a AutoReady (y solo a AutoReady, en `127.0.0.1`) cuando estás en partida.
 
 La página para conectar el celular ([hercase.github.io/autoready/phone](https://hercase.github.io/autoready/phone/)) que

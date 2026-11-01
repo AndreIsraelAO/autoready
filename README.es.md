@@ -6,7 +6,7 @@
 
 <p align="center">
   <b>Buscá partida, andá a hacer otra cosa. AutoReady la acepta por vos.</b><br>
-  Una app gratis para Windows que acepta tus partidas de Steam y te avisa cuándo volver.<br>
+  Una app gratis para Windows que acepta tus partidas y te avisa cuándo volver.<br>
   Funciona con Dota 2 y Counter-Strike 2.
 </p>
 

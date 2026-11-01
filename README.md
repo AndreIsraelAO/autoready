@@ -6,7 +6,7 @@
 
 <p align="center">
   <b>Queue up. Step away. AutoReady accepts the match for you.</b><br>
-  A free Windows app that accepts your Steam matches and tells you when to come back.<br>
+  A free Windows app that accepts your matches and tells you when to come back.<br>
   Works with Dota 2 and Counter-Strike 2.
 </p>
 
