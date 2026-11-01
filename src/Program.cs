@@ -40,12 +40,13 @@ namespace AutoReady
             }
             Updater.CleanupOldExe();
 
-            // Desinstalar (lo llama Configuracion > Aplicaciones) o, si es un exe recien bajado, ofrecer instalarlo.
+            // Desinstalar (lo llama Configuracion > Aplicaciones) o, si es un exe recien bajado, instalarlo. Tanto si se
+            // instala (arranca la copia instalada) como si se cancela, este exe termina aca.
             if (args.Length >= 1 && args[0] == "--uninstall") return Installer.Uninstall();
             if (Installer.ShouldOffer(args))
             {
-                Installer.Choice choice = Installer.Offer();
-                if (choice != Installer.Choice.Portable) return 0;   // instalado (ya arranco la copia instalada) o cancelado
+                Installer.Offer();
+                return 0;
             }
 
             bool created;

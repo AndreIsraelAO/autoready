@@ -16,7 +16,7 @@ namespace AutoReady
     // inicio con Windows opcional y entrada en Configuracion > Aplicaciones con su desinstalador.
     static class Installer
     {
-        public enum Choice { Installed, Portable, Cancel }
+        public enum Choice { Installed, Cancel }
 
         const string UninstallKey = @"Software\Microsoft\Windows\CurrentVersion\Uninstall\AutoReady";
         const string RunKey = @"Software\Microsoft\Windows\CurrentVersion\Run";
@@ -32,12 +32,10 @@ namespace AutoReady
             get { return string.Equals(Path.GetFullPath(System.Windows.Forms.Application.ExecutablePath), InstalledExe, StringComparison.OrdinalIgnoreCase); }
         }
 
-        // Se ofrece instalar al abrir un exe bajado (no el instalado, no las builds locales de desarrollo).
+        // Un exe bajado siempre se instala (no hay modo portable). Las builds locales de desarrollo corren donde estan.
         public static bool ShouldOffer(string[] args)
         {
-            if (IsInstalledCopy || Updater.IsDevBuild) return false;
-            foreach (string a in args) if (a == "--portable") return false;
-            return true;
+            return !IsInstalledCopy && !Updater.IsDevBuild;
         }
 
         public static Choice Offer()
@@ -186,13 +184,6 @@ namespace AutoReady
             Grid buttons = new Grid();
             buttons.ColumnDefinitions.Add(new ColumnDefinition());
             buttons.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
-            TextBlock portable = new TextBlock
-            {
-                Text = Lang.T("Usar sin instalar", "Run without installing"), Foreground = theme.Link, Cursor = Cursors.Hand,
-                VerticalAlignment = VerticalAlignment.Center,
-            };
-            portable.MouseLeftButtonUp += (s, e) => { Result = Installer.Choice.Portable; Close(); };
-            buttons.Children.Add(portable);
             Border install = new Border
             {
                 Background = theme.Accent, CornerRadius = new CornerRadius(4), Padding = new Thickness(22, 8, 22, 8), Cursor = Cursors.Hand,
