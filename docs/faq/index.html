@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>AutoReady: questions</title>
+<meta name="description" content="What AutoReady installs, what it sends, and answers to common questions.">
+<meta name="theme-color" content="#F3F3F3" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#161616" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="../assets/autoready-icon-192.png">
+<style>
+  /* Preguntas frecuentes: aca va el detalle que no entra en el instalador ni en el panel. Sin scripts de terceros. */
+  :root {
+    --bg: #F3F3F3; --card: #FFFFFF; --stroke: #E5E5E5; --text: #1B1B1B; --muted: #5F5F5F;
+    --accent: #176B47; --soft: #E7F3EC; --code-bg: #F0F0F0;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #161616; --card: #222222; --stroke: #2E2E2E; --text: #FFFFFF; --muted: #B5B5B5;
+            --accent: #5FD49E; --soft: #17301F; --code-bg: #1A1A1A; }
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; scroll-padding-top: 16px; }
+  body { margin: 0; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column;
+         font: 16px/1.6 "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", Arial, sans-serif; }
+  main { width: 100%; max-width: 720px; margin: 0 auto; padding: 40px 20px 32px; flex: 1; }
+  a { color: var(--accent); }
+  a:focus-visible, summary:focus-visible { outline: 2px solid var(--text); outline-offset: 3px; border-radius: 6px; }
+  .top { display: flex; align-items: center; gap: 12px; margin-bottom: 28px; text-decoration: none; color: var(--text); font-weight: 650; font-size: 18px; }
+  .top img { width: 36px; height: 36px; border-radius: 9px; }
+  h1 { font-size: 32px; line-height: 1.15; letter-spacing: -.02em; margin: 0 0 8px; }
+  .sub { color: var(--muted); margin: 0 0 28px; }
+  h2 { font-size: 13px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: 32px 0 10px; font-weight: 600; }
+
+  details { background: var(--card); border: 1px solid var(--stroke); border-radius: 14px; padding: 0 20px; margin-bottom: 10px; }
+  summary { cursor: pointer; padding: 16px 0; font-weight: 600; list-style: none; display: flex; justify-content: space-between; gap: 12px; }
+  summary::-webkit-details-marker { display: none; }
+  summary::after { content: "+"; color: var(--muted); font-weight: 400; font-size: 22px; line-height: 1; }
+  details[open] summary::after { content: "–"; }
+  details > div { padding: 0 0 18px; color: var(--muted); }
+  details p { margin: 0 0 10px; }
+  details ul { margin: 0 0 10px; padding-left: 20px; }
+  details li { margin-bottom: 6px; }
+  details b { color: var(--text); font-weight: 600; }
+  code { font: 14px ui-monospace, "Cascadia Mono", Consolas, monospace; background: var(--code-bg); padding: 1px 5px; border-radius: 5px; overflow-wrap: anywhere; }
+
+  footer { border-top: 1px solid var(--stroke); padding: 20px 20px calc(20px + env(safe-area-inset-bottom)); text-align: center; }
+  footer img { height: 20px; display: inline-block; vertical-align: middle; }
+  footer .dark { display: none; }
+  @media (prefers-color-scheme: dark) { footer .dark { display: inline-block; } footer .light { display: none; } }
+  [data-lang] { display: none; }
+  html[lang="en"] [data-lang="en"], html[lang="es"] [data-lang="es"] { display: revert; }
+</style>
+<script>
+  // Idioma: ?lang=es|en (lo usa el instalador), si no el del navegador. Se resuelve antes de pintar.
+  (function () {
+    var q = /[?&]lang=(es|en)\b/.exec(location.search);
+    var es = q ? q[1] === "es" : /^es\b/i.test(navigator.language || "");
+    document.documentElement.lang = es ? "es" : "en";
+    if (es) document.title = "AutoReady: preguntas frecuentes";
+  })();
+</script>
+</head>
+<body>
+<main>
+  <a class="top" href="../"><img src="../assets/autoready-icon-192.png" alt="">AutoReady</a>
+
+  <!-- ===================== English ===================== -->
+  <div data-lang="en">
+    <h1>Questions</h1>
+    <p class="sub">What AutoReady installs, what it sends, and everything else that doesn't fit in the app.</p>
+
+    <h2>Installing</h2>
+    <details id="install" open><summary>What gets installed?</summary><div>
+      <p>Everything is for your user only and needs no admin rights:</p>
+      <ul>
+        <li><b>The app</b> in <code>%LOCALAPPDATA%\Programs\AutoReady</code>.</li>
+        <li><b>Shortcuts</b> in the Start menu and, if you choose, on the desktop.</li>
+        <li><b>An entry in Settings → Apps</b>, to uninstall it like any other app.</li>
+        <li><b>Start with Windows</b>, if you leave it on: a startup entry for your user.</li>
+        <li><b>A Game State Integration file</b> in the Dota 2 and CS2 folders. It's Valve's official way for tools to know when you're in a match; the game only talks to AutoReady on your own PC (<code>127.0.0.1</code>).</li>
+        <li><b>Settings and logs</b> in <code>%APPDATA%\AutoReady</code>.</li>
+      </ul>
+      <p>It never touches game memory, game files or your other settings, and it keeps your Steam launch options as they are.</p>
+    </div></details>
+    <details id="uninstall"><summary>How do I uninstall it?</summary><div>
+      <p><b>Settings → Apps → Installed apps → AutoReady → Uninstall.</b> It removes the app, its shortcuts, the startup entry and the Game State Integration files, and asks whether to delete your settings too.</p>
+    </div></details>
+    <details id="smartscreen"><summary>Windows shows a SmartScreen warning</summary><div>
+      <p>AutoReady is new and isn't code-signed yet (the request is in progress). Click <b>More info → Run anyway</b>. Every release is built from the public source code and scanned with Microsoft Defender.</p>
+    </div></details>
+
+    <h2 id="privacy">Privacy</h2>
+    <details open><summary>What does AutoReady send, and to whom?</summary><div>
+      <p>No accounts, analytics or telemetry. It only goes online for these, and each one can be turned off:</p>
+      <ul>
+        <li><b>Updates (GitHub):</b> checks for a new version at startup and once a day.</li>
+        <li><b>Your Steam status (Steam Community):</b> reads the public status of the Steam account on this PC (for example "Finding a match") while Dota 2 is open, to know when you're playing.</li>
+        <li><b>Phone notifications (ntfy):</b> only if you turn them on, and only the notification text.</li>
+      </ul>
+      <p>During the beta it keeps a few screenshots of the game window on your PC to improve detection; they're never uploaded. Full details in the <a href="https://github.com/hercase/autoready/blob/main/PRIVACY.md">privacy policy</a>.</p>
+    </div></details>
+
+    <h2>Using it</h2>
+    <details id="ban"><summary>Can I get banned for this?</summary><div>
+      <p>AutoReady only looks at the game window and presses Accept, like you would. It doesn't read or change game memory and doesn't inject anything. Steam's terms do mention automation software, so the risk isn't zero, but nothing here touches the match itself.</p>
+    </div></details>
+    <details id="match"><summary>Does it click anything during a match?</summary><div>
+      <p>No. Once a match starts it stops looking until you're back in the menu. If it can't tell whether you're in a match, it runs in a safe mode: it only clicks, and never while you're using your mouse or keyboard in the game.</p>
+    </div></details>
+    <details id="pause"><summary>Should I leave it on all the time?</summary><div>
+      <p>Yes, that's the idea: you never know when the match will pop. Pause it with your hotkey or the switch at the top of the panel if you don't want a match; the pause lasts until you resume it or close the game.</p>
+    </div></details>
+    <details id="phone"><summary>How do phone notifications work?</summary><div>
+      <p>Turn on <b>Phone notifications</b> in the panel and scan the QR code with your phone camera. It opens <a href="../phone/">a short page</a> that connects the free ntfy app: one tap on Android, copy and paste on iPhone. Keep your code private: anyone with it can read your notifications.</p>
+    </div></details>
+    <details id="afk"><summary>Can I use it to stay AFK?</summary><div>
+      <p>No, please don't. It's there so you don't miss a match while you grab something. Accept, then come back: leaving hurts the other nine players.</p>
+    </div></details>
+    <details id="games"><summary>Will you add my game?</summary><div>
+      <p>Probably, if it shows an Accept button when a match is found. <a href="https://github.com/hercase/autoready/issues/new?template=game-request.yml">Ask for it here</a>; a screenshot of the popup helps a lot.</p>
+    </div></details>
+    <details id="help"><summary>It didn't accept my match</summary><div>
+      <p>Check that the switch at the top of the panel is on and that there's no <b>Set up</b> notice. If it still fails, <a href="https://github.com/hercase/autoready/issues/new">tell us</a> your game, screen resolution and Windows display scale.</p>
+    </div></details>
+  </div>
+
+  <!-- ===================== Español ===================== -->
+  <div data-lang="es">
+    <h1>Preguntas frecuentes</h1>
+    <p class="sub">Qué instala AutoReady, qué manda, y todo lo que no entra en la app.</p>
+
+    <h2>Instalación</h2>
+    <details id="instalar" open><summary>¿Qué se instala?</summary><div>
+      <p>Todo es solo para tu usuario y no necesita permisos de administrador:</p>
+      <ul>
+        <li><b>La app</b>, en <code>%LOCALAPPDATA%\Programs\AutoReady</code>.</li>
+        <li><b>Accesos directos</b> en el menú Inicio y, si querés, en el escritorio.</li>
+        <li><b>Una entrada en Configuración → Aplicaciones</b>, para desinstalarla como cualquier app.</li>
+        <li><b>Iniciar con Windows</b>, si lo dejás activado: una entrada de inicio para tu usuario.</li>
+        <li><b>Un archivo de Game State Integration</b> en las carpetas de Dota 2 y CS2. Es la forma oficial de Valve para que una herramienta sepa cuándo estás en partida; el juego solo le habla a AutoReady dentro de tu PC (<code>127.0.0.1</code>).</li>
+        <li><b>La configuración y los logs</b>, en <code>%APPDATA%\AutoReady</code>.</li>
+      </ul>
+      <p>Nunca toca la memoria ni los archivos del juego ni tus otras configuraciones, y respeta tus opciones de lanzamiento de Steam.</p>
+    </div></details>
+    <details id="desinstalar"><summary>¿Cómo lo desinstalo?</summary><div>
+      <p><b>Configuración → Aplicaciones → Aplicaciones instaladas → AutoReady → Desinstalar.</b> Borra la app, sus accesos directos, la entrada de inicio y los archivos de Game State Integration, y te pregunta si querés borrar también tu configuración.</p>
+    </div></details>
+    <details><summary>Windows muestra un aviso de SmartScreen</summary><div>
+      <p>AutoReady es nuevo y todavía no está firmado (está en trámite). Tocá <b>Más información → Ejecutar de todas formas</b>. Cada versión se compila desde el código público y se escanea con Microsoft Defender.</p>
+    </div></details>
+
+    <h2 id="privacidad">Privacidad</h2>
+    <details open><summary>¿Qué manda AutoReady, y a quién?</summary><div>
+      <p>Sin cuentas, estadísticas ni telemetría. Solo se conecta a internet para esto, y cada cosa se puede apagar:</p>
+      <ul>
+        <li><b>Actualizaciones (GitHub):</b> busca una versión nueva al iniciar y una vez por día.</li>
+        <li><b>Tu estado de Steam (Comunidad de Steam):</b> lee el estado público de la cuenta de Steam de esta PC (por ejemplo "Buscando partida") mientras Dota 2 está abierto, para saber cuándo estás jugando.</li>
+        <li><b>Avisos al celular (ntfy):</b> solo si los activás, y solo el texto del aviso.</li>
+      </ul>
+      <p>Durante la beta guarda algunas capturas de la ventana del juego en tu PC para mejorar la detección; nunca se suben. Todo el detalle en la <a href="https://github.com/hercase/autoready/blob/main/PRIVACY.md#política-de-privacidad">política de privacidad</a>.</p>
+    </div></details>
+
+    <h2>Uso</h2>
+    <details><summary>¿Me pueden banear?</summary><div>
+      <p>AutoReady solo mira la ventana del juego y toca Aceptar, como lo harías vos. No lee ni cambia la memoria del juego y no inyecta nada. Los términos de Steam mencionan el software de automatización, así que el riesgo no es cero, pero nada de esto toca la partida en sí.</p>
+    </div></details>
+    <details><summary>¿Hace click en algo durante la partida?</summary><div>
+      <p>No. Cuando empieza la partida deja de mirar hasta que volvés al menú. Si no puede saber si estás en partida, funciona en modo seguro: solo hace click, y nunca mientras estás usando el mouse o el teclado en el juego.</p>
+    </div></details>
+    <details><summary>¿Lo dejo activo todo el tiempo?</summary><div>
+      <p>Sí, esa es la idea: nunca sabés cuándo va a aparecer la partida. Si no querés una partida, pausalo con tu tecla o con el interruptor de arriba del panel; la pausa dura hasta que la quites o cierres el juego.</p>
+    </div></details>
+    <details><summary>¿Cómo funcionan los avisos al celular?</summary><div>
+      <p>Activá <b>Avisos al celular</b> en el panel y escaneá el QR con la cámara del celular. Se abre <a href="../phone/">una página corta</a> que conecta la app gratis ntfy: un toque en Android, copiar y pegar en iPhone. No compartas tu código: con él se pueden leer tus avisos.</p>
+    </div></details>
+    <details><summary>¿Lo puedo usar para quedarme AFK?</summary><div>
+      <p>No, por favor. Está para que no pierdas una partida mientras buscás algo. Aceptá y volvé: irte perjudica a los otros nueve jugadores.</p>
+    </div></details>
+    <details><summary>¿Van a agregar mi juego?</summary><div>
+      <p>Probablemente, si muestra un botón de Aceptar cuando encuentra partida. <a href="https://github.com/hercase/autoready/issues/new?template=game-request.yml">Pedilo acá</a>; una captura del aviso ayuda mucho.</p>
+    </div></details>
+    <details><summary>No aceptó mi partida</summary><div>
+      <p>Fijate que el interruptor de arriba del panel esté activado y que no aparezca el aviso <b>Configurar</b>. Si igual falla, <a href="https://github.com/hercase/autoready/issues/new">contanos</a> tu juego, la resolución de pantalla y la escala de Windows.</p>
+    </div></details>
+  </div>
+</main>
+
+<footer>
+  <a href="https://keis.studio" aria-label="keis.studio">
+    <img class="light" src="../assets/keis-wordmark-light-tight.svg" alt="keis.studio">
+    <img class="dark" src="../assets/keis-wordmark-dark-tight.svg" alt="keis.studio">
+  </a>
+</footer>
+<script>
+  // Un link con #install / #privacy abre esa pregunta (en el idioma que se muestre).
+  (function () {
+    var map = { install: "instalar", uninstall: "desinstalar", privacy: "privacidad" };
+    var id = location.hash.slice(1);
+    if (document.documentElement.lang === "es" && map[id]) id = map[id];
+    var el = id && document.getElementById(id);
+    if (el) { if (el.tagName === "DETAILS") el.open = true; el.scrollIntoView(); }
+  })();
+</script>
+</body>
+</html>

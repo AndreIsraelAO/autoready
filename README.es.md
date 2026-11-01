@@ -80,6 +80,8 @@ AutoReady se actualiza solo, y está en español o en inglés según el idioma d
 
 ## Preguntas frecuentes
 
+Más respuestas, incluido exactamente qué se instala, en el [sitio](https://hercase.github.io/autoready/faq/?lang=es).
+
 <details>
 <summary><b>¿Me pueden banear?</b></summary>
 <br>

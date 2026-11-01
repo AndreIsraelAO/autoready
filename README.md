@@ -80,6 +80,8 @@ Playing something else? **[Ask for your game](https://github.com/hercase/autorea
 
 ## FAQ
 
+More answers, including exactly what gets installed, on the [website](https://hercase.github.io/autoready/faq/).
+
 <details>
 <summary><b>Can I get banned for this?</b></summary>
 <br>

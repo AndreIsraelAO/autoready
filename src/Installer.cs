@@ -157,59 +157,48 @@ namespace AutoReady
                 DwmSetWindowAttribute(new WindowInteropHelper(this).Handle, 20, ref dark, 4);   // barra de titulo oscura
             };
 
+            // Como el panel: encabezado chico, una sola tarjeta y nada de letra chica. El detalle de que instala y la
+            // privacidad estan en la pagina de preguntas del sitio (un link), no en la ventana.
             StackPanel root = new StackPanel { Margin = new Thickness(24) };
-            Image logo = new Image { Width = 56, Height = 56, HorizontalAlignment = HorizontalAlignment.Left, Margin = new Thickness(0, 0, 0, 14) };
+            Grid header = new Grid { Margin = new Thickness(0, 0, 0, 20) };
+            header.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+            header.ColumnDefinitions.Add(new ColumnDefinition());
+            Image logo = new Image { Width = 44, Height = 44, Margin = new Thickness(0, 0, 14, 0) };
             using (Stream st = typeof(InstallWindow).Assembly.GetManifestResourceStream("AutoReady.logo-64.png"))
             {
                 System.Windows.Media.Imaging.BitmapImage img = new System.Windows.Media.Imaging.BitmapImage();
                 img.BeginInit(); img.CacheOption = System.Windows.Media.Imaging.BitmapCacheOption.OnLoad; img.StreamSource = st; img.EndInit();
                 logo.Source = img;
             }
-            root.Children.Add(logo);
-            root.Children.Add(new TextBlock { Text = "AutoReady", FontSize = 22, FontWeight = FontWeights.SemiBold });
-            root.Children.Add(new TextBlock
+            RenderOptions.SetBitmapScalingMode(logo, BitmapScalingMode.HighQuality);
+            header.Children.Add(logo);
+            StackPanel titles = new StackPanel { VerticalAlignment = VerticalAlignment.Center };
+            titles.Children.Add(new TextBlock { Text = "AutoReady", FontSize = 20, FontWeight = FontWeights.SemiBold });
+            titles.Children.Add(new TextBlock
             {
                 Text = Lang.T("Acepta tus partidas de Steam mientras no estás.", "Accepts your Steam matches while you're away."),
-                Foreground = theme.TextSecondary, TextWrapping = TextWrapping.Wrap, Margin = new Thickness(0, 4, 0, 18),
+                FontSize = 13, Foreground = theme.TextSecondary, TextWrapping = TextWrapping.Wrap,
             });
+            Grid.SetColumn(titles, 1);
+            header.Children.Add(titles);
+            root.Children.Add(header);
 
-            Toggle desktop = new Toggle(theme, true, Lang.T("Acceso directo en el escritorio", "Desktop shortcut")),
-                   autostart = new Toggle(theme, true, Lang.T("Iniciar con Windows", "Start with Windows"));
+            string desktopText = Lang.T("Acceso directo en el escritorio", "Desktop shortcut");
+            string autostartText = Lang.T("Iniciar con Windows", "Start with Windows");
+            string updatesText = Lang.T("Actualizar automáticamente", "Update automatically");
+            string steamText = Lang.T("Usar mi estado de Steam", "Use my Steam status");
+            Toggle desktop = new Toggle(theme, true, desktopText), autostart = new Toggle(theme, true, autostartText),
+                   updates = new Toggle(theme, true, updatesText), steam = new Toggle(theme, true, steamText);
             StackPanel card = new StackPanel();
-            card.Children.Add(Row(Lang.T("Acceso directo en el escritorio", "Desktop shortcut"), desktop));
-            card.Children.Add(new Border { Height = 1, Background = theme.CardStroke });
-            card.Children.Add(Row(Lang.T("Iniciar con Windows", "Start with Windows"), autostart));
+            card.Children.Add(Row(desktopText, desktop));
+            card.Children.Add(Divider());
+            card.Children.Add(Row(autostartText, autostart));
+            card.Children.Add(Divider());
+            card.Children.Add(Row(updatesText, updates));
+            card.Children.Add(Divider());
+            // Es la unica opcion de privacidad que no esta en el panel: una linea dice para que sirve.
+            card.Children.Add(Row(steamText, steam, Lang.T("Para saber cuándo estás jugando", "To know when you're playing")));
             root.Children.Add(Card(card));
-
-            // Privacidad (PRIVACY.md): cada conexion automatica se puede apagar desde aca o despues en el panel.
-            root.Children.Add(new TextBlock { Text = Lang.T("Conexiones", "Connections"), FontSize = 13, FontWeight = FontWeights.SemiBold, Margin = new Thickness(2, 16, 0, 8) });
-            Toggle updates = new Toggle(theme, true, Lang.T("Buscar actualizaciones", "Check for updates")),
-                   steam = new Toggle(theme, true, Lang.T("Usar mi estado de Steam", "Use my Steam status"));
-            StackPanel net = new StackPanel();
-            net.Children.Add(Row(Lang.T("Buscar actualizaciones", "Check for updates"), updates,
-                Lang.T("Consulta GitHub al iniciar y una vez por día", "Asks GitHub at startup and once a day")));
-            net.Children.Add(new Border { Height = 1, Background = theme.CardStroke });
-            net.Children.Add(Row(Lang.T("Usar mi estado de Steam", "Use my Steam status"), steam,
-                Lang.T("Lee tu perfil público de Steam mientras un juego compatible está abierto",
-                       "Reads your public Steam profile while a supported game is open")));
-            root.Children.Add(Card(net));
-            string privacyText = Lang.T("Política de privacidad", "Privacy policy");
-            root.Children.Add(new ClickArea(theme,
-                new TextBlock { Text = privacyText, Foreground = theme.Link, FontSize = 12, TextDecorations = TextDecorations.Underline },
-                () => Process.Start("https://github.com/hercase/autoready/blob/main/PRIVACY.md"), privacyText)
-                { Margin = new Thickness(2, 8, 0, 0), HorizontalAlignment = HorizontalAlignment.Left });
-
-            // Cambios al sistema, avisados antes de instalar.
-            root.Children.Add(new TextBlock
-            {
-                Text = Lang.T("Se instala solo para tu usuario, sin permisos de administrador, en " + Installer.InstallDir + ". " +
-                              "Agrega un archivo de configuración oficial (Game State Integration) en las carpetas de tus juegos " +
-                              "compatibles para saber cuándo estás en partida. Se desinstala desde Configuración > Aplicaciones, y ahí se borra todo.",
-                              "Installs for your user only, no admin rights needed, in " + Installer.InstallDir + ". " +
-                              "It adds an official config file (Game State Integration) to the folders of your supported games to know " +
-                              "when you're in a match. Uninstall it from Settings > Apps, which removes everything."),
-                FontSize = 12, Foreground = theme.TextSecondary, TextWrapping = TextWrapping.Wrap, Margin = new Thickness(0, 14, 0, 20),
-            });
 
             Grid buttons = new Grid();
             buttons.ColumnDefinitions.Add(new ColumnDefinition());
@@ -229,14 +218,28 @@ namespace AutoReady
                     Log.Write("Instalador: fallo: " + ex);
                     MessageBox.Show(Lang.T("No se pudo instalar: ", "Couldn't install: ") + ex.Message, "AutoReady");
                 }
-            }, installText) { Background = theme.Fill, CornerRadius = new CornerRadius(4), Padding = new Thickness(22, 8, 22, 8) };
+            }, installText) { Background = theme.Fill, CornerRadius = new CornerRadius(4), Padding = new Thickness(24, 9, 24, 9), Margin = new Thickness(0, 20, 0, 0) };
             Grid.SetColumn(install, 1);
             buttons.Children.Add(install);
+            StackPanel note = new StackPanel { VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 20, 12, 0) };
+            note.Children.Add(new TextBlock
+            {
+                Text = Lang.T("Sin permisos de administrador", "No admin rights needed"), FontSize = 12, Foreground = theme.TextSecondary,
+                ToolTip = Installer.InstallDir,
+            });
+            string infoText = Lang.T("Qué se instala y privacidad", "What gets installed and privacy");
+            note.Children.Add(new ClickArea(theme,
+                new TextBlock { Text = infoText, Foreground = theme.Link, FontSize = 12, TextDecorations = TextDecorations.Underline },
+                () => Process.Start(Lang.T("https://hercase.github.io/autoready/faq/?lang=es#install", "https://hercase.github.io/autoready/faq/#install")), infoText)
+                { HorizontalAlignment = HorizontalAlignment.Left, Margin = new Thickness(0, 2, 0, 0) });
+            buttons.Children.Add(note);
             root.Children.Add(buttons);
             Content = root;
             Loaded += (s, e) => install.Focus();   // Enter instala de una
             KeyDown += (s, e) => { if (e.Key == Key.Escape) Close(); };
         }
+
+        Border Divider() { return new Border { Height = 1, Background = theme.CardStroke }; }
 
         Border Card(StackPanel content)
         {

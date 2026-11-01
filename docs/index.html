@@ -55,6 +55,7 @@
   .btn:active { transform: scale(.98); }
   .btn svg { width: 22px; height: 22px; }
   .meta { margin: 12px 0 0; color: var(--muted); font-size: 14px; }
+  .meta a { color: var(--muted); }
 
   .points { list-style: none; padding: 0; margin: 32px 0 0; display: grid; gap: 10px; font-size: 16px; }
   .points li { display: flex; gap: 10px; align-items: flex-start; }
@@ -95,7 +96,7 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
         <span data-t="download">Download for Windows</span>
       </a>
-      <p class="meta" data-t="meta">Free · Windows 10 and 11 · Installs in seconds, no admin rights</p>
+      <p class="meta"><span data-t="meta">Free · Windows 10 and 11 · Installs in seconds, no admin rights</span> · <a href="faq/#install" data-t="what">What gets installed</a></p>
       <ul class="points">
         <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg><span data-t="p1">Never clicks during a match</span></li>
         <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg><span data-t="p2">Doesn't read or change the game, it just presses Accept</span></li>
@@ -114,7 +115,7 @@
       <img class="dark" src="assets/keis-wordmark-dark-tight.svg" alt="keis.studio">
     </a>
     <nav>
-      <a href="https://github.com/hercase/autoready#faq" data-t="faq">FAQ</a>
+      <a href="faq/" data-t="faq">FAQ</a>
       <a href="https://github.com/hercase/autoready" data-t="source">Source code</a>
       <a href="https://github.com/hercase/autoready/blob/main/PRIVACY.md" data-t="privacy">Privacy</a>
     </nav>
@@ -135,6 +136,7 @@
     p2: "No lee ni modifica el juego, solo toca Aceptar",
     p3: "Sin cuentas, publicidad ni rastreo. Código abierto",
     askQ: "¿Jugás a otra cosa?", askA: "Pedí tu juego →",
+    what: "Qué se instala",
     faq: "Preguntas", source: "Código fuente", privacy: "Privacidad"
   };
   document.documentElement.lang = "es";
@@ -145,7 +147,6 @@
   });
   var shot = document.getElementById("shot");
   shot.src = "assets/panel-es.png"; shot.alt = "El panel de AutoReady";
-  document.querySelector("footer nav a").href = "https://github.com/hercase/autoready/blob/main/README.es.md#preguntas-frecuentes";
 })();
 </script>
 </body>
