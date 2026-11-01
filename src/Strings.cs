@@ -48,8 +48,8 @@ namespace AutoReady
         public static string PhoneSecret { get { return T("No muestres este código en stream.", "Don't show this code on stream."); } }
         public static string PhoneTest { get { return T("Enviar prueba", "Send test"); } }
         public static string PhoneSending { get { return T("Enviando…", "Sending…"); } }
-        public static string PhoneSent { get { return T("Enviada", "Sent"); } }
-        public static string PhoneFailed { get { return T("No se pudo enviar. Revisá tu conexión.", "Couldn't send. Check your internet."); } }
+        public static string PhoneSent { get { return T("Enviada. Mirá el celular.", "Sent. Check your phone."); } }
+        public static string PhoneFailed { get { return T("No se pudo enviar. Revisá tu conexión y probá de nuevo.", "Couldn't send. Check your internet and try again."); } }
 
         public static string MoreSettings { get { return T("Más opciones", "More options"); } }
         public static string StartWithWindows { get { return T("Iniciar con Windows", "Start with Windows"); } }

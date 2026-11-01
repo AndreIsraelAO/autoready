@@ -176,7 +176,7 @@ namespace AutoReady
             titles.Children.Add(new TextBlock { Text = "AutoReady", FontSize = 20, FontWeight = FontWeights.SemiBold, FontFamily = new FontFamily("Segoe UI Variable Display, Segoe UI") });
             titles.Children.Add(new TextBlock
             {
-                Text = Lang.T("Acepta tus partidas de Steam mientras no estás.", "Accepts your Steam matches while you're away."),
+                Text = Lang.T("Acepta tus partidas de Dota 2 y CS2 mientras no estás.", "Accepts your Dota 2 and CS2 matches while you're away."),
                 Foreground = theme.TextSecondary, TextWrapping = TextWrapping.Wrap,
             });
             Grid.SetColumn(titles, 1);
@@ -199,20 +199,31 @@ namespace AutoReady
                                                             "Reads your public Steam status to know when you're in a match")));
             body.Children.Add(Card(card));
 
-            ClickArea install = ClickArea.Make(theme, Lang.T("Instalar", "Install"), () =>
+            // Instalar puede tardar unos segundos (cierra otras copias, copia el exe): se hace en segundo plano para que
+            // la ventana no se congele, con el boton apagado y "Instalando…" mientras tanto.
+            string installText = Lang.T("Instalar", "Install");
+            ClickArea install = null;
+            install = ClickArea.Make(theme, installText, () =>
             {
-                try
+                bool d = desktop.IsOn, a = autostart.IsOn, st = steam.IsOn;
+                TextBlock label = (TextBlock)install.Child;
+                label.Text = Lang.T("Instalando…", "Installing…");
+                install.Enabled = false;
+                System.Threading.ThreadPool.QueueUserWorkItem(_ =>
                 {
-                    Installer.Install(desktop.IsOn, autostart.IsOn, true, steam.IsOn);
-                    Result = Installer.Choice.Installed;
-                    Close();
-                }
-                catch (Exception ex)
-                {
-                    Log.Write("Instalador: fallo: " + ex);
-                    MessageBox.Show(Lang.T("No se pudo instalar AutoReady. Cerralo si está abierto y probá de nuevo.",
-                                           "Couldn't install AutoReady. Close it if it's open and try again."), "AutoReady");
-                }
+                    Exception error = null;
+                    try { Installer.Install(d, a, true, st); }
+                    catch (Exception ex) { error = ex; }
+                    Dispatcher.BeginInvoke(new Action(() =>
+                    {
+                        if (error == null) { Result = Installer.Choice.Installed; Close(); return; }
+                        Log.Write("Instalador: fallo: " + error);
+                        label.Text = installText;
+                        install.Enabled = true;
+                        MessageBox.Show(Lang.T("No se pudo instalar AutoReady. Cerralo si está abierto y probá de nuevo.",
+                                               "Couldn't install AutoReady. Close it if it's open and try again."), "AutoReady");
+                    }));
+                });
             }, ButtonKind.Accent);
             install.MinWidth = 120;
             ClickArea details = ClickArea.Make(theme, Lang.T("Privacidad y detalles", "Privacy & details"),

@@ -33,6 +33,9 @@ namespace AutoReady
             string forced = Environment.GetEnvironmentVariable("AUTOREADY_THEME");   // light|dark: para revisar capturas
             if (forced == "light") light = true; else if (forced == "dark") light = false;
 
+            // Alto contraste de Windows: todo con los colores del sistema, que el usuario eligio para poder leer.
+            if (SystemParameters.HighContrast) return HighContrast();
+
             Theme t = new Theme { Dark = !light };
             t.Good = Rgb(0x3F, 0xB3, 0x7F);
             t.Idle = Rgb(0x9A, 0x9A, 0x9A);
@@ -63,6 +66,22 @@ namespace AutoReady
                 t.ToggleOffHover = Rgb(0x35, 0x35, 0x35);
                 t.Focus = Rgb(0xFF, 0xFF, 0xFF); t.FocusInner = Brushes.Black;
             }
+            return t;
+        }
+
+        static Theme HighContrast()
+        {
+            Brush win = SystemColors.WindowBrush, text = SystemColors.WindowTextBrush, gray = SystemColors.GrayTextBrush;
+            Brush hi = SystemColors.HighlightBrush, hiText = SystemColors.HighlightTextBrush, link = SystemColors.HotTrackBrush;
+            Theme t = new Theme { Dark = true };
+            t.Background = t.Card = t.Button = t.ButtonHover = t.ButtonPressed = t.InfoBg = t.CautionBg = win;
+            t.SubtleHover = t.SubtlePressed = t.ToggleOffHover = hi;
+            t.CardStroke = t.Divider = t.ControlStroke = t.ButtonStroke = t.InfoStroke = text;
+            t.Text = text; t.TextSecondary = gray;
+            t.Fill = t.FillHover = t.FillPressed = hi; t.OnFill = hiText;
+            t.Link = t.LinkHover = t.LinkPressed = link;
+            t.InfoIcon = t.CautionIcon = t.Good = t.Paused = t.Idle = text;
+            t.Focus = text; t.FocusInner = win;
             return t;
         }
 
@@ -134,8 +153,14 @@ namespace AutoReady
 
         void Apply(bool value, bool animate)
         {
+            bool old = on;
             on = value;
             Paint();
+            // El lector de pantalla anuncia el cambio ("activado"/"desactivado") apenas se toca.
+            AutomationPeer peer = UIElementAutomationPeer.FromElement(this);
+            if (peer != null && old != on)
+                peer.RaisePropertyChangedEvent(TogglePatternIdentifiers.ToggleStateProperty,
+                    old ? ToggleState.On : ToggleState.Off, on ? ToggleState.On : ToggleState.Off);
             double to = on ? 20 : 0;
             if (animate)
                 slide.BeginAnimation(TranslateTransform.XProperty,
@@ -217,6 +242,25 @@ namespace AutoReady
             if (label != null && fg != null) label.Foreground = fg;
         }
 
+        // Desplegable (como "Mas opciones"): el lector lo anuncia como expandido/contraido.
+        public Func<bool> Expanded;
+
+        public void RaiseExpanded(bool wasOpen, bool isOpen)
+        {
+            AutomationPeer peer = UIElementAutomationPeer.FromElement(this);
+            if (peer != null)
+                peer.RaisePropertyChangedEvent(ExpandCollapsePatternIdentifiers.ExpandCollapseStateProperty,
+                    wasOpen ? ExpandCollapseState.Expanded : ExpandCollapseState.Collapsed,
+                    isOpen ? ExpandCollapseState.Expanded : ExpandCollapseState.Collapsed);
+        }
+
+        // Mientras hace algo (enviando, instalando): no se puede volver a tocar y se ve apagado.
+        public bool Enabled
+        {
+            get { return IsEnabled; }
+            set { IsEnabled = value; Opacity = value ? 1 : 0.5; Cursor = value ? Cursors.Hand : Cursors.Arrow; }
+        }
+
         // Botones con el estilo de Windows 11: acento (accion principal), comun, sutil (sin fondo) y link.
         public static ClickArea Make(Theme t, string text, Action click, ButtonKind kind, double fontSize = 14)
         {
@@ -251,13 +295,22 @@ namespace AutoReady
 
         protected override AutomationPeer OnCreateAutomationPeer() { return new Peer(this); }
 
-        class Peer : FrameworkElementAutomationPeer, IInvokeProvider
+        class Peer : FrameworkElementAutomationPeer, IInvokeProvider, IExpandCollapseProvider
         {
             public Peer(ClickArea owner) : base(owner) { }
+            ClickArea C { get { return (ClickArea)Owner; } }
             protected override AutomationControlType GetAutomationControlTypeCore() { return AutomationControlType.Button; }
             protected override bool IsKeyboardFocusableCore() { return true; }
-            public override object GetPattern(PatternInterface p) { return p == PatternInterface.Invoke ? this : base.GetPattern(p); }
-            public void Invoke() { ((ClickArea)Owner).click(); }
+            public override object GetPattern(PatternInterface p)
+            {
+                if (p == PatternInterface.Invoke) return this;
+                if (p == PatternInterface.ExpandCollapse && C.Expanded != null) return this;
+                return base.GetPattern(p);
+            }
+            public void Invoke() { C.click(); }
+            public ExpandCollapseState ExpandCollapseState { get { return C.Expanded != null && C.Expanded() ? ExpandCollapseState.Expanded : ExpandCollapseState.Collapsed; } }
+            public void Expand() { if (!C.Expanded()) C.click(); }
+            public void Collapse() { if (C.Expanded()) C.click(); }
         }
     }
 

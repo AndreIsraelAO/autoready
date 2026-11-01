@@ -3,6 +3,7 @@ using System.IO;
 using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Automation;
+using System.Windows.Automation.Peers;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Interop;
@@ -60,7 +61,7 @@ namespace AutoReady
         Ellipse statusDot;
         Toggle acceptToggle, phoneToggle;
         StackPanel phoneDetails, moreBox;
-        ClickArea phoneShowCode, hotkeyButton;
+        ClickArea phoneShowCode, hotkeyButton, updateButton, moreButton;
         InfoBar welcomeBar, protectionBar, updateBar;
         TextBlock hotkeyLabel, hotkeyHint, moreChevron;
         GameProfile protectionGame;
@@ -121,7 +122,7 @@ namespace AutoReady
         void StartHotkeyCapture()
         {
             capturingHotkey = true;
-            hotkeyLabel.Text = S.HotkeyPress;
+            SetHotkeyLabel(S.HotkeyPress);
             hotkeyButton.BorderBrush = theme.Fill;
             hotkeyButton.BorderThickness = new Thickness(1, 1, 1, 2);
             Hint(S.HotkeyPressHint);
@@ -131,7 +132,7 @@ namespace AutoReady
         {
             if (!capturingHotkey) return;
             capturingHotkey = false;
-            hotkeyLabel.Text = host.HotkeyText;
+            SetHotkeyLabel(host.HotkeyText);
             EndCaptureLook();
             Hint(null);
         }
@@ -142,11 +143,25 @@ namespace AutoReady
             hotkeyButton.BorderThickness = new Thickness(1);
         }
 
-        // Aviso debajo de la tecla de pausa; sin mensaje no ocupa lugar.
+        void SetHotkeyLabel(string text)
+        {
+            hotkeyLabel.Text = text;
+            AutomationProperties.SetName(hotkeyButton, S.HotkeyTitle + ", " + text);
+        }
+
+        // Aviso debajo de la tecla de pausa; sin mensaje no ocupa lugar. El lector de pantalla lo anuncia.
         void Hint(string text)
         {
             hotkeyHint.Text = text ?? "";
             hotkeyHint.Visibility = text == null ? Visibility.Collapsed : Visibility.Visible;
+            if (text != null) Announce(hotkeyHint);
+        }
+
+        // Region "viva": WPF solo la lee en voz alta si se avisa el cambio.
+        static void Announce(UIElement e)
+        {
+            AutomationPeer peer = UIElementAutomationPeer.FromElement(e) ?? UIElementAutomationPeer.CreatePeerForElement(e);
+            if (peer != null) peer.RaiseAutomationEvent(AutomationEvents.LiveRegionChanged);
         }
 
         void OnPreviewKeyDown(object sender, KeyEventArgs e)
@@ -175,12 +190,12 @@ namespace AutoReady
             bool special = (vk >= 0x70 && vk <= 0x87) || vk == 0x13;
             if (vk != 0 && mods == 0 && !special)
             {
-                hotkeyLabel.Text = host.HotkeyText;
+                SetHotkeyLabel(host.HotkeyText);
                 Hint(S.HotkeyNeedsModifier);
                 return;
             }
             bool ok = host.SetHotkey(vk, mods);
-            hotkeyLabel.Text = host.HotkeyText;
+            SetHotkeyLabel(host.HotkeyText);
             Hint(ok ? null : S.HotkeyTaken);
         }
 
@@ -233,13 +248,22 @@ namespace AutoReady
 
         public void Refresh(PanelStatus st)
         {
-            statusText.Text = st.Text;
+            if (statusText.Text != st.Text) { statusText.Text = st.Text; Announce(statusText); }
             statusDot.Fill = st.Kind == StatusKind.Watching ? theme.Good : st.Kind == StatusKind.Paused ? theme.Paused : theme.Idle;
             acceptToggle.IsOn = !st.Paused;
 
             bool hasUpdate = st.UpdateTag != null;
             updateBar.Visibility = hasUpdate ? Visibility.Visible : Visibility.Collapsed;
-            if (hasUpdate) updateBar.Title.Text = S.UpdateAvailable(st.UpdateTag);
+            if (hasUpdate)
+            {
+                // El resultado de tocar Actualizar se ve en el mismo aviso (no escondido en Mas opciones).
+                updateBar.Title.Text = S.UpdateAvailable(st.UpdateTag);
+                bool busy = st.UpdateMessage == S.Updating || st.UpdateMessage == S.UpdateAfterMatch;
+                bool show = busy || st.UpdateMessage == S.UpdateFailed;
+                updateBar.Message.Text = show ? st.UpdateMessage : "";
+                updateBar.Message.Visibility = show ? Visibility.Visible : Visibility.Collapsed;
+                updateButton.Enabled = !busy;
+            }
             updateText.Text = S.Version(Updater.CurrentVersionText, st.UpdateMessage);
 
             // Si el usuario ya toco "Configurar" y todavia no termino, no se pisa la instruccion.
@@ -292,7 +316,8 @@ namespace AutoReady
             protectionBar = new InfoBar(theme, true, "", null, "", ClickArea.Make(theme, S.ProtectionButton, SetUpProtection, ButtonKind.Accent), null)
                 { Margin = new Thickness(0, 8, 0, 0), Visibility = Visibility.Collapsed };
             bars.Children.Add(protectionBar);
-            updateBar = new InfoBar(theme, false, "", "", null, ClickArea.Make(theme, S.UpdateButton, () => host.InstallUpdate(), ButtonKind.Accent), null)
+            updateButton = ClickArea.Make(theme, S.UpdateButton, () => host.InstallUpdate(), ButtonKind.Accent);
+            updateBar = new InfoBar(theme, false, "", "", "", updateButton, null)
                 { Margin = new Thickness(0, 8, 0, 0), Visibility = Visibility.Collapsed };
             bars.Children.Add(updateBar);
             root.Children.Add(bars);
@@ -301,7 +326,7 @@ namespace AutoReady
             StackPanel main = new StackPanel();
             hotkeyButton = ClickArea.Make(theme, host.HotkeyText, StartHotkeyCapture, ButtonKind.Standard);
             hotkeyButton.MinWidth = 56;
-            AutomationProperties.SetName(hotkeyButton, S.HotkeyTitle);
+            AutomationProperties.SetName(hotkeyButton, S.HotkeyTitle + ", " + host.HotkeyText);
             hotkeyLabel = (TextBlock)hotkeyButton.Child;
             StackPanel hotkeyLeft = Texts(S.HotkeyTitle, "");
             hotkeyHint = (TextBlock)hotkeyLeft.Children[1];
@@ -317,7 +342,8 @@ namespace AutoReady
             // Celular: el QR se muestra hasta que la prueba llega una vez; despues queda a un click.
             phoneToggle = new Toggle(theme, host.Cfg.NotifyPhone, S.PhoneTitle);
             phoneShowCode = ClickArea.Make(theme, S.PhoneShowCode, () => ShowPhoneDetails(true), ButtonKind.Link, 12);
-            phoneShowCode.Margin = new Thickness(0, 2, 0, 0);
+            phoneShowCode.Padding = new Thickness(0, 4, 8, 4);   // area para tocar de al menos 24 px
+            phoneShowCode.Margin = new Thickness(0, -2, 0, -4);
             StackPanel phoneLeft = Texts(S.PhoneTitle, null);
             phoneLeft.Children.Add(phoneShowCode);
             main.Children.Add(Row(phoneLeft, phoneToggle));
@@ -331,7 +357,8 @@ namespace AutoReady
             StackPanel more = new StackPanel();
             moreChevron = new TextBlock { Text = "", FontFamily = new FontFamily("Segoe Fluent Icons, Segoe MDL2 Assets"), FontSize = 12, Foreground = theme.TextSecondary, VerticalAlignment = VerticalAlignment.Center };
             Grid moreHead = Row(Texts(S.MoreSettings, null), moreChevron);
-            ClickArea moreButton = new ClickArea(theme, moreHead, ToggleMore, S.MoreSettings) { CornerRadius = new CornerRadius(7) };
+            moreButton = new ClickArea(theme, moreHead, ToggleMore, S.MoreSettings) { CornerRadius = new CornerRadius(7) };
+            moreButton.Expanded = () => moreBox.Visibility == Visibility.Visible;
             moreButton.SetBackgrounds(Brushes.Transparent, theme.SubtleHover, theme.SubtlePressed);
             more.Children.Add(moreButton);
             moreBox = new StackPanel { Visibility = Visibility.Collapsed };
@@ -376,6 +403,7 @@ namespace AutoReady
         void ToggleMore()
         {
             bool open = moreBox.Visibility != Visibility.Visible;
+            moreButton.RaiseExpanded(!open, open);
             moreBox.Visibility = open ? Visibility.Visible : Visibility.Collapsed;
             moreChevron.Text = open ? "" : "";   // chevron arriba / abajo
         }
@@ -411,7 +439,7 @@ namespace AutoReady
             // y en iPhone guia a copiar y pegar el codigo. El codigo va despues del #, asi nunca llega a un servidor.
             // Con un servidor de ntfy propio, el link directo a ese servidor.
             string qrUrl = host.Cfg.NtfyServer.TrimEnd('/') == "https://ntfy.sh"
-                ? PhonePageUrl + "#" + host.Cfg.NtfyTopic
+                ? PhonePageUrl + (Lang.Spanish ? "?lang=es" : "?lang=en") + "#" + host.Cfg.NtfyTopic
                 : host.Cfg.NtfyServer.TrimEnd('/') + "/" + host.Cfg.NtfyTopic;
             Border qrBox = new Border
             {
@@ -454,22 +482,32 @@ namespace AutoReady
             right.Children.Add(codeRow);
 
             TextBlock testText = null;
-            ClickArea test = ClickArea.Make(theme, S.PhoneTest, () =>
+            TextBlock result = Small("");
+            result.Visibility = Visibility.Collapsed;
+            result.Margin = new Thickness(0, 6, 0, 0);
+            AutomationProperties.SetLiveSetting(result, AutomationLiveSetting.Polite);
+            ClickArea test = null;
+            test = ClickArea.Make(theme, S.PhoneTest, () =>
             {
                 testText.Text = S.PhoneSending;
+                test.Enabled = false;
+                result.Visibility = Visibility.Collapsed;
                 host.SendTestPush(ok => Dispatcher.BeginInvoke(new Action(() =>
                 {
-                    testText.Text = ok ? S.PhoneSent : S.PhoneFailed;
+                    testText.Text = S.PhoneTest;
+                    test.Enabled = true;
+                    result.Text = ok ? S.PhoneSent : S.PhoneFailed;
+                    result.Foreground = ok ? theme.TextSecondary : theme.Text;
+                    result.Visibility = Visibility.Visible;
+                    Announce(result);
                     if (ok && !host.Cfg.PhoneTested) { host.Cfg.PhoneTested = true; host.Cfg.Save(); }
-                    System.Windows.Threading.DispatcherTimer back = new System.Windows.Threading.DispatcherTimer { Interval = TimeSpan.FromSeconds(4) };
-                    back.Tick += (s2, e2) => { back.Stop(); testText.Text = S.PhoneTest; };
-                    back.Start();
                 })));
             }, ButtonKind.Standard);
             testText = (TextBlock)test.Child;
             test.Margin = new Thickness(0, 12, 0, 0);
             test.HorizontalAlignment = HorizontalAlignment.Left;
             right.Children.Add(test);
+            right.Children.Add(result);
             Grid.SetColumn(right, 1);
             g.Children.Add(right);
             p.Children.Add(g);
