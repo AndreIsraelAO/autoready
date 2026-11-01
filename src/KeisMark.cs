@@ -25,8 +25,8 @@ namespace AutoReady
             if (!plates)
             {
                 d.Children.Add(Fill(Plate(0, 0), ink));
-                d.Children.Add(Fill(Geometry.Parse(Letters), ink));
-                d.Children.Add(Fill(Geometry.Parse(Dot), "#00b3e6"));
+                d.Children.Add(Fill(Svg(Letters), ink));
+                d.Children.Add(Fill(Svg(Dot), "#00b3e6"));
                 return Freeze(d);
             }
             d.Children.Add(Fill(c, "#00b3e6"));
@@ -36,8 +36,8 @@ namespace AutoReady
             d.Children.Add(Fill(Geometry.Combine(c, y, GeometryCombineMode.Intersect, null), cy));
             d.Children.Add(Fill(Geometry.Combine(m, y, GeometryCombineMode.Intersect, null), my));
             d.Children.Add(Fill(Geometry.Combine(Geometry.Combine(c, m, GeometryCombineMode.Intersect, null), y, GeometryCombineMode.Intersect, null), ink));
-            d.Children.Add(Fill(Geometry.Parse(Letters), ink));
-            d.Children.Add(Fill(Geometry.Parse(Dot), "#00b3e6"));
+            d.Children.Add(Fill(Svg(Letters), ink));
+            d.Children.Add(Fill(Svg(Dot), "#00b3e6"));
             return Freeze(d);
         }
 
@@ -48,9 +48,16 @@ namespace AutoReady
             return img;
         }
 
+        // SVG rellena con la regla nonzero y WPF por defecto con evenodd: con evenodd las piezas que se pisan
+        // (el palo y la barra de la t, el trazo del medio de la e) quedan huecas. "F1" fuerza nonzero.
+        static Geometry Svg(string path)
+        {
+            return Geometry.Parse("F1 " + path);
+        }
+
         static Geometry Plate(double x, double y)
         {
-            Geometry g = Geometry.Parse(K).Clone();
+            Geometry g = Svg(K).Clone();   // lo parseado viene congelado; la copia acepta Transform
             TransformGroup t = new TransformGroup();
             t.Children.Add(new ScaleTransform(0.05, 0.05));
             t.Children.Add(new TranslateTransform(x, y));
