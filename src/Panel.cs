@@ -346,12 +346,11 @@ namespace AutoReady
             general.Children.Add(Row(updateText, Link("Buscar actualizaciones", () => host.CheckUpdatesNow())));
             root.Children.Add(Wrap(general, new Thickness(0)));
 
-            // Pie: el wordmark de keis.studio. Las planchas de color de la k solo se ven desde unos 26 px de alto
-            // (guia de marca), por eso no va mas chico.
+            // Pie: el wordmark de keis.studio, liso con el punto cyan (version para tamano chico de la guia de marca).
             Image brand = new Image
             {
-                Source = KeisMark.BuildWordmark(theme.Dark), Height = 26, HorizontalAlignment = HorizontalAlignment.Center,
-                Margin = new Thickness(0, 20, 0, 6), Cursor = Cursors.Hand, ToolTip = "keis.studio",
+                Source = KeisMark.BuildWordmark(theme.Dark, false), Height = 15, Opacity = 0.85, HorizontalAlignment = HorizontalAlignment.Center,
+                Margin = new Thickness(0, 18, 0, 4), Cursor = Cursors.Hand, ToolTip = "keis.studio",
             };
             brand.MouseLeftButtonUp += (s, e) => System.Diagnostics.Process.Start("https://keis.studio");
             root.Children.Add(brand);
