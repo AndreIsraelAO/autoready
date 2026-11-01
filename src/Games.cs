@@ -19,6 +19,8 @@ namespace AutoReady
         public bool AcceptWithEnter;
         // Opcion de lanzamiento que el juego necesita para mandar GSI (null si no hace falta).
         public string GsiLaunchOption;
+        // Leer el estado de Steam (Rich Presence) para saber si busca partida o esta jugando, sin configurar nada.
+        public bool UsesPresence;
         public string MatchStartedTitle, MatchStartedText;
         public Func<Detector.Settings> DefaultDetector;
 
@@ -33,6 +35,7 @@ namespace AutoReady
             LaunchOptionHint = "En Steam: Dota 2 > Propiedades > Opciones de lanzamiento, agrega -gamestateintegration y reinicia Dota.",
             AcceptWithEnter = true,
             GsiLaunchOption = "-gamestateintegration",
+            UsesPresence = true,
             MatchStartedTitle = "¡Empezo el pick!",
             MatchStartedText = "Ya estan eligiendo heroes. ¡Volve!",
             // Boton ACCEPT turquesa: H ~154, S ~0.30-0.35, V ~0.35.

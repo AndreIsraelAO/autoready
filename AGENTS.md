@@ -35,6 +35,10 @@ vuelva a tiempo. Producto de **keis.studio** (estudio del dueño del repo). Ante
    `map.game_state` (Dota) o `map.phase` (CS2) = en partida → no escanear. Sin GSI, después de aceptar sigue 90 s y se pausa.
 6. **Modo seguro (sin GSI):** 3 detecciones seguidas en el mismo lugar, solo click (nunca Enter: en Dota abriría el chat) y
    no acepta si el juego está al frente y hubo mouse/teclado en los últimos 3 s (`Win32.IdleTime`).
+8. **Estado de Steam (Dota, `src/Presence.cs`):** se lee el Rich Presence de la cuenta conectada desde
+   `steamcommunity.com/miniprofile/<id>` (en inglés, cada 6 s, solo con Dota abierto). Si dice "Finding A Match" se mira la
+   pantalla; en "Main Menu" o cualquier estado de partida, no. Si no se puede leer (perfil privado), se cae a GSI o al modo
+   seguro. No avisa el popup en sí: pasa de Finding a Hero Selection cuando todos aceptan.
 7. **Protección en partida (panel):** Dota necesita la opción de lanzamiento `-gamestateintegration`. `SteamConfig` lee
    (nunca escribe) `userdata/<cuenta activa>/config/localconfig.vdf` para saber si está; el botón Activar copia las opciones actuales del jugador + la que falta (para reemplazar sin perder nada) y
    abre `steam://gameproperties/570`. No se edita el archivo: Steam lo pisa si está abierto y puede haber cuentas ajenas.

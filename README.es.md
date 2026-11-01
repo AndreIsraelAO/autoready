@@ -85,8 +85,9 @@ nada y no modifica archivos del juego. Lo único que escribe es la configuració
 <details>
 <summary><b>¿Hace clicks durante la partida?</b></summary>
 <br>
-No. Game State Integration le avisa cuando estás en partida, y deja de mirar hasta que termina. Si eso todavía no está
-configurado, trabaja en modo seguro: nunca acepta mientras estás usando el mouse o el teclado en el juego, y solo hace click.
+No. Game State Integration le avisa cuando estás en partida, y deja de mirar hasta que termina. En Dota 2 además lee tu estado de
+Steam (el "Buscando partida" que ves en Steam) y solo mira la pantalla mientras estás en la cola. Si no hay ninguna de
+las dos, trabaja en modo seguro: nunca acepta mientras estás usando el mouse o el teclado en el juego, y solo hace click.
 </details>
 
 <details>

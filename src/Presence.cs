@@ -1,0 +1,112 @@
+using System;
+using System.Net;
+using System.Text.RegularExpressions;
+using System.Threading;
+using Microsoft.Win32;
+
+namespace AutoReady
+{
+    // Estado de Steam (Rich Presence) de la cuenta conectada: "Finding A Match", "Hero Selection", "Main Menu"...
+    // Es lo que Steam muestra a los amigos. Se lee de la mini-ficha publica del perfil (steamcommunity.com/miniprofile),
+    // sin clave, sin login y sin configurar nada en el juego. Requiere que los detalles de juego del perfil sean
+    // visibles; si no, el estado queda Unknown y AutoReady sigue con GSI o el modo seguro.
+    //
+    // Se usa para Dota 2, donde GSI necesita una opcion de lanzamiento. Los textos son los oficiales en ingles
+    // (game/dota/.../richpresence_english.txt); se pide la pagina en ingles para no depender del idioma del usuario.
+    enum PresenceState { Unknown, Menu, Finding, InMatch }
+
+    static class Presence
+    {
+        static readonly TimeSpan Every = TimeSpan.FromSeconds(6);
+        static readonly TimeSpan Stale = TimeSpan.FromSeconds(30);
+
+        static string lastText;
+        static DateTime lastRead = DateTime.MinValue;
+        static DateTime lastWorking = DateTime.MinValue;   // ultima vez que se pudo leer un estado de juego
+        static Thread worker;
+        static volatile bool wanted;
+
+        public static event Action<PresenceState, PresenceState, string> Changed;   // (anterior, nuevo, texto)
+        static PresenceState current = PresenceState.Unknown;
+
+        public static PresenceState Current
+        {
+            get { return DateTime.Now - lastRead > Stale ? PresenceState.Unknown : current; }
+        }
+
+        public static string Text { get { return lastText; } }
+
+        // El estado se pudo leer hace poco: la proteccion por estado de Steam esta funcionando.
+        public static bool Working { get { return DateTime.Now - lastWorking < TimeSpan.FromMinutes(10); } }
+
+        // Se consulta solo mientras el juego esta abierto.
+        public static void SetWanted(bool on)
+        {
+            wanted = on;
+            if (!on || worker != null) return;
+            worker = new Thread(Loop) { IsBackground = true, Name = "presence" };
+            worker.Start();
+        }
+
+        static void Loop()
+        {
+            ServicePointManager.SecurityProtocol |= (SecurityProtocolType)3072;   // TLS 1.2
+            while (true)
+            {
+                if (wanted)
+                {
+                    try { Update(Read()); }
+                    catch (Exception e) { Log.Write("Presence: no pude leer el estado de Steam: " + e.Message); }
+                }
+                Thread.Sleep(Every);
+            }
+        }
+
+        static void Update(string text)
+        {
+            lastRead = DateTime.Now;
+            PresenceState s = Classify(text);
+            if (s != PresenceState.Unknown) lastWorking = DateTime.Now;
+            bool changed = s != current || text != lastText;
+            PresenceState old = current;
+            current = s;
+            lastText = text;
+            if (!changed) return;
+            Log.Write("Presence: " + (text ?? "(sin estado de juego)") + " -> " + s);
+            Action<PresenceState, PresenceState, string> h = Changed;
+            if (h != null && old != s) h(old, s, text);
+        }
+
+        // Textos oficiales de Dota 2 (richpresence_english.txt).
+        public static PresenceState Classify(string text)
+        {
+            if (string.IsNullOrEmpty(text)) return PresenceState.Unknown;
+            if (text.IndexOf("Finding A Match", StringComparison.OrdinalIgnoreCase) >= 0) return PresenceState.Finding;
+            if (text.StartsWith("Main Menu", StringComparison.OrdinalIgnoreCase)) return PresenceState.Menu;
+            // Cualquier otro estado del juego (seleccion de heroe, partida, post-partida, espectando, bots...) se
+            // trata como "ocupado": ahi no puede aparecer el popup de aceptar.
+            return PresenceState.InMatch;
+        }
+
+        // Devuelve el texto de Rich Presence de la mini-ficha, o null si no esta en un juego o no es visible.
+        static string Read()
+        {
+            int account;
+            using (RegistryKey k = Registry.CurrentUser.OpenSubKey(@"Software\Valve\Steam\ActiveProcess"))
+                account = k == null ? 0 : Convert.ToInt32(k.GetValue("ActiveUser", 0));
+            if (account == 0) return null;
+
+            string html;
+            using (WebClient wc = new WebClient())
+            {
+                wc.Headers[HttpRequestHeader.UserAgent] = "AutoReady/" + Updater.CurrentVersionText;
+                wc.Headers[HttpRequestHeader.Cookie] = "Steam_Language=english";
+                wc.Headers[HttpRequestHeader.AcceptLanguage] = "en-US,en";
+                wc.Encoding = System.Text.Encoding.UTF8;
+                html = wc.DownloadString("https://steamcommunity.com/miniprofile/" + account + "?l=english");
+            }
+            Match m = Regex.Match(html, "class=\"[^\"]*rich_presence[^\"]*\"[^>]*>\\s*([^<]+?)\\s*<", RegexOptions.IgnoreCase);
+            return m.Success ? WebUtility.HtmlDecode(m.Groups[1].Value) : null;
+        }
+    }
+}

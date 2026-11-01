@@ -84,6 +84,7 @@ namespace AutoReady
             foreach (GameProfile g in GameProfile.All) gsi.InstallConfig(g);
             gsi.Start();
             gsi.StateChanged += OnGameStateChanged;
+            Presence.Changed += OnPresenceChanged;
 
             if (cfg.HotkeyVk != 0 && !RegisterHotkey(cfg.HotkeyVk, cfg.HotkeyMods))
                 Log.Write("Atajo: no se pudo registrar (otra app lo usa)");
@@ -155,6 +156,7 @@ namespace AutoReady
             {
                 if (g.GsiLaunchOption == null || !cfg.For(g).Enabled || !Gsi.IsInstalled(g)) continue;
                 if (gsi.Connected(g)) continue;
+                if (g.UsesPresence && Presence.Working) continue;   // el estado de Steam ya alcanza
                 string lo = SteamConfig.LaunchOptions(g.AppId);
                 if (lo != null && !SteamConfig.HasOption(g.AppId, g.GsiLaunchOption)) return g;
             }
@@ -250,7 +252,9 @@ namespace AutoReady
             st.ProtectionFix = missing;
             st.Protection = missing != null
                 ? "Falta un paso en " + missing.Name + ". Mientras tanto acepta en modo seguro."
-                : "Activa: nunca toca nada durante una partida.";
+                : (activeGame != null && activeGame.UsesPresence && !gsi.Connected(activeGame) && Presence.Working
+                    ? "Activa con tu estado de Steam: solo mira la pantalla mientras buscás partida."
+                    : "Activa: nunca toca nada durante una partida.");
             ui.Post(() =>
             {
                 pauseItem.Text = paused ? "Reanudar" : "Pausar";
@@ -361,17 +365,24 @@ namespace AutoReady
                 if (game != null) Log.Write(game.Name + " abierto");
                 state = AppState.Starting;
             }
+            Presence.SetWanted(game != null && game.UsesPresence);
             if (paused) { SetState(AppState.Paused); return 500; }
             if (game == null) { SetState(AppState.GameClosed); return 2000; }
-            MaybeShowGsiHint(game);
 
             if (gsi.InMatch(game)) { SetState(AppState.InMatch); return 1000; }
+
+            // Estado de Steam (Dota): el popup solo puede aparecer mientras dice "Finding A Match".
+            // En el menu o en partida no se mira la pantalla: imposible tocar algo jugando.
+            PresenceState ps = game.UsesPresence && !gsi.Connected(game) ? Presence.Current : PresenceState.Unknown;
+            if (ps == PresenceState.InMatch) { SetState(AppState.InMatch); consecutiveHits = 0; return 1000; }
             SetState(AppState.Searching);
+            if (ps == PresenceState.Menu) { consecutiveHits = 0; return 1000; }
+            if (ps == PresenceState.Unknown) MaybeShowGsiHint(game);
             if (DateTime.Now < cooldownUntil) return 500;
 
-            // Sin GSI no sabemos si ya estas en partida: despues de aceptar seguimos un rato (por si alguien
-            // no acepto y volves a la cola) y despues pausamos para no hacer clicks dentro del juego.
-            if (!gsi.Connected(game) && lastAccept != DateTime.MinValue &&
+            // Sin GSI ni estado de Steam no sabemos si ya estas en partida: despues de aceptar seguimos un rato
+            // (por si alguien no acepto y volves a la cola) y despues pausamos para no hacer clicks dentro del juego.
+            if (!gsi.Connected(game) && ps == PresenceState.Unknown && lastAccept != DateTime.MinValue &&
                 (DateTime.Now - lastAccept).TotalSeconds > cfg.FallbackScanSecAfterAccept)
             {
                 lastAccept = DateTime.MinValue;
@@ -392,7 +403,8 @@ namespace AutoReady
             }
 
             // Modo seguro: sin GSI no sabemos si ya hay una partida en curso, asi que se exige mas antes de tocar nada.
-            bool safe = !gsi.Connected(game);
+            // Con el estado de Steam en "Finding A Match" sabemos que no hay partida en curso: no hace falta el modo seguro.
+            bool safe = !gsi.Connected(game) && ps != PresenceState.Finding;
             int needed = safe ? 3 : 2;   // detecciones seguidas
 
             Detector.Hit hit;
@@ -473,6 +485,17 @@ namespace AutoReady
             // Las capturas de ese momento sirven para ajustar el detector.
             if (oldState == null && newState != null && !paused && !recentlyAccepted) Samples.Missed(game);
             if (newState != null) { lastAccept = DateTime.MinValue; Samples.Forget(); }   // ya estamos en partida
+        }
+
+        // Estado de Steam (Dota sin GSI): mismo efecto que GSI al empezar y terminar una partida.
+        void OnPresenceChanged(PresenceState old, PresenceState now, string text)
+        {
+            GameProfile game = activeGame;
+            if (game == null || !game.UsesPresence || gsi.Connected(game)) return;
+            // Solo cuenta como "empezo una partida" si venia buscando (bots o partidas personalizadas no tienen popup).
+            if (now == PresenceState.InMatch && old == PresenceState.Finding) OnGameStateChanged(game, null, text);
+            else if (old == PresenceState.InMatch && now != PresenceState.InMatch) OnGameStateChanged(game, text, null);
+            PushStatus();
         }
 
         void MaybeShowGsiHint(GameProfile game)

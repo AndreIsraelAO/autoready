@@ -85,8 +85,8 @@ config.
 <details>
 <summary><b>Does it click anything during a match?</b></summary>
 <br>
-No. Game State Integration tells it when you're in a match, and it stops looking until the match is over. If that's not
-set up yet, it runs in a safe mode: it never accepts while you're using your mouse or keyboard in the game, and it only clicks.
+No. Game State Integration tells it when you're in a match, and it stops looking until the match is over. In Dota 2 it also reads your Steam status (the
+"Finding A Match" you see in Steam) and only looks at the screen while you're queuing. If neither is available, it runs in a safe mode: it never accepts while you're using your mouse or keyboard in the game, and it only clicks.
 </details>
 
 <details>
