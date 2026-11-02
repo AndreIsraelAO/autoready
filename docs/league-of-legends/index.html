@@ -1,0 +1,231 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>League of Legends auto accept for Windows: free AutoReady</title>
+<meta name="description" content="Free Windows app that auto-accepts your League of Legends queue pop while you step away, with no mouse clicks, and tells you when to come back. Open source.">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<meta name="author" content="keis.studio">
+<meta name="application-name" content="AutoReady">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#F3F3F3" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#161616" media="(prefers-color-scheme: dark)">
+<link rel="canonical" href="https://hercase.github.io/autoready/league-of-legends/">
+<link rel="alternate" hreflang="en" href="https://hercase.github.io/autoready/league-of-legends/">
+<link rel="alternate" hreflang="es" href="https://hercase.github.io/autoready/league-of-legends/?lang=es">
+<link rel="alternate" hreflang="x-default" href="https://hercase.github.io/autoready/league-of-legends/">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://hercase.github.io/autoready/league-of-legends/">
+<meta property="og:site_name" content="AutoReady">
+<meta property="og:locale" content="en_US">
+<meta property="og:locale:alternate" content="es_AR">
+<meta property="og:title" content="League of Legends auto accept for Windows: free AutoReady">
+<meta property="og:description" content="Free Windows app that auto-accepts your League of Legends queue pop while you step away, with no mouse clicks, and tells you when to come back. Open source.">
+<meta property="og:image" content="https://hercase.github.io/autoready/assets/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="AutoReady: Queue up. Step away. AutoReady accepts it. Next to the AutoReady panel.">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="League of Legends auto accept for Windows: free AutoReady">
+<meta name="twitter:description" content="Free Windows app that auto-accepts your League of Legends queue pop while you step away, with no mouse clicks, and tells you when to come back. Open source.">
+<meta name="twitter:image" content="https://hercase.github.io/autoready/assets/og-image.png">
+<link rel="icon" type="image/png" sizes="32x32" href="../assets/favicon-32.png">
+<link rel="icon" type="image/png" sizes="192x192" href="../assets/autoready-icon-192.png">
+<link rel="apple-touch-icon" sizes="180x180" href="../assets/apple-touch-icon.png">
+<link rel="manifest" href="../manifest.webmanifest">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebPage",
+  "@id": "https://hercase.github.io/autoready/league-of-legends/#page",
+  "url": "https://hercase.github.io/autoready/league-of-legends/",
+  "name": "League of Legends auto accept for Windows: free AutoReady",
+  "description": "Free Windows app that auto-accepts your League of Legends queue pop while you step away, with no mouse clicks, and tells you when to come back. Open source.",
+  "inLanguage": "en",
+  "about": {
+    "@id": "https://hercase.github.io/autoready/#app"
+  },
+  "isPartOf": {
+    "@type": "WebSite",
+    "name": "AutoReady",
+    "url": "https://hercase.github.io/autoready/"
+  },
+  "breadcrumb": {
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "AutoReady",
+        "item": "https://hercase.github.io/autoready/"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "League of Legends auto accept",
+        "item": "https://hercase.github.io/autoready/league-of-legends/"
+      }
+    ]
+  }
+}
+</script>
+<style>
+  /* Preguntas frecuentes: aca va el detalle que no entra en el instalador ni en el panel. Sin scripts de terceros. */
+  :root {
+    color-scheme: light dark;
+    --bg: #F3F3F3; --card: #FFFFFF; --stroke: #E5E5E5; --text: #1B1B1B; --muted: #5F5F5F;
+    --accent: #176B47; --soft: #E7F3EC; --code-bg: #F3F3F3;
+    --r-ctl: 8px; --r-in: 6px; --r-card: 12px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #161616; --card: #222222; --stroke: #2E2E2E; --text: #FFFFFF; --muted: #B5B5B5;
+            --accent: #5FD49E; --soft: #17301F; --code-bg: #2E2E2E; }
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; scroll-padding-top: 16px; }
+  body { margin: 0; background: var(--bg); color: var(--text); min-height: 100vh; min-height: 100dvh; display: flex; flex-direction: column;
+         font: 16px/1.5 "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", Arial, sans-serif; }
+  main { width: 100%; max-width: 720px; margin: 0 auto; padding: 40px 20px 32px; flex: 1; }
+  a { color: var(--accent); }
+  :where(a, button, summary):focus-visible { outline: 2px solid var(--text); outline-offset: 2px; }
+  .brand { display: inline-flex; align-items: center; gap: 12px; margin-bottom: 28px; text-decoration: none; color: var(--text); font-weight: 600; font-size: 18px; }
+  .brand img { width: 36px; height: 36px; border-radius: 8px; }
+  h1 { font-family: "Segoe UI Variable Display", "Segoe UI", system-ui, -apple-system, Roboto, sans-serif;
+       font-size: 32px; line-height: 1.15; letter-spacing: -.02em; margin: 0 0 8px; font-weight: 600; text-wrap: balance; }
+  .sub { color: var(--muted); margin: 0 0 28px; }
+  h2 { font-size: 15px; font-weight: 600; text-transform: none; letter-spacing: 0; color: var(--text); margin: 32px 0 8px; }
+
+  details { background: var(--card); border: 1px solid var(--stroke); border-radius: var(--r-card); padding: 0 20px; margin-bottom: 10px; }
+  summary { cursor: pointer; padding: 14px 0; min-height: 44px; font-weight: 600; list-style: none; display: flex; align-items: center;
+            justify-content: space-between; gap: 16px; }
+  summary::-webkit-details-marker { display: none; }
+  summary::after { content: ""; flex: none; width: 8px; height: 8px; margin-right: 4px; border: solid var(--muted);
+                   border-width: 0 2px 2px 0; transform: translateY(-2px) rotate(45deg); transition: transform .15s ease; }
+  details[open] summary::after { transform: translateY(2px) rotate(-135deg); }
+  details > div { padding: 0 0 18px; color: var(--muted); }
+  details p { margin: 0 0 10px; text-wrap: pretty; }
+  details ul { margin: 0 0 10px; padding-left: 20px; }
+  details li { margin-bottom: 6px; }
+  details b { color: var(--text); font-weight: 600; }
+  code { font-family: ui-monospace, "Cascadia Mono", Consolas, monospace; font-size: .875em; background: var(--code-bg);
+         padding: 1px 4px; border-radius: 4px; overflow-wrap: anywhere; }
+
+  footer { border-top: 1px solid var(--stroke); padding: 12px 20px calc(12px + env(safe-area-inset-bottom)); font-size: 14px; color: var(--muted); }
+  main, footer { padding-left: max(20px, env(safe-area-inset-left)); padding-right: max(20px, env(safe-area-inset-right)); }
+  footer .wrap { max-width: 680px; margin: 0 auto; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0 20px; }
+  footer nav { display: flex; flex-wrap: wrap; gap: 0 18px; }
+  footer a { color: var(--muted); }
+  footer nav a, footer .mark { display: inline-flex; align-items: center; min-height: 44px; }
+  footer nav a { text-decoration: none; }
+  footer nav a:hover { color: var(--text); }
+  footer .mark img { height: 20px; width: auto; display: block; }
+  footer .legal { margin: 0 0 12px; font-size: 13px; max-width: 60ch; }
+
+  [data-lang] { display: none; }
+  html[lang="en"] [data-lang="en"], html[lang="es"] [data-lang="es"] { display: revert; }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { transition: none !important; animation: none !important; scroll-behavior: auto !important; }
+  }
+  .btn { display: inline-flex; align-items: center; min-height: 44px; padding: 0 22px; border-radius: var(--r-ctl); background: var(--accent); color: #fff; font-weight: 600; text-decoration: none; }
+  @media (prefers-color-scheme: dark) { .btn { color: #0B1F15; } }
+  .btn:hover { filter: brightness(1.08); }
+  .cta { margin: 0 0 8px; }
+  .note { font-size: 14px; color: var(--muted); margin: 0 0 24px; }
+  main ul, main ol { padding-left: 22px; } main li { margin-bottom: 8px; }
+  p, li { text-wrap: pretty; }
+</style>
+<script>
+  (function () {
+    var q = /[?&]lang=(es|en)\b/.exec(location.search);
+    var es = q ? q[1] === "es" : /^es\b/i.test(navigator.language || "");
+    document.documentElement.lang = es ? "es" : "en";
+    if (es) {
+      var title = "Auto aceptar partida de League of Legends en Windows: AutoReady gratis";
+      var desc = "App gratis para Windows que acepta tu cola de League of Legends mientras te alejás, sin usar el mouse, y te avisa cuándo volver. Código abierto.";
+      var set = function (sel, v) { var m = document.querySelector(sel); if (m) m.setAttribute("content", v); };
+      document.title = title;
+      set('meta[name="description"]', desc);
+      set('meta[property="og:title"]', title);
+      set('meta[name="twitter:title"]', title);
+      set('meta[property="og:description"]', desc);
+      set('meta[name="twitter:description"]', desc);
+      set('meta[property="og:locale"]', "es_AR");
+      set('meta[property="og:locale:alternate"]', "en_US");
+    }
+  })();
+</script>
+</head>
+<body>
+<main>
+  <a class="brand" href="../"><img src="../assets/autoready-icon-192.png" width="36" height="36" alt="">AutoReady</a>
+
+  <div data-lang="en">
+    <h1>League of Legends auto accept</h1>
+    <p class="sub">Queue up, step away, and AutoReady accepts your League match for you. Free and open source.</p>
+    <p class="cta"><a class="btn" href="https://github.com/hercase/autoready/releases/latest/download/AutoReady.exe">Download AutoReady for Windows</a></p>
+    <p class="note">Windows 10 and 11. No admin rights needed.</p>
+    <h2>How it works in League of Legends</h2>
+      <ol>
+        <li>Install AutoReady and queue up as usual. There's nothing to set up.</li>
+        <li>When the match is found, AutoReady accepts it through the League client's local API on your PC, without touching your mouse.</li>
+        <li>It rings, shows a Windows notification and, if you want, pings your phone so you're back for champ select.</li>
+      </ol>
+      <h2>Is it safe?</h2>
+      <ul>
+        <li>It does nothing in champ select or in game, and it doesn't read game memory or change game files.</li>
+        <li>It uses the client's local API, the same one community tools have used for years. Riot doesn't officially document it, so it's a gray area (and not allowed in Korea). <a href="../faq/#ban">Details in the FAQ</a>.</li>
+        <li>No accounts, ads or telemetry. <a href="https://github.com/hercase/autoready">Source code on GitHub</a>.</li>
+      </ul>
+    <p>More answers in the <a href="../faq/">FAQ</a>.</p>
+  </div>
+
+  <div data-lang="es">
+    <h1>Auto aceptar partida de League of Legends</h1>
+    <p class="sub">Buscá partida, alejate y AutoReady acepta tu partida de League por vos. Gratis y de código abierto.</p>
+    <p class="cta"><a class="btn" href="https://github.com/hercase/autoready/releases/latest/download/AutoReady.exe">Descargar AutoReady para Windows</a></p>
+    <p class="note">Windows 10 y 11. No pide permisos de administrador.</p>
+    <h2>Cómo funciona en League of Legends</h2>
+      <ol>
+        <li>Instalá AutoReady y buscá partida como siempre. No hay nada que configurar.</li>
+        <li>Cuando se encuentra la partida, AutoReady la acepta por la API local del cliente de League en tu PC, sin tocar el mouse.</li>
+        <li>Suena, muestra una notificación de Windows y, si querés, te avisa al celular para que vuelvas a la selección de campeón.</li>
+      </ol>
+      <h2>¿Es seguro?</h2>
+      <ul>
+        <li>No hace nada en la selección de campeón ni en partida, y no lee la memoria del juego ni cambia archivos del juego.</li>
+        <li>Usa la API local del cliente, la misma que usan herramientas de la comunidad hace años. Riot no la documenta oficialmente, así que es una zona gris (y no está permitido en Corea). <a href="../faq/#ban">Detalles en las preguntas frecuentes</a>.</li>
+        <li>Sin cuentas, ni anuncios, ni telemetría. <a href="https://github.com/hercase/autoready">Código fuente en GitHub</a>.</li>
+      </ul>
+    <p>Más respuestas en las <a href="../faq/">preguntas frecuentes</a>.</p>
+  </div>
+</main>
+
+<footer>
+  <div class="wrap">
+    <a class="mark" href="https://keis.studio"><picture>
+      <source srcset="../assets/keis-wordmark-dark-tight.svg" media="(prefers-color-scheme: dark)">
+      <img src="../assets/keis-wordmark-light-tight.svg" width="105" height="20" alt="keis.studio">
+    </picture></a>
+    <nav>
+      <a href="../"><span data-lang="en">Download</span><span data-lang="es">Descargar</span></a>
+      <a href="https://github.com/hercase/autoready"><span data-lang="en">Source code</span><span data-lang="es">Código fuente</span></a>
+      <a href="https://github.com/hercase/autoready/blob/main/PRIVACY.md"><span data-lang="en">Privacy</span><span data-lang="es">Privacidad</span></a>
+      <a id="lang-link" href="?lang=es" hreflang="es" lang="es">Español</a>
+    </nav>
+  </div>
+  <p class="legal"><span data-lang="en">AutoReady is an independent project, not affiliated with or endorsed by the companies behind the games it supports. Game names are trademarks of their owners.</span><span data-lang="es">AutoReady es un proyecto independiente, sin afiliación ni respaldo de las empresas detrás de los juegos que soporta. Los nombres de los juegos son marcas de sus dueños.</span></p>
+</footer>
+<script>
+  (function () {
+    var es = document.documentElement.lang === "es", other = es ? "en" : "es";
+    var langLink = document.getElementById("lang-link");
+    langLink.href = "?lang=" + other; langLink.hreflang = other; langLink.lang = other;
+    langLink.textContent = es ? "English" : "Español";
+    if (es || /[?&]lang=en\b/.test(location.search)) {
+      [].forEach.call(document.querySelectorAll('a[href="../"], a[href="../faq/"]'), function (a) { a.href += "?lang=" + (es ? "es" : "en"); });
+    }
+  })();
+</script>
+</body>
+</html>

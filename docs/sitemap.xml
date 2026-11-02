@@ -15,4 +15,25 @@
     <xhtml:link rel="alternate" hreflang="es" href="https://hercase.github.io/autoready/faq/?lang=es"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://hercase.github.io/autoready/faq/"/>
   </url>
+  <url>
+    <loc>https://hercase.github.io/autoready/dota-2/</loc>
+    <lastmod>2026-11-02</lastmod>
+    <xhtml:link rel="alternate" hreflang="en" href="https://hercase.github.io/autoready/dota-2/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://hercase.github.io/autoready/dota-2/?lang=es"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://hercase.github.io/autoready/dota-2/"/>
+  </url>
+  <url>
+    <loc>https://hercase.github.io/autoready/cs2/</loc>
+    <lastmod>2026-11-02</lastmod>
+    <xhtml:link rel="alternate" hreflang="en" href="https://hercase.github.io/autoready/cs2/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://hercase.github.io/autoready/cs2/?lang=es"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://hercase.github.io/autoready/cs2/"/>
+  </url>
+  <url>
+    <loc>https://hercase.github.io/autoready/league-of-legends/</loc>
+    <lastmod>2026-11-02</lastmod>
+    <xhtml:link rel="alternate" hreflang="en" href="https://hercase.github.io/autoready/league-of-legends/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://hercase.github.io/autoready/league-of-legends/?lang=es"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://hercase.github.io/autoready/league-of-legends/"/>
+  </url>
 </urlset>

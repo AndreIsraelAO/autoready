@@ -73,9 +73,9 @@ AutoReady se actualiza solo, y está en español o en inglés según el idioma d
 
 | Juego | Configuración |
 |---|---|
-| **Dota 2** | Nada. Si hace falta un paso (una sola vez), el panel muestra **Configurar**: copia la opción de lanzamiento y abre las propiedades de Dota en Steam para que solo la pegues. |
-| **Counter-Strike 2** | Nada. Reiniciá CS2 una vez después de instalar AutoReady. |
-| **League of Legends** | Nada. AutoReady usa la API local del cliente de LoL en tu PC (la misma que usan las herramientas de la comunidad): acepta sin tocar el mouse y no hace nada en la selección de campeones ni en partida. |
+| **[Dota 2](https://hercase.github.io/autoready/dota-2/?lang=es)** | Nada. Si hace falta un paso (una sola vez), el panel muestra **Configurar**: copia la opción de lanzamiento y abre las propiedades de Dota en Steam para que solo la pegues. |
+| **[Counter-Strike 2](https://hercase.github.io/autoready/cs2/?lang=es)** | Nada. Reiniciá CS2 una vez después de instalar AutoReady. |
+| **[League of Legends](https://hercase.github.io/autoready/league-of-legends/?lang=es)** | Nada. AutoReady usa la API local del cliente de LoL en tu PC (la misma que usan las herramientas de la comunidad): acepta sin tocar el mouse y no hace nada en la selección de campeones ni en partida. |
 
 ¿Jugás a otra cosa? **[Pedí tu juego](https://github.com/hercase/autoready/issues/new?template=game-request.yml)**: es un minuto, y una captura del aviso de partida encontrada ayuda mucho.
 
