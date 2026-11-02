@@ -15,7 +15,8 @@ namespace AutoReady
             // Area de busqueda en fracciones de la ventana: el dialogo siempre aparece centrado.
             public double RoiX0 = 0.2, RoiY0 = 0.2, RoiX1 = 0.8, RoiY1 = 0.85;
             // Color del boton en HSV (H en grados). Medido en el boton ACCEPT: H ~154, S ~0.30-0.35, V ~0.35.
-            public double HueMin = 120, HueMax = 190, SatMin = 0.18, ValMin = 0.24;
+            // HueMin 140 deja afuera los verdes puros (H ~125-130), como el boton "Play" de los juegos personalizados.
+            public double HueMin = 140, HueMax = 190, SatMin = 0.18, ValMin = 0.24;
             // Tamano y forma del boton en fracciones de la ventana.
             public double MinWidthFrac = 0.07, MaxWidthFrac = 0.40;
             public double MinHeightFrac = 0.025, MaxHeightFrac = 0.15;

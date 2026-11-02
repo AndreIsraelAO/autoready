@@ -91,6 +91,7 @@ namespace AutoReady
                     d.RoiX0 = Dbl(kv, p + "RoiX0", d.RoiX0); d.RoiY0 = Dbl(kv, p + "RoiY0", d.RoiY0);
                     d.RoiX1 = Dbl(kv, p + "RoiX1", d.RoiX1); d.RoiY1 = Dbl(kv, p + "RoiY1", d.RoiY1);
                     d.HueMin = Dbl(kv, p + "HueMin", d.HueMin); d.HueMax = Dbl(kv, p + "HueMax", d.HueMax);
+                    if (g.Id == "dota2" && d.HueMin == 120) d.HueMin = new Detector.Settings().HueMin;   // valor viejo: aceptaba verdes puros (botones de menu)
                     d.SatMin = Dbl(kv, p + "SatMin", d.SatMin); d.ValMin = Dbl(kv, p + "ValMin", d.ValMin);
                     d.MinWidthFrac = Dbl(kv, p + "MinWidthFrac", d.MinWidthFrac); d.MaxWidthFrac = Dbl(kv, p + "MaxWidthFrac", d.MaxWidthFrac);
                     d.MinHeightFrac = Dbl(kv, p + "MinHeightFrac", d.MinHeightFrac); d.MaxHeightFrac = Dbl(kv, p + "MaxHeightFrac", d.MaxHeightFrac);

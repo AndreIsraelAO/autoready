@@ -85,6 +85,16 @@ namespace AutoReady.Tests
             Expect("popup-ultrawide.png", GameProfile.Dota2, cfg, 1720, 717);
             Expect("cs2-1080p.png", GameProfile.Cs2, cfg, 960, 589);
             Expect("cs2-ultrawide.png", GameProfile.Cs2, cfg, 1720, 785);
+            // Un boton verde puro (H ~125) del menu, como "Play" en juegos personalizados de Dota, no es el ACCEPT (H ~154).
+            using (Bitmap b = new Bitmap(1920, 1080))
+            {
+                using (Graphics gr = Graphics.FromImage(b))
+                {
+                    gr.Clear(Color.FromArgb(8, 8, 12));
+                    using (Brush br = new SolidBrush(Color.FromArgb(77, 136, 81))) gr.FillRectangle(br, 800, 520, 320, 70);
+                }
+                Check(Detector.FindButton(b, GameProfile.Dota2, cfg.For(GameProfile.Dota2).Detector) == null, "un boton verde puro del menu no es el ACCEPT de Dota");
+            }
             // Pantallas sin popup: nunca tiene que encontrar nada (un falso positivo seria un click en cualquier lado).
             foreach (string f in new[] { "grass.png", "menu.png" })
                 foreach (GameProfile g in new[] { GameProfile.Dota2, GameProfile.Cs2 })
