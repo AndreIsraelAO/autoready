@@ -66,7 +66,7 @@ namespace AutoReady
         public static string UpdateWhenIdle(string tag) { return string.Format(T("{0} se instala cuando no estés en partida", "{0} installs when you're not in a match"), tag); }
         public static string Updating { get { return T("Actualizando…", "Updating…"); } }
         public static string UpdateFailed { get { return T("No se pudo actualizar. Probá más tarde.", "Couldn't update. Try again later."); } }
-        public static string UpdateAfterMatch { get { return T("Se actualiza al terminar la partida", "Updates after this match"); } }
+        public static string UpdateAfterMatch { get { return T("Podés actualizar cuando no estés buscando partida", "You can update when you're not searching for a match"); } }
         public static string DevBuild { get { return T("Versión de desarrollo", "Development build"); } }
 
         // Menu de la bandeja
