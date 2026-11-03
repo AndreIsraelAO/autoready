@@ -17,7 +17,7 @@
 <p align="center">
   <picture>
     <source media="(prefers-reduced-motion: reduce)" srcset="assets/demo-static.svg">
-    <img src="assets/demo.svg" width="700" alt="Animated demo: the Dota 2 "Your game is ready" popup gets accepted automatically, then a Windows notification and a phone notification say the match was accepted.">
+    <img src="assets/demo.svg" width="700" alt="Animated demo: the Dota 2 &quot;Your game is ready&quot; popup gets accepted automatically, then a Windows notification and a phone notification say the match was accepted.">
   </picture>
 </p>
 
