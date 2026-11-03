@@ -1,50 +1,94 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 400" width="700" height="400" role="img" aria-label="AutoReady demo: a Match found popup in Dota 2 accepts itself while you are in another window; then a Windows notification and a phone notification say the match was accepted.">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 400" width="700" height="400" role="img" aria-label="AutoReady demo: on a Windows 11 desktop a Dota 2 Match found popup appears while the Dota 2 taskbar icon flashes; AutoReady clicks Accept for you, then a Windows notification and a phone lock-screen notification say the match was accepted.">
 <defs>
-<radialGradient id="glow" gradientUnits="userSpaceOnUse" cx="126" cy="178" r="260"><stop offset="0" stop-color="#10B981" stop-opacity=".09"/><stop offset="1" stop-color="#10B981" stop-opacity="0"/></radialGradient>
-<filter id="shw" filterUnits="userSpaceOnUse" x="0" y="0" width="700" height="400" color-interpolation-filters="sRGB"><feDropShadow dx="0" dy="24" stdDeviation="24" flood-color="#000" flood-opacity=".8"/><feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="#000" flood-opacity=".6"/></filter>
-<filter id="shwt" filterUnits="userSpaceOnUse" x="0" y="0" width="700" height="400" color-interpolation-filters="sRGB"><feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="#000" flood-opacity=".6"/></filter>
+<linearGradient id="cv" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#17171C"/><stop offset="1" stop-color="#0B0B0E"/></linearGradient>
+<radialGradient id="cvg" gradientUnits="userSpaceOnUse" cx="350" cy="220" r="400"><stop offset="0" stop-color="#26334F" stop-opacity=".55"/><stop offset="1" stop-color="#26334F" stop-opacity="0"/></radialGradient>
+<linearGradient id="wp" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#1B2E5E"/><stop offset="1" stop-color="#0B1020"/></linearGradient>
+<radialGradient id="bloom" gradientUnits="userSpaceOnUse" cx="410" cy="50" r="230"><stop offset="0" stop-color="#9DBBFF" stop-opacity=".38"/><stop offset="1" stop-color="#9DBBFF" stop-opacity="0"/></radialGradient>
+<linearGradient id="lk" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#22394F"/><stop offset=".55" stop-color="#14212F"/><stop offset="1" stop-color="#0D141D"/></linearGradient>
+<radialGradient id="teal" gradientUnits="userSpaceOnUse" cx="94" cy="290" r="130"><stop offset="0" stop-color="#2BB3D6" stop-opacity=".3"/><stop offset="1" stop-color="#2BB3D6" stop-opacity="0"/></radialGradient>
+<linearGradient id="edge" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5A5A64"/><stop offset="1" stop-color="#26262C"/></linearGradient>
+<linearGradient id="br" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#35C1F1"/><stop offset=".55" stop-color="#2D8CF0"/><stop offset="1" stop-color="#3DD598"/></linearGradient>
+<clipPath id="scr"><rect x="24" y="24" width="440" height="352" rx="10"/></clipPath>
+<clipPath id="pscr"><rect x="5" y="5" width="178" height="335" rx="23"/></clipPath>
+<filter id="bl" x="-30%" y="-40%" width="160%" height="180%"><feGaussianBlur stdDeviation="26"/></filter>
+<filter id="shs" x="-10%" y="-10%" width="120%" height="130%" color-interpolation-filters="sRGB"><feDropShadow dx="0" dy="20" stdDeviation="20" flood-color="#000" flood-opacity=".7"/></filter>
+<filter id="shw" x="-20%" y="-25%" width="140%" height="170%" color-interpolation-filters="sRGB"><feDropShadow dx="0" dy="18" stdDeviation="16" flood-color="#000" flood-opacity=".65"/><feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="#000" flood-opacity=".5"/></filter>
+<filter id="sht" x="-10%" y="-20%" width="120%" height="170%" color-interpolation-filters="sRGB"><feDropShadow dx="0" dy="10" stdDeviation="10" flood-color="#000" flood-opacity=".6"/><feDropShadow dx="0" dy="1" stdDeviation="1.5" flood-color="#000" flood-opacity=".5"/></filter>
 <symbol id="logo" viewBox="0 0 512 512"><rect width="512" height="512" rx="112" fill="#09090B"/><g transform="translate(256 256) scale(.84) translate(-203 -283)"><polyline points="86.48,263.72 61.02,238.26" fill="none" stroke="#38BDF8" stroke-width="84"/><polyline points="18.61,269.37 -4.02,246.74" fill="none" stroke="#10B981" stroke-width="84"/><polyline points="78,292 188,402 352,198" fill="none" stroke="#F5F4F0" stroke-width="84" stroke-linejoin="miter"/><polygon points="440,104 274,160 412,280" fill="#F5F4F0"/></g></symbol>
+<symbol id="dota" viewBox="0 0 24 24"><circle cx="12" cy="12" r="11.5" fill="#1A1A1F"/><circle cx="12" cy="12" r="8.2" fill="none" stroke="#C8372D" stroke-width="2.6" stroke-dasharray="34 18" transform="rotate(-30 12 12)"/><path d="M9.6 14.4l5-5" stroke="#E8483A" stroke-width="2.8" stroke-linecap="round"/></symbol>
 </defs>
-<style>.d{font-family:'Segoe UI Variable Display','Segoe UI',-apple-system,'SF Pro Display',Inter,Helvetica,Arial,sans-serif}.t{font-family:'Segoe UI Variable Text','Segoe UI',-apple-system,'SF Pro Text',Inter,Helvetica,Arial,sans-serif}.m{font-family:'Cascadia Mono',Consolas,Menlo,monospace}</style>
-<rect width="700" height="400" fill="#09090B"/>
-<rect width="700" height="400" fill="url(#glow)"/>
-<g class="d" font-weight="700" font-size="48" letter-spacing="-1.44">
-<text x="404" y="78" fill="#F5F4F0">Queue up.</text>
-<text x="404" y="132" fill="#7C7C86">Step away.</text></g>
-<text class="t" x="40" y="296" font-size="14" fill="#8A8A94">Dota 2, CS2 and League of Legends</text>
-<g class="t" font-size="16" fill="#A1A1AA"><text x="40" y="334">Accepts the match for you,</text><text x="40" y="356">then pings your PC and phone.</text></g>
-<g opacity="1"><animate attributeName="opacity" values="1;1;0;0;1" keyTimes="0.00000;0.90714;0.95000;0.96429;1.00000" dur="7s" repeatCount="indefinite" calcMode="spline" keySplines="0 0 1 1;0.4 0 0.2 1;0 0 1 1;0.2 0.8 0.2 1"/>
-<g filter="url(#shw)"><rect x="40.5" y="44.5" width="339" height="179" rx="8" fill="#141418" stroke="#34343C"/></g>
-<path d="M48.5 45h323" stroke="#fff" stroke-opacity=".06" fill="none"/>
-<rect x="60" y="52" width="16" height="16" rx="4" fill="#2B2B33"/><path d="M68 56.5v7M64.5 60h7" stroke="#9A9AA3" stroke-width="1.6" stroke-linecap="round"/>
-<text class="t" x="84" y="64" font-size="13" fill="#9A9AA3">Dota 2</text>
-<g fill="none" stroke="#9A9AA3" stroke-width="1"><path d="M290 60h10"/><rect x="320.5" y="55.5" width="9" height="9" rx="1.5"/><path d="M350 55l10 10M360 55l-10 10"/></g>
-<text class="d" x="60" y="116" font-size="28" font-weight="700" letter-spacing="-.56" fill="#F5F4F0">Match found</text>
-<text class="t" x="60" y="140" font-size="14" fill="#9A9AA3" opacity="1">Accepting for you…<animate attributeName="opacity" values="1;0;1;1" keyTimes="0.00000;0.30571;0.95714;1.00000" dur="7s" repeatCount="indefinite" calcMode="discrete"/></text>
-<text class="t" x="60" y="140" font-size="14" fill="#9A9AA3" opacity="0">Waiting for players…<animate attributeName="opacity" values="0;1;0;0" keyTimes="0.00000;0.30571;0.95714;1.00000" dur="7s" repeatCount="indefinite" calcMode="discrete"/></text>
-<g class="m" font-size="13" fill="#7C7C86" text-anchor="end"><text x="360" y="116">0:09<animate attributeName="opacity" values="1;0;1;1" keyTimes="0.00000;0.14286;0.95714;1.00000" dur="7s" repeatCount="indefinite" calcMode="discrete"/></text><text x="360" y="116" opacity="0">0:08<animate attributeName="opacity" values="0;1;0;0" keyTimes="0.00000;0.14286;0.30571;1.00000" dur="7s" repeatCount="indefinite" calcMode="discrete"/></text></g>
-<rect x="60" y="158" width="132" height="40" rx="6" fill="#10B981"><animate attributeName="fill" values="#10B981;#34D399;#059669;#10B981;#10B981" keyTimes="0.00000;0.27143;0.29286;0.31429;1.00000" dur="7s" repeatCount="indefinite" calcMode="discrete"/></rect>
-<g class="t" font-size="15" font-weight="600" fill="#022C1E" text-anchor="middle" opacity="1"><text x="126" y="183.5">Accept</text><animate attributeName="opacity" values="1;0;1;1" keyTimes="0.00000;0.30571;0.95714;1.00000" dur="7s" repeatCount="indefinite" calcMode="discrete"/></g>
-<g class="t" font-size="15" font-weight="600" fill="#022C1E" text-anchor="middle" opacity="0"><text x="137" y="183.5">Accepted</text><path d="M84 178.5l4.5 4.5 8.5-9.5" fill="none" stroke="#022C1E" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="22" stroke-dashoffset="22"><animate attributeName="stroke-dashoffset" values="22;22;0;0;22;22" keyTimes="0.00000;0.30571;0.34000;0.95714;0.95729;1.00000" dur="7s" repeatCount="indefinite" calcMode="spline" keySplines="0 0 1 1;0.2 0.8 0.2 1;0 0 1 1;0 0 1 1;0 0 1 1"/></path><animate attributeName="opacity" values="0;1;0;0" keyTimes="0.00000;0.30571;0.95714;1.00000" dur="7s" repeatCount="indefinite" calcMode="discrete"/></g>
-<circle cx="182" cy="178" r="0" fill="none" stroke="#F5F4F0" stroke-width="1" opacity="0"><animate attributeName="r" values="0;0;24;24" keyTimes="0.00000;0.29286;0.37143;1.00000" dur="7s" repeatCount="indefinite" calcMode="spline" keySplines="0 0 1 1;0.2 0.8 0.2 1;0 0 1 1"/><animate attributeName="opacity" values="0;0;0.4;0;0" keyTimes="0.00000;0.29286;0.29429;0.37143;1.00000" dur="7s" repeatCount="indefinite" calcMode="spline" keySplines="0 0 1 1;0.2 0.8 0.2 1;0.2 0.8 0.2 1;0 0 1 1"/></circle>
-<g opacity="0"><animateTransform attributeName="transform" type="translate" values="0 12;0 12;0 0;0 0;0 12;0 12" keyTimes="0.00000;0.34286;0.40000;0.95571;0.95714;1.00000" dur="7s" repeatCount="indefinite" calcMode="spline" keySplines="0 0 1 1;0.34 1.56 0.64 1;0 0 1 1;0 0 1 1;0 0 1 1"/><animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0.00000;0.34286;0.38571;0.95571;0.95714;1.00000" dur="7s" repeatCount="indefinite" calcMode="spline" keySplines="0 0 1 1;0.2 0.8 0.2 1;0 0 1 1;0 0 1 1;0 0 1 1"/>
-<g filter="url(#shwt)"><rect x="404" y="184" width="256" height="96" rx="8" fill="#2C2C2C"/></g>
-<rect x="404.5" y="184.5" width="255" height="95" rx="7.5" fill="none" stroke="#fff" stroke-opacity=".08"/>
-<use href="#logo" x="420" y="198" width="16" height="16"/>
-<g class="t" fill="#fff"><text x="444" y="211" font-size="13" fill-opacity=".7">AutoReady</text><text x="644" y="212" font-size="16" fill-opacity=".7" text-anchor="end">…</text>
-<text x="420" y="241" font-size="14" font-weight="600">Match accepted in Dota 2</text><text x="420" y="261" font-size="14" fill-opacity=".79">Come back, it's starting.</text></g></g>
-<g opacity="0"><animateTransform attributeName="transform" type="translate" values="0 12;0 12;0 0;0 0;0 12;0 12" keyTimes="0.00000;0.42857;0.49286;0.95571;0.95714;1.00000" dur="7s" repeatCount="indefinite" calcMode="spline" keySplines="0 0 1 1;0.34 1.56 0.64 1;0 0 1 1;0 0 1 1;0 0 1 1"/><animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0.00000;0.42857;0.47143;0.95571;0.95714;1.00000" dur="7s" repeatCount="indefinite" calcMode="spline" keySplines="0 0 1 1;0.2 0.8 0.2 1;0 0 1 1;0 0 1 1;0 0 1 1"/>
-<g filter="url(#shwt)"><rect x="404" y="292" width="256" height="68" rx="20" fill="#2A2A2E"/></g>
-<rect x="404.5" y="292.5" width="255" height="67" rx="19.5" fill="none" stroke="#fff" stroke-opacity=".09"/>
-<rect x="418" y="307" width="38" height="38" rx="9" fill="#338574"/>
-<path d="M428.5 317h17a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2h-8l-4.5 4v-4h-4.5a2 2 0 0 1-2-2v-10a2 2 0 0 1 2-2z" fill="#fff"/>
-<path d="M432 321.5l4.5 3.5-4.5 3.5M438.5 328.5h4" fill="none" stroke="#338574" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-<g class="t" fill="#fff"><text x="466" y="313" font-size="15" font-weight="700">ntfy</text><text x="644" y="313" font-size="13" fill-opacity=".55" text-anchor="end">now</text>
-<text x="466" y="331" font-size="14" font-weight="700">Match accepted</text><text x="466" y="348" font-size="14" fill-opacity=".78">Come back, it's starting.</text></g></g>
-<g opacity="0"><animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0.00000;0.08571;0.12143;0.34286;0.40000;1.00000" dur="7s" repeatCount="indefinite" calcMode="spline" keySplines="0 0 1 1;0.2 0.8 0.2 1;0 0 1 1;0.4 0 0.2 1;0 0 1 1"/>
-<animateTransform attributeName="transform" type="translate" values="246 0;246 0;182 0;182 0;236 0;236 0;246 0;246 0" keyTimes="0.00000;0.08571;0.27143;0.34286;0.41429;0.95571;0.95729;1.00000" dur="7s" repeatCount="indefinite" calcMode="spline" keySplines="0 0 1 1;0.4 0 0.6 1;0 0 1 1;0.4 0 0.2 1;0 0 1 1;0 0 1 1;0 0 1 1"/>
-<g><animateTransform attributeName="transform" type="translate" values="0 128;0 128;0 178;0 178;0 132;0 132;0 128;0 128" keyTimes="0.00000;0.08571;0.27143;0.34286;0.41429;0.95571;0.95729;1.00000" dur="7s" repeatCount="indefinite" calcMode="spline" keySplines="0 0 1 1;0.2 0.8 0.2 1;0 0 1 1;0.4 0 0.2 1;0 0 1 1;0 0 1 1;0 0 1 1"/>
-<path d="M0 0L0 17L4.5 13L7.5 20L10.5 18.7L7.6 12H13Z" fill="#F5F4F0" stroke="#09090B" stroke-width="1.2" stroke-linejoin="round"/>
-<rect x="14" y="18" width="84" height="20" rx="10" fill="#10B981"/><text class="t" x="56" y="32.5" font-size="13" font-weight="600" fill="#022C1E" text-anchor="middle">AutoReady</text>
-</g></g>
-</g></svg>
+<style>text{font-family:'Segoe UI Variable Display','Segoe UI',-apple-system,'SF Pro Display',Inter,Roboto,Helvetica,Arial,sans-serif}.m{font-family:'Cascadia Mono',Consolas,Menlo,monospace}</style>
+<rect width="700" height="400" fill="url(#cv)"/>
+<rect width="700" height="400" fill="url(#cvg)"/>
+<g opacity="1"><animate attributeName="opacity" keyTimes="0.00000;0.89286;0.94286;0.95714;1.00000" values="1;1;0;0;1" dur="7s" repeatCount="indefinite" calcMode="spline" keySplines="0 0 1 1;.4 0 .2 1;0 0 1 1;.2 .8 .2 1"/>
+<rect x="24" y="24" width="440" height="352" rx="10" fill="#0B1020" filter="url(#shs)"/>
+<g clip-path="url(#scr)">
+<rect x="24" y="24" width="440" height="352" fill="url(#wp)"/>
+<g filter="url(#bl)"><ellipse cx="360" cy="120" rx="190" ry="70" transform="rotate(-25 360 120)" fill="#4C8DFF" fill-opacity=".7"/><ellipse cx="170" cy="230" rx="170" ry="60" transform="rotate(22 170 230)" fill="#7B5CFF" fill-opacity=".5"/><ellipse cx="360" cy="290" rx="150" ry="50" transform="rotate(-8 360 290)" fill="#2BB3D6" fill-opacity=".38"/></g>
+<rect x="24" y="24" width="440" height="352" fill="url(#bloom)"/>
+<rect x="24" y="340" width="440" height="36" fill="#12141C" fill-opacity=".9"/>
+<path d="M24 340.5h440" stroke="#fff" stroke-opacity=".1" fill="none"/>
+</g>
+<rect x="24.5" y="24.5" width="439" height="351" rx="9.5" fill="none" stroke="#fff" stroke-opacity=".12"/>
+<g fill="#CFD3DC"><rect x="142" y="352" width="5.5" height="5.5" rx=".8"/><rect x="148.5" y="352" width="5.5" height="5.5" rx=".8"/><rect x="142" y="358.5" width="5.5" height="5.5" rx=".8"/><rect x="148.5" y="358.5" width="5.5" height="5.5" rx=".8"/></g>
+<rect x="166.5" y="346.5" width="91" height="23" rx="11.5" fill="#fff" fill-opacity=".07" stroke="#fff" stroke-opacity=".1"/>
+<circle cx="178" cy="356.5" r="4" fill="none" stroke="#B4B4BC" stroke-width="1.4"/><path d="M181 359.5l3.5 3.5" stroke="#B4B4BC" stroke-width="1.4" stroke-linecap="round"/>
+<text x="191" y="362.5" font-size="13" fill="#B4B4BC">Search</text>
+<rect x="264" y="343" width="30" height="30" rx="6" fill="#E8890C" opacity="0.6"><animate attributeName="opacity" keyTimes="0.00000;0.05714;0.11429;0.17143;0.22857;0.28571;0.30571;0.94286;0.95000;1.00000" values="0.6;0.1;0.6;0.1;0.6;0.1;0;0;0.6;0.6" dur="7s" repeatCount="indefinite" calcMode="spline" keySplines=".4 0 .2 1;.4 0 .2 1;.4 0 .2 1;.4 0 .2 1;.4 0 .2 1;.4 0 .2 1;0 0 1 1;0 0 1 1;0 0 1 1"/></rect>
+<use href="#dota" x="269" y="348" width="20" height="20"/>
+<rect x="275" y="371" width="8" height="2" rx="1" fill="#F5F4F0" fill-opacity=".9"/>
+<rect x="271" y="370.5" width="16" height="3" rx="1.5" fill="#FBA23A" opacity="1"><animate attributeName="opacity" keyTimes="0.00000;0.05714;0.11429;0.17143;0.22857;0.28571;0.30571;0.94286;0.95000;1.00000" values="1;0.3;1;0.3;1;0.3;0;0;1;1" dur="7s" repeatCount="indefinite" calcMode="spline" keySplines=".4 0 .2 1;.4 0 .2 1;.4 0 .2 1;.4 0 .2 1;.4 0 .2 1;.4 0 .2 1;0 0 1 1;0 0 1 1;0 0 1 1"/></rect>
+<circle cx="311" cy="358" r="8.5" fill="url(#br)"/><path d="M304 356.5c3-4.5 10-4.5 14 .5" fill="none" stroke="#fff" stroke-opacity=".85" stroke-width="1.6" stroke-linecap="round"/>
+<path d="M334.5 353.5a1.5 1.5 0 0 1 1.5-1.5h4.5l2 2.5h5.5a1.5 1.5 0 0 1 1.5 1.5v9a1.5 1.5 0 0 1-1.5 1.5h-12a1.5 1.5 0 0 1-1.5-1.5z" fill="#E0A526"/><rect x="334.5" y="356.5" width="16" height="9.5" rx="1.5" fill="#F4C04E"/>
+<use href="#logo" x="378" y="350" width="16" height="16"/>
+<text x="452" y="355" font-size="13" fill="#E8E8EC" text-anchor="end">9:41 PM</text>
+<text x="452" y="367" font-size="11" fill="#B4B4BC" text-anchor="end">11/2/2026</text>
+<g><animateTransform attributeName="transform" type="translate" keyTimes="0.00000;0.94286;0.95714;1.00000" values="0 0;0 0;0 14;0 0" dur="7s" repeatCount="indefinite" calcMode="spline" keySplines="0 0 1 1;0 0 1 1;.2 .8 .2 1"/>
+<rect x="88" y="44" width="308" height="176" rx="8" fill="#141418" filter="url(#shw)"/>
+<path d="M88 76V52a8 8 0 0 1 8-8h292a8 8 0 0 1 8 8v24z" fill="#1B1B21"/>
+<path d="M88 76.5h308" stroke="#fff" stroke-opacity=".07" fill="none"/>
+<rect x="88.5" y="44.5" width="307" height="175" rx="7.5" fill="none" stroke="#fff" stroke-opacity=".14"/>
+<use href="#dota" x="103" y="53" width="14" height="14"/>
+<text x="125" y="64.5" font-size="13" fill="#9A9AA3">Dota 2</text>
+<g fill="none" stroke="#9A9AA3" stroke-width="1"><path d="M327 60.5h10"/><rect x="349.5" y="55.5" width="9" height="9" rx="1.5"/><path d="M373 55.5l9 9M382 55.5l-9 9"/></g>
+<text x="108" y="114" font-size="28" font-weight="700" letter-spacing="-.56" fill="#F5F4F0">Match found</text>
+<g font-size="18" fill="#9A9AA3" text-anchor="end">
+<text class="m" x="376" y="114" opacity="1">0:09<animate attributeName="opacity" keyTimes="0.00000;0.14286;0.15429;0.94286;0.95000;1.00000" values="1;1;0;0;1;1" dur="7s" repeatCount="indefinite" calcMode="spline" keySplines="0 0 1 1;.4 0 .2 1;0 0 1 1;0 0 1 1;0 0 1 1"/></text>
+<text class="m" x="376" y="114" opacity="0">0:08<animate attributeName="opacity" keyTimes="0.00000;0.14286;0.15429;0.28571;0.29714;0.94286;0.95000;1.00000" values="0;0;1;1;0;0;0;0" dur="7s" repeatCount="indefinite" calcMode="spline" keySplines="0 0 1 1;.4 0 .2 1;0 0 1 1;.4 0 .2 1;0 0 1 1;0 0 1 1;0 0 1 1"/></text>
+<text class="m" x="376" y="114" opacity="0">0:07<animate attributeName="opacity" keyTimes="0.00000;0.28571;0.29714;0.94286;0.95000;1.00000" values="0;0;1;1;0;0" dur="7s" repeatCount="indefinite" calcMode="spline" keySplines="0 0 1 1;.4 0 .2 1;0 0 1 1;0 0 1 1;0 0 1 1"/></text></g>
+<text x="108" y="138" font-size="14" fill="#9A9AA3" opacity="1">Your match is ready.<animate attributeName="opacity" keyTimes="0.00000;0.30571;0.32286;0.94286;0.95000;1.00000" values="1;1;0;0;1;1" dur="7s" repeatCount="indefinite" calcMode="spline" keySplines="0 0 1 1;.4 0 .2 1;0 0 1 1;0 0 1 1;0 0 1 1"/></text>
+<text x="108" y="138" font-size="14" fill="#9A9AA3" opacity="0">Waiting for other players…<animate attributeName="opacity" keyTimes="0.00000;0.30571;0.32286;0.94286;0.95000;1.00000" values="0;0;1;1;0;0" dur="7s" repeatCount="indefinite" calcMode="spline" keySplines="0 0 1 1;.4 0 .2 1;0 0 1 1;0 0 1 1;0 0 1 1"/></text>
+<rect x="108" y="162" width="268" height="36" rx="6" fill="#10B981"><animate attributeName="fill" keyTimes="0.00000;0.27143;0.28286;0.29286;0.29714;0.30571;0.33429;0.94286;0.95000;1.00000" values="#10B981;#10B981;#34D399;#34D399;#059669;#059669;#10B981;#10B981;#10B981;#10B981" dur="7s" repeatCount="indefinite" calcMode="spline" keySplines="0 0 1 1;.4 0 .2 1;0 0 1 1;.4 0 .2 1;0 0 1 1;.4 0 .2 1;0 0 1 1;0 0 1 1;0 0 1 1"/></rect>
+<g font-size="15" font-weight="600" fill="#022C1E" text-anchor="middle" opacity="1"><text x="242" y="185">Accept</text><animate attributeName="opacity" keyTimes="0.00000;0.30571;0.32000;0.94286;0.95000;1.00000" values="1;1;0;0;1;1" dur="7s" repeatCount="indefinite" calcMode="spline" keySplines="0 0 1 1;.4 0 .2 1;0 0 1 1;0 0 1 1;0 0 1 1"/></g>
+<g font-size="15" font-weight="600" fill="#022C1E" text-anchor="middle" opacity="0"><text x="253" y="185">Accepted</text><path d="M197 181l4.5 4.5 8.5-9.5" fill="none" stroke="#022C1E" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="22" stroke-dashoffset="22"><animate attributeName="stroke-dashoffset" keyTimes="0.00000;0.31429;0.35714;0.94286;0.95000;1.00000" values="22;22;0;0;22;22" dur="7s" repeatCount="indefinite" calcMode="spline" keySplines="0 0 1 1;.2 .8 .2 1;0 0 1 1;0 0 1 1;0 0 1 1"/></path><animate attributeName="opacity" keyTimes="0.00000;0.30571;0.32286;0.94286;0.95000;1.00000" values="0;0;1;1;0;0" dur="7s" repeatCount="indefinite" calcMode="spline" keySplines="0 0 1 1;.4 0 .2 1;0 0 1 1;0 0 1 1;0 0 1 1"/></g>
+</g>
+<circle cx="242" cy="180" r="0" fill="#fff" fill-opacity=".28" opacity="0"><animate attributeName="r" keyTimes="0.00000;0.29286;0.35000;0.94286;0.95000;1.00000" values="0;0;26;26;0;0" dur="7s" repeatCount="indefinite" calcMode="spline" keySplines="0 0 1 1;.2 .8 .2 1;0 0 1 1;0 0 1 1;0 0 1 1"/><animate attributeName="opacity" keyTimes="0.00000;0.29286;0.29429;0.35000;0.94286;0.95000;1.00000" values="0;0;1;0;0;0;0" dur="7s" repeatCount="indefinite" calcMode="spline" keySplines="0 0 1 1;0 0 1 1;.2 .8 .2 1;0 0 1 1;0 0 1 1;0 0 1 1"/></circle>
+<g opacity="0"><g><animateTransform attributeName="transform" type="translate" keyTimes="0.00000;0.35000;0.40000;0.42857;0.94286;0.95000;1.00000" values="40 0;40 0;-5 0;0 0;0 0;40 0;40 0" dur="7s" repeatCount="indefinite" calcMode="spline" keySplines="0 0 1 1;.2 .8 .2 1;.4 0 .2 1;0 0 1 1;0 0 1 1;0 0 1 1"/>
+<rect x="152" y="244" width="300" height="84" rx="8" fill="#2C2C32" filter="url(#sht)"/>
+<rect x="152.5" y="244.5" width="299" height="83" rx="7.5" fill="none" stroke="#fff" stroke-opacity=".1"/>
+<use href="#logo" x="166" y="256" width="16" height="16"/>
+<g fill="#fff"><text x="190" y="268.5" font-size="13" fill-opacity=".7">AutoReady</text><text x="436" y="269" font-size="16" fill-opacity=".7" text-anchor="end">…</text>
+<text x="166" y="296" font-size="14" font-weight="700">Match accepted in Dota 2</text><text x="166" y="314" font-size="14" fill-opacity=".8">Come back, it's starting.</text></g></g><animate attributeName="opacity" keyTimes="0.00000;0.35000;0.37857;0.94286;0.95000;1.00000" values="0;0;1;1;0;0" dur="7s" repeatCount="indefinite" calcMode="spline" keySplines="0 0 1 1;.2 .8 .2 1;0 0 1 1;0 0 1 1;0 0 1 1"/></g>
+<path d="M458 286H497" stroke="#10B981" stroke-width="1.5" stroke-linecap="round" stroke-dasharray="2 4" fill="none" opacity="0"><animate attributeName="opacity" keyTimes="0.00000;0.52857;0.56429;0.94286;0.95000;1.00000" values="0;0;1;1;0;0" dur="7s" repeatCount="indefinite" calcMode="spline" keySplines="0 0 1 1;.2 .8 .2 1;0 0 1 1;0 0 1 1;0 0 1 1"/></path>
+<g transform="translate(488 110)"><g><animateTransform attributeName="transform" type="translate" keyTimes="0.00000;0.94286;0.95714;1.00000" values="0 0;0 0;0 44;0 0" dur="7s" repeatCount="indefinite" calcMode="spline" keySplines="0 0 1 1;0 0 1 1;.2 .8 .2 1"/><g><animateTransform attributeName="transform" type="translate" keyTimes="0.00000;0.52857;0.53714;0.54571;0.55429;0.56286;0.57143;0.58286;0.94286;0.95000;1.00000" values="0 0;0 0;-2.5 0;2.5 0;-2 0;1.5 0;-1 0;0 0;0 0;0 0;0 0" dur="7s" repeatCount="indefinite" calcMode="spline" keySplines="0 0 1 1;.4 0 .2 1;.4 0 .2 1;.4 0 .2 1;.4 0 .2 1;.4 0 .2 1;.4 0 .2 1;0 0 1 1;0 0 1 1;0 0 1 1"/>
+<g fill="#3A3A42"><rect x="188" y="116" width="2.5" height="52" rx="1"/><rect x="-2.5" y="74" width="2.5" height="22" rx="1"/><rect x="-2.5" y="110" width="2.5" height="36" rx="1"/><rect x="-2.5" y="154" width="2.5" height="36" rx="1"/></g>
+<rect x="0" y="0" width="188" height="340" rx="28" fill="#0B0B0D" filter="url(#sht)"/>
+<rect x=".75" y=".75" width="186.5" height="338.5" rx="27.25" fill="none" stroke="url(#edge)" stroke-width="1.5"/>
+<rect x="5" y="5" width="178" height="335" rx="23" fill="url(#lk)"/>
+<g clip-path="url(#pscr)"><rect x="5" y="150" width="178" height="190" fill="url(#teal)"/></g>
+<rect x="66" y="14" width="56" height="17" rx="8.5" fill="#000"/>
+<text x="94" y="64" font-size="13" font-weight="500" fill="#fff" fill-opacity=".85" text-anchor="middle">Monday, November 2</text>
+<text x="94" y="114" font-size="52" font-weight="300" letter-spacing="-1" fill="#fff" fill-opacity=".95" text-anchor="middle">9:41</text>
+<g opacity="0"><g><animateTransform attributeName="transform" type="translate" keyTimes="0.00000;0.52857;0.56429;0.59286;0.94286;0.95000;1.00000" values="0 -14;0 -14;0 3;0 0;0 0;0 -14;0 -14" dur="7s" repeatCount="indefinite" calcMode="spline" keySplines="0 0 1 1;.2 .8 .2 1;.4 0 .2 1;0 0 1 1;0 0 1 1;0 0 1 1"/><rect x="27" y="150" width="134" height="84" rx="20" fill="#3A3C44" fill-opacity=".4"/>
+<rect x="19" y="142" width="150" height="84" rx="20" fill="#3A3C44" fill-opacity=".6"/><rect x="11" y="134" width="166" height="84" rx="20" fill="#2B2D33" fill-opacity=".94" filter="url(#sht)"/>
+<rect x="11.5" y="134.5" width="165" height="83" rx="19.5" fill="none" stroke="#fff" stroke-opacity=".1"/>
+<g transform="translate(20 146) scale(.737)"><rect width="38" height="38" rx="9" fill="#338574"/><path d="M10.5 10h17a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2h-8l-4.5 4v-4h-4.5a2 2 0 0 1-2-2v-10a2 2 0 0 1 2-2z" fill="#fff"/><path d="M14 14.5l4.5 3.5-4.5 3.5M20.5 21.5h4" fill="none" stroke="#338574" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></g>
+<g fill="#fff"><text x="56" y="154" font-size="13" fill-opacity=".7">ntfy</text><text x="167" y="154" font-size="13" fill-opacity=".6" text-anchor="end">now</text><text x="56" y="172" font-size="14" font-weight="700">Match accepted</text><text x="56" y="190" font-size="14" fill-opacity=".8">Come back,</text><text x="56" y="206" font-size="14" fill-opacity=".8">it's starting.</text></g></g><animate attributeName="opacity" keyTimes="0.00000;0.52857;0.55714;0.94286;0.95000;1.00000" values="0;0;1;1;0;0" dur="7s" repeatCount="indefinite" calcMode="spline" keySplines="0 0 1 1;.2 .8 .2 1;0 0 1 1;0 0 1 1;0 0 1 1"/></g>
+</g></g></g>
+<g opacity="0"><animate attributeName="opacity" keyTimes="0.00000;0.07857;0.12143;0.36429;0.40714;0.94286;0.95000;1.00000" values="0;0;1;1;0;0;0;0" dur="7s" repeatCount="indefinite" calcMode="spline" keySplines="0 0 1 1;.2 .8 .2 1;0 0 1 1;.4 0 .2 1;0 0 1 1;0 0 1 1;0 0 1 1"/>
+<animateMotion path="M380 268 C340 298 290 234 242 180" calcMode="spline" keyPoints="0;0;1;1" keyTimes="0;0.07857;0.27857;1" keySplines="0 0 1 1;.4 0 .2 1;0 0 1 1" dur="7s" repeatCount="indefinite"/>
+<g><animateTransform attributeName="transform" type="translate" keyTimes="0.00000;0.36429;0.40714;0.94286;0.95000;1.00000" values="0 0;0 0;18 14;18 14;0 0;0 0" dur="7s" repeatCount="indefinite" calcMode="spline" keySplines="0 0 1 1;.4 0 .2 1;0 0 1 1;0 0 1 1;0 0 1 1"/>
+<g><animateTransform attributeName="transform" type="scale" keyTimes="0.00000;0.29286;0.29857;0.31429;0.94286;0.95000;1.00000" values="1 1;1 1;.86 .86;1 1;1 1;1 1;1 1" dur="7s" repeatCount="indefinite" calcMode="spline" keySplines="0 0 1 1;.4 0 .2 1;.4 0 .2 1;0 0 1 1;0 0 1 1;0 0 1 1"/><path d="M0 0L0 17L4.5 13L7.5 20L10.5 18.7L7.6 12H13Z" transform="translate(0 1.5)" fill="#000" fill-opacity=".35" stroke="#000" stroke-opacity=".35" stroke-width="1.2" stroke-linejoin="round"/><path d="M0 0L0 17L4.5 13L7.5 20L10.5 18.7L7.6 12H13Z" fill="#F5F4F0" stroke="#09090B" stroke-width="1.2" stroke-linejoin="round"/></g>
+<rect x="14" y="16" width="84" height="22" rx="11" fill="#10B981"/><text x="56" y="31.5" font-size="13" font-weight="600" fill="#022C1E" text-anchor="middle">AutoReady</text></g></g>
+</g>
+</svg>
