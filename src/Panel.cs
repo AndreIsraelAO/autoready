@@ -23,6 +23,7 @@ namespace AutoReady
         public bool Paused;
         public string UpdateTag;       // "v0.2.3" si hay version nueva, si no null
         public string UpdateMessage;   // resultado de "Buscar actualizaciones"
+        public bool CanUpdate;         // false buscando partida o en partida: el boton Actualizar queda apagado
         public GameProfile ProtectionFix;   // juego al que le falta la opcion de lanzamiento (null = todo bien)
     }
 
@@ -257,11 +258,11 @@ namespace AutoReady
             {
                 // El resultado de tocar Actualizar se ve en el mismo aviso (no escondido en Mas opciones).
                 updateBar.Title.Text = S.UpdateAvailable(st.UpdateTag);
-                bool busy = st.UpdateMessage == S.Updating || st.UpdateMessage == S.UpdateAfterMatch;
-                bool show = busy || st.UpdateMessage == S.UpdateFailed;
-                updateBar.Message.Text = show ? st.UpdateMessage : "";
+                bool updating = st.UpdateMessage == S.Updating;
+                bool show = updating || st.UpdateMessage == S.UpdateFailed || !st.CanUpdate;
+                updateBar.Message.Text = !show ? "" : (updating || st.CanUpdate) ? st.UpdateMessage : S.UpdateAfterMatch;
                 updateBar.Message.Visibility = show ? Visibility.Visible : Visibility.Collapsed;
-                updateButton.Enabled = !busy;
+                updateButton.Enabled = !updating && st.CanUpdate;
             }
             // Version arriba y, debajo, lo que pasa con las actualizaciones (si hay algo que decir).
             versionTitle.Text = S.Version(Updater.CurrentVersionText);

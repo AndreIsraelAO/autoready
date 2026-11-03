@@ -243,8 +243,9 @@ namespace AutoReady
                 Text = text,
                 Kind = kind,
                 Paused = paused,
-                UpdateTag = pendingUpdate != null && !cfg.AutoUpdateCheck ? pendingUpdate.Tag : null,
+                UpdateTag = pendingUpdate != null ? pendingUpdate.Tag : null,
                 UpdateMessage = updateMessage,
+                CanUpdate = CanUpdateNow(),
             };
             st.ProtectionFix = MissingProtection();
             ui.Post(() =>
@@ -300,14 +301,22 @@ namespace AutoReady
             });
         }
 
+        // Actualizar reinicia la app: solo con el juego cerrado o con el juego abierto en el menu confirmado.
+        // Buscando partida, en partida o sin poder distinguirlo, no.
+        // GSI y el estado de Steam se miran para todos los juegos (no solo el vigilado): cualquier partida en curso frena.
+        bool CanUpdateNow()
+        {
+            GameStrategy playing = active;
+            if (gsi.InAnyMatch() || Presence.Current == PresenceState.InMatch) return false;
+            return playing == null || (!playing.InMatch && playing.IdleForUpdate);
+        }
+
         public void InstallUpdate()
         {
             Updater.Release r = pendingUpdate;
             if (r == null) return;
             if (Interlocked.CompareExchange(ref installing, 1, 0) != 0) return;   // ya se esta instalando
-            // GSI y el estado de Steam se miran para todos los juegos (no solo el vigilado): cualquier partida en curso frena.
-            GameStrategy playing = active;
-            if (gsi.InAnyMatch() || Presence.Current == PresenceState.InMatch || (playing != null && playing.InMatch))
+            if (!CanUpdateNow())
             {
                 updateMessage = S.UpdateAfterMatch;
                 installing = 0;
