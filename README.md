@@ -15,6 +15,10 @@
 </p>
 
 <p align="center">
+  <img src="assets/demo.svg" width="700" alt="Animated demo: a radar searches for a match, the match-found popup appears, AutoReady clicks Accept, and a notification reaches your PC and phone.">
+</p>
+
+<p align="center">
   <img src="https://img.shields.io/github/v/release/hercase/autoready?label=version" alt="Latest version">
   <img src="https://img.shields.io/badge/Windows-10%20%7C%2011-0078D4" alt="Windows 10 and 11">
   <img src="https://img.shields.io/github/downloads/hercase/autoready/total" alt="Downloads">

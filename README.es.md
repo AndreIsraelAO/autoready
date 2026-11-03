@@ -15,6 +15,10 @@
 </p>
 
 <p align="center">
+  <img src="assets/demo.svg" width="700" alt="Demo animada: un radar busca partida, aparece el aviso de partida encontrada, AutoReady toca Aceptar y te llega una notificación a la PC y al celular.">
+</p>
+
+<p align="center">
   <img src="https://img.shields.io/github/v/release/hercase/autoready?label=versi%C3%B3n" alt="Última versión">
   <img src="https://img.shields.io/badge/Windows-10%20%7C%2011-0078D4" alt="Windows 10 y 11">
   <img src="https://img.shields.io/github/downloads/hercase/autoready/total?label=descargas" alt="Descargas">
