@@ -15,7 +15,10 @@
 </p>
 
 <p align="center">
-  <img src="assets/demo.svg" width="700" alt="Demo animada: un radar busca partida, aparece el aviso de partida encontrada, AutoReady toca Aceptar y te llega una notificación a la PC y al celular.">
+  <picture>
+    <source media="(prefers-reduced-motion: reduce)" srcset="assets/demo-static.svg">
+    <img src="assets/demo.svg" width="700" alt="Demo animada: el aviso de partida encontrada en Dota 2 se acepta solo mientras estás en otra ventana y te llega una notificación a la PC y al celular.">
+  </picture>
 </p>
 
 <p align="center">

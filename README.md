@@ -15,7 +15,10 @@
 </p>
 
 <p align="center">
-  <img src="assets/demo.svg" width="700" alt="Animated demo: a radar searches for a match, the match-found popup appears, AutoReady clicks Accept, and a notification reaches your PC and phone.">
+  <picture>
+    <source media="(prefers-reduced-motion: reduce)" srcset="assets/demo-static.svg">
+    <img src="assets/demo.svg" width="700" alt="Animated demo: a Match found popup in Dota 2 accepts itself while you are in another window, then a Windows notification and a phone notification say the match was accepted.">
+  </picture>
 </p>
 
 <p align="center">
