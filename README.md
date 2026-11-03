@@ -61,7 +61,7 @@
 
 > [!NOTE]
 > Windows may show a SmartScreen warning the first time, because AutoReady isn't code-signed yet
-> ([in progress](#code-signing-policy)). Click **More info → Run anyway**.
+> ([why](#code-signing-policy)). Click **More info → Run anyway**.
 
 ## Using it
 
@@ -70,11 +70,12 @@ Click the icon to open the panel:
 - **The switch at the top** turns accepting on or off. The status next to it tells you what AutoReady is doing.
 - **Pause hotkey:** pick a key (F1–F12 or a combination) to pause and resume from anywhere, even mid-game.
 - **Phone notifications:** scan the QR code with your phone camera. A [short page](https://hercase.github.io/autoready/phone/) walks you through connecting the free [ntfy](https://ntfy.sh) app (one tap on Android, copy and paste on iPhone).
-- **More options:** start with Windows, automatic updates (installed when no game is open), and the current version.
+- **Updates:** when a new version is out, the panel shows an **Update** button. It stays disabled while you're searching for a match or playing, so an update never interrupts you. With automatic updates on, it installs itself once you're back at the menu.
+- **More options:** start with Windows, automatic updates and the current version.
 
 Right-click the icon for **Pause/Resume** and **Exit**. The icon turns gray while paused.
 AutoReady is meant to stay on: a pause lasts until you resume it or close the game.
-AutoReady updates itself, and it's in English or Spanish depending on your Windows language.
+It's in English or Spanish depending on your Windows language.
 
 ## Supported games
 
@@ -145,15 +146,13 @@ Integration files, and asks whether to delete your settings too.
 
 ## Code signing policy
 
-Free code signing provided by [SignPath.io](https://about.signpath.io), certificate by [SignPath Foundation](https://signpath.org).
-(The application is in progress: until it's approved, releases are not signed yet.)
+AutoReady's releases are **not code-signed yet**. Free certificates for open-source projects go to projects with an
+established public track record, and AutoReady is new. We'll apply again as it grows. Until then, you can check any
+download yourself:
 
-- Committers and reviewers: [hercase](https://github.com/hercase)
-- Approvers: [hercase](https://github.com/hercase)
-
-Every release is built from this repository by GitHub Actions, scanned with Microsoft Defender and signed only after
-manual approval. Each build also carries a GitHub attestation: check yours with
-`gh attestation verify AutoReady.exe -R hercase/autoready`.
+- Every release is built from this repository by GitHub Actions and scanned with Microsoft Defender.
+- Each release publishes its checksum (`AutoReady.exe.sha256`) and carries a GitHub attestation. Check yours with
+  `gh attestation verify AutoReady.exe -R hercase/autoready`.
 
 **Privacy:** AutoReady has no accounts, analytics or telemetry. It only connects to GitHub (updates), Steam Community
 (your own Steam status) and ntfy (phone notifications, off by default), and each one can be turned off. See the

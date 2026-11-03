@@ -61,7 +61,7 @@
 
 > [!NOTE]
 > Windows puede mostrar un aviso de SmartScreen la primera vez, porque AutoReady todavía no está firmado
-> ([en trámite](#code-signing-policy-política-de-firma-de-código)). Tocá **Más información → Ejecutar de todas formas**.
+> ([por qué](#política-de-firma-de-código)). Tocá **Más información → Ejecutar de todas formas**.
 
 ## Cómo se usa
 
@@ -70,11 +70,12 @@ Tocá el ícono para abrir el panel:
 - **El interruptor de arriba** activa o pausa AutoReady. El estado de al lado dice qué está haciendo.
 - **Tecla de pausa:** elegí una tecla (F1–F12 o una combinación) para pausar y reanudar desde cualquier lado, también jugando.
 - **Avisos al celular:** escaneá el QR con la cámara del celular. Una [página corta](https://hercase.github.io/autoready/phone/) te guía para conectar la app gratis [ntfy](https://ntfy.sh) (un toque en Android, copiar y pegar en iPhone).
-- **Más opciones:** iniciar con Windows, actualizaciones automáticas (se instalan cuando no hay un juego abierto) y la versión instalada.
+- **Actualizaciones:** cuando sale una versión nueva, el panel muestra un botón **Actualizar**. Queda apagado mientras buscás partida o estás jugando, así que una actualización nunca te interrumpe. Con las actualizaciones automáticas activadas, se instala sola cuando volvés al menú.
+- **Más opciones:** iniciar con Windows, actualizaciones automáticas y la versión instalada.
 
 Con click derecho en el ícono tenés **Pausar/Reanudar** y **Salir**. El ícono se pone gris cuando está en pausa.
 AutoReady está pensado para quedar activo: la pausa dura hasta que la quites o cierres el juego.
-AutoReady se actualiza solo, y está en español o en inglés según el idioma de tu Windows.
+Está en español o en inglés según el idioma de tu Windows.
 
 ## Juegos compatibles
 
@@ -143,17 +144,15 @@ nada. Se apagan con <code>SaveSamples=False</code> en <code>%APPDATA%\AutoReady\
 directos y los archivos de Game State Integration, y te pregunta si querés borrar también tu configuración.
 </details>
 
-## Code signing policy (política de firma de código)
+## Política de firma de código
 
-Free code signing provided by [SignPath.io](https://about.signpath.io), certificate by [SignPath Foundation](https://signpath.org).
-(Firma de código gratuita de SignPath.io, certificado de SignPath Foundation. La solicitud está en curso: hasta que
-la aprueben, las versiones todavía no están firmadas.)
+Las versiones de AutoReady **todavía no están firmadas**. Los certificados gratuitos para proyectos de código abierto
+se dan a proyectos con trayectoria pública, y AutoReady es nuevo. Lo vamos a volver a pedir a medida que crezca.
+Mientras tanto, podés verificar cualquier descarga vos mismo:
 
-- Autores y revisores: [hercase](https://github.com/hercase)
-- Aprobadores: [hercase](https://github.com/hercase)
-
-Cada versión se compila desde este repositorio con GitHub Actions, se escanea con Microsoft Defender y se firma solo
-después de una aprobación manual.
+- Cada versión se compila desde este repositorio con GitHub Actions y se escanea con Microsoft Defender.
+- Cada versión publica su suma de control (`AutoReady.exe.sha256`) y lleva una attestation de GitHub. Verificá la tuya
+  con `gh attestation verify AutoReady.exe -R hercase/autoready`.
 
 **Privacidad:** AutoReady no tiene cuentas, estadísticas ni telemetría. Solo se conecta a GitHub (actualizaciones), a
 la Comunidad de Steam (tu propio estado) y a ntfy (avisos al celular, apagado por defecto), y cada una se puede
