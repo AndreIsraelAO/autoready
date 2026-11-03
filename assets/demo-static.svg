@@ -55,10 +55,7 @@
 <text x="101" y="60.5" font-size="13" fill="#9A9AA3">Dota 2</text>
 <g fill="none" stroke="#9A9AA3" stroke-width="1"><path d="M351 56.5h10"/><rect x="373.5" y="51.5" width="9" height="9" rx="1.5"/><path d="M397 51.5l9 9M406 51.5l-9 9"/></g>
 <rect x="176" y="148" width="133" height="22" fill="#BFF5E0" opacity="0"></rect>
-<g opacity="1"><rect x="175" y="147.5" width="135" height="25" rx="1" fill="url(#acc)" stroke="#33584C"/><path d="M176 148.5h133" stroke="#fff" stroke-opacity=".07"/>
-<path d="M194.5 160l3.4 3.4 6.4-7.2" fill="none" stroke="#9CC4B4" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="22" stroke-dashoffset="0"></path>
-<text x="253.5" y="164.6" font-family="'Trebuchet MS','Segoe UI',Verdana,sans-serif" font-size="12.5" font-weight="700" letter-spacing="2" fill="#9CC4B4" text-anchor="middle">ACCEPTED</text>
-</g>
+<rect x="175.5" y="147.5" width="134" height="24" rx="1" fill="#0B0F0E" fill-opacity=".45" opacity="1"></rect>
 </g>
 <g opacity="1"><g>
 <rect x="152" y="244" width="300" height="84" rx="8" fill="#2C2C32" filter="url(#sht)"/>
