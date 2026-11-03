@@ -1,0 +1,18 @@
+PackageIdentifier: hercase.AutoReady
+PackageVersion: 0.5.2
+PackageLocale: es-AR
+Publisher: keis.studio
+PublisherUrl: https://keis.studio
+PackageName: AutoReady
+PackageUrl: https://hercase.github.io/autoready/
+License: MIT
+LicenseUrl: https://github.com/hercase/autoready/blob/main/LICENSE
+ShortDescription: Acepta tus partidas mientras no estás y te avisa en la PC o en el celular.
+Description: AutoReady hace click en ACCEPT cuando se encuentra una partida en Dota 2 o CS2 y después te avisa con sonido, una notificación de Windows y, si querés, al celular, para que vuelvas a tiempo. Solo mira la pantalla y simula un click; nunca toca la memoria ni los archivos del juego.
+Tags:
+  - gaming
+  - bandeja
+  - notificaciones
+ReleaseNotesUrl: https://github.com/hercase/autoready/releases/tag/v0.5.2
+ManifestType: locale
+ManifestVersion: 1.6.0
