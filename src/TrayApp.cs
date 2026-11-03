@@ -460,23 +460,13 @@ namespace AutoReady
             });
         }
 
-        // Tres tonos subiendo = empezo la partida (distinto del aviso de aceptada, para no confundirlos).
-        static void BeepStarted()
-        {
-            ThreadPool.QueueUserWorkItem(_ =>
-            {
-                Console.Beep(1200, 100); Console.Beep(1500, 100); Console.Beep(1900, 160);
-            });
-        }
+        // Arpegio de tres notas = empezo la partida (distinto del aviso de aceptada, para no confundirlos).
+        static void BeepStarted() { Sounds.MatchStarted(); }
 
-        // Dos tonos subiendo = activo / aceptada; uno bajo = pausa.
+        // Dos notas subiendo = activo / aceptada; dos bajando = pausa.
         static void Beep(bool up)
         {
-            ThreadPool.QueueUserWorkItem(_ =>
-            {
-                if (up) { Console.Beep(1500, 120); Console.Beep(1900, 160); }
-                else Console.Beep(700, 200);
-            });
+            if (up) Sounds.Accepted(); else Sounds.Paused();
         }
 
         void Quit()
