@@ -174,3 +174,9 @@ instalar nada. Consecuencias:
 ## Pendiente (issues)
 #1 celular sin códigos · #4 README · #5 instalador · #8 firma (SignPath) · #9 restos de accesibilidad y DPI ·
 #6 confiabilidad (popups reales, dos monitores).
+
+**Firma (#8):** el 2026-11-02 SignPath Foundation rechazó la solicitud porque el proyecto todavía no muestra suficiente
+confianza pública (estrellas, forks, contribuidores, menciones externas, actividad sostenida). Se puede reaplicar más
+adelante o pagar un certificado. Plan: juntar esas señales (README con demo, winget, issues `good first issue`, releases
+regulares, menciones independientes en Reddit/YouTube/Stack Overflow) y reaplicar. Hasta entonces los releases siguen con
+attestation de GitHub y SHA-256.
